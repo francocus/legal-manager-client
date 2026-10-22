@@ -1,0 +1,32 @@
+.app-toast-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1090;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.app-toast {
+  min-width: 280px;
+  border-radius: 14px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+}
+
+.app-toast .toast-header {
+  border-radius: 14px 14px 0 0;
+}
+
+@media (max-width: 620px) {
+  .app-toast-container {
+    left: 0.75rem;
+    right: 0.75rem;
+    top: 0.75rem;
+  }
+
+  .app-toast {
+    min-width: 0;
+    width: 100%;
+  }
+}

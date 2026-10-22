@@ -1,0 +1,12 @@
+.profile-preferences {
+  display: flex;
+  align-items: flex-end;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.profile-theme {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

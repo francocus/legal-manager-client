@@ -1,0 +1,208 @@
+import { useContext, useState } from 'react';
+import { Alert, Button } from 'react-bootstrap';
+import { AuthenticationContext } from '../../../services/auth/authentication.context';
+import { useDashboardData } from '../../../services/data/dashboardData.context';
+import { usersApi } from '../../../services/api/usersApi';
+import { useToast } from '../../../shared/toast/toast.context';
+import { usePagination } from '../../../services/hooks/usePagination';
+import ConfirmDialog from '../../../shared/confirmDialog/ConfirmDialog';
+import { SkeletonRows } from '../../../shared/skeleton/Skeleton';
+import EmptyState from '../../../shared/emptyState/EmptyState';
+import Pagination from '../../../shared/pagination/Pagination';
+import NewUser from '../newUser/NewUser';
+import UserDetails from '../userDetails/UserDetails.jsx';
+import UserItem from '../userItem/UserItem';
+import UsersSearch from '../usersSearch/UsersSearch';
+import { ROLE_OPTIONS } from '../../../services/consts/roles';
+import '../users.css';
+
+const PAGE_SIZE = 10;
+
+const UsersContainer = () => {
+  const { user: currentUser } = useContext(AuthenticationContext);
+  const { users, loading, error, refreshUsers } = useDashboardData();
+  const { showToast } = useToast();
+
+  const [searchUser, setSearchUser] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [showNewUser, setShowNewUser] = useState(false);
+  const [userToEdit, setUserToEdit] = useState(null);
+  const [userToDelete, setUserToDelete] = useState(null);
+
+  const handleOpenNewUser = () => {
+    setUserToEdit(null);
+    setUserToDelete(null);
+    setShowNewUser(true);
+  };
+
+  const handleCloseForms = () => {
+    setShowNewUser(false);
+    setUserToEdit(null);
+    setUserToDelete(null);
+  };
+
+  const handleAddUser = async (form) => {
+    await usersApi.create(form);
+    await refreshUsers();
+  };
+
+  const handleEditUser = async (form) => {
+    await usersApi.update(form.id, form);
+    await refreshUsers();
+  };
+
+  const handleDeleteUser = async (id) => {
+    if (id === currentUser?.id) {
+      return;
+    }
+
+    try {
+      await usersApi.remove(id);
+      await refreshUsers();
+      setUserToDelete(null);
+      showToast({ variant: 'success', message: 'Usuario eliminado correctamente.' });
+    } catch (deleteError) {
+      showToast({
+        variant: 'danger',
+        message: deleteError.message || 'No se pudo eliminar el usuario.',
+      });
+      throw deleteError;
+    }
+  };
+
+  const filteredUsers = users.filter((user) => {
+    if (roleFilter !== 'all' && user.role !== roleFilter) {
+      return false;
+    }
+    const lowerSearch = searchUser.toLowerCase();
+    return (
+      (user.name && user.name.toLowerCase().includes(lowerSearch)) ||
+      (user.email && user.email.toLowerCase().includes(lowerSearch)) ||
+      (user.dni && String(user.dni).toLowerCase().includes(lowerSearch))
+    );
+  });
+
+  const { page, setPage, totalPages, pageItems } = usePagination(filteredUsers, PAGE_SIZE);
+
+  return (
+    <section className="users-panel">
+      <header className="users-header">
+        <div className="users-header__copy">
+          <p>Gestión de usuarios</p>
+          <h2>Gestión de usuarios</h2>
+        </div>
+
+        <div className="users-header__controls">
+          <select
+            className="users-filter"
+            value={roleFilter}
+            onChange={(event) => setRoleFilter(event.target.value)}
+            aria-label="Filtrar por rol"
+          >
+            <option value="all">Todos los roles</option>
+            {ROLE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+
+          <div className="users-search-wrap">
+            <UsersSearch onSearch={setSearchUser} />
+          </div>
+
+          <Button
+            type="button"
+            className="users-create"
+            title="Crear usuario"
+            aria-label="Crear usuario"
+            onClick={handleOpenNewUser}
+          >
+            <span className="users-create__text">Crear usuario</span>
+          </Button>
+        </div>
+      </header>
+
+      {error && (
+        <Alert className="users-alert" variant="danger">
+          {error}
+        </Alert>
+      )}
+
+      {showNewUser && <NewUser onAddUser={handleAddUser} onFormClosed={handleCloseForms} />}
+
+      {userToEdit && (
+        <UserDetails
+          user={userToEdit}
+          onEditUser={handleEditUser}
+          onFormClosed={handleCloseForms}
+        />
+      )}
+
+      <ConfirmDialog
+        show={Boolean(userToDelete)}
+        onHide={() => setUserToDelete(null)}
+        onConfirm={() => handleDeleteUser(userToDelete?.id)}
+        title="Eliminar usuario"
+        message="¿Estás seguro que deseas eliminar al usuario"
+        itemName={userToDelete?.name}
+        confirmLabel="Sí, deseo eliminarlo"
+      />
+
+      {loading ? (
+        <SkeletonRows rows={5} />
+      ) : filteredUsers.length > 0 ? (
+        <>
+          <div className="users-table-wrap">
+            <table className="users-table">
+              <thead>
+                <tr>
+                  <th>Usuario / DNI</th>
+                  <th>Rol</th>
+                  <th>Contacto</th>
+                  <th>Estado</th>
+                  <th className="users-table__actions-head">Acciones Admin</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pageItems.map((userEntry) => (
+                  <UserItem
+                    key={userEntry.id}
+                    id={userEntry.id}
+                    name={userEntry.name}
+                    dni={userEntry.dni}
+                    email={userEntry.email}
+                    role={userEntry.role}
+                    active={userEntry.active}
+                    isCurrentUser={userEntry.id === currentUser?.id}
+                    onEdit={(selectedUser) => {
+                      setShowNewUser(false);
+                      setUserToDelete(null);
+                      setUserToEdit(selectedUser);
+                    }}
+                    onDelete={(id) => {
+                      const selectedUser = filteredUsers.find((entry) => entry.id === id);
+                      if (selectedUser) {
+                        setShowNewUser(false);
+                        setUserToEdit(null);
+                        setUserToDelete(selectedUser);
+                      }
+                    }}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+        </>
+      ) : (
+        <EmptyState
+          title="No se encontraron usuarios"
+          message="Probá con otro término de búsqueda o cambiá el filtro de rol."
+        />
+      )}
+    </section>
+  );
+};
+
+export default UsersContainer;

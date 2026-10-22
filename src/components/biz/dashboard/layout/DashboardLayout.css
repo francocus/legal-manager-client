@@ -1,0 +1,90 @@
+.dashboard-home.is-active {
+  background: linear-gradient(135deg, #eef4fa, #b9cee2);
+  border-color: transparent;
+  color: #07090d;
+}
+
+.dashboard-profile-toggle::after {
+  display: none !important;
+}
+
+.dashboard-profile-menu {
+  min-width: 220px;
+  padding: 8px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(14, 18, 26, 0.98);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
+.dashboard-profile-menu__header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+}
+
+.dashboard-profile-menu__header strong {
+  color: #eef2f6;
+  font-size: 0.92rem;
+}
+
+.dashboard-profile-menu__header span {
+  color: #9aa7b6;
+  font-size: 0.8rem;
+  word-break: break-all;
+}
+
+.dashboard-profile-menu .dropdown-divider {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dashboard-profile-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  color: #dbe5ee;
+}
+
+.dashboard-profile-menu__item:hover,
+.dashboard-profile-menu__item:focus {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+[data-bs-theme='light'] .dashboard-header {
+  background:
+    radial-gradient(circle at top left, rgba(76, 122, 160, 0.24), transparent 22%),
+    radial-gradient(circle at 78% 18%, rgba(94, 141, 123, 0.2), transparent 20%),
+    linear-gradient(135deg, #f6f8fa 0%, #eef1f4 48%, #e7ecf1 100%);
+}
+
+[data-bs-theme='light'] .dashboard-profile-menu {
+  border-color: rgba(15, 23, 32, 0.12);
+  background: #ffffff;
+  box-shadow: 0 24px 60px rgba(15, 23, 32, 0.18);
+}
+
+[data-bs-theme='light'] .dashboard-profile-menu__header strong {
+  color: #0d1117;
+}
+
+[data-bs-theme='light'] .dashboard-profile-menu__header span {
+  color: #5b6675;
+}
+
+[data-bs-theme='light'] .dashboard-profile-menu .dropdown-divider {
+  border-color: rgba(15, 23, 32, 0.1);
+}
+
+[data-bs-theme='light'] .dashboard-profile-menu__item {
+  color: #2c3744;
+}
+
+[data-bs-theme='light'] .dashboard-profile-menu__item:hover,
+[data-bs-theme='light'] .dashboard-profile-menu__item:focus {
+  background: rgba(15, 23, 32, 0.06);
+  color: #0d1117;
+}

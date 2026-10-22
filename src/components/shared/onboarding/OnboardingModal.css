@@ -1,0 +1,19 @@
+.onboarding-modal__content {
+  border-radius: 20px;
+}
+
+.onboarding-modal__body {
+  color: #dbe5ee;
+}
+
+.onboarding-modal__body ul {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+[data-bs-theme='light'] .onboarding-modal__body {
+  color: #3c4754;
+}
