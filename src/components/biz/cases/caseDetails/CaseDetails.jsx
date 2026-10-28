@@ -122,6 +122,8 @@ const CaseDetails = ({
             <Col md={12}>
               <Form.Group className="mb-3" controlId="caseNumber">
                 <Form.Label>Número de expediente</Form.Label>
+                {/* PUT /case/{id} only persists title/area/description/notes,
+                    so these fields stay display-only in the edit modal. */}
                 <Form.Control
                   name="caseNumber"
                   value={values.caseNumber ?? ''}
@@ -129,6 +131,8 @@ const CaseDetails = ({
                   isInvalid={Boolean(errors.caseNumber)}
                   type="text"
                   placeholder="Ingresar número de expediente"
+                  className="opacity-50"
+                  disabled
                 />
                 {fieldError('caseNumber')}
               </Form.Group>
@@ -195,6 +199,8 @@ const CaseDetails = ({
                   onChange={handleChange}
                   isInvalid={Boolean(errors.startDate)}
                   type="date"
+                  className="opacity-50"
+                  disabled
                 />
                 {fieldError('startDate')}
               </Form.Group>
@@ -208,6 +214,8 @@ const CaseDetails = ({
                   onChange={handleChange}
                   isInvalid={Boolean(errors.lastUpdate)}
                   type="date"
+                  className="opacity-50"
+                  disabled
                 />
                 {fieldError('lastUpdate')}
               </Form.Group>
@@ -257,6 +265,8 @@ const CaseDetails = ({
                   value={values.clientId ? String(values.clientId) : ''}
                   onChange={handleChange}
                   isInvalid={Boolean(errors.clientId)}
+                  className="opacity-50"
+                  disabled
                 >
                   <option value="">Seleccionar cliente</option>
                   {clients.map((client) => (
@@ -281,6 +291,8 @@ const CaseDetails = ({
                       value={values.lawyerId ? String(values.lawyerId) : ''}
                       onChange={handleChange}
                       isInvalid={Boolean(errors.lawyerId)}
+                      className="opacity-50"
+                      disabled
                     >
                       <option value="">Seleccionar abogado</option>
                       {lawyers.map((lawyer) => (
