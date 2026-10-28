@@ -5,4 +5,5 @@ export const initialUserForm = {
   password: '',
   role: 'cliente',
   active: true,
+  barNumber: '',
 };

@@ -3,7 +3,7 @@ import { Button, Col, Form, Modal, Row } from 'react-bootstrap';
 import { initialUserForm } from './NewUser.data';
 import { useForm } from '../../../services/hooks/useForm';
 import { formatDni, isDni, isEmail, isRequired } from '../../../services/validators/validators';
-import { ROLE_OPTIONS } from '../../../services/consts/roles';
+import { ROLE_OPTIONS, ROLES } from '../../../services/consts/roles';
 import { useToast } from '../../../shared/toast/toast.context';
 
 const capitalize = (value) => value.charAt(0).toUpperCase() + value.slice(1);
@@ -17,6 +17,8 @@ const validateUserForm = (values) => {
   if (!isRequired(values.email)) errors.email = 'El correo es obligatorio.';
   else if (!isEmail(values.email)) errors.email = 'Ingresá un correo válido.';
   if (!isRequired(values.password)) errors.password = 'La contraseña es obligatoria.';
+  if (values.role === ROLES.ABOGADO && !isRequired(values.barNumber))
+    errors.barNumber = 'La matrícula es obligatoria.';
 
   return errors;
 };
@@ -156,6 +158,27 @@ const NewUser = ({ onAddUser, onFormClosed, fixedRole, entityLabel = 'usuario' }
               </Col>
             ) : null}
           </Row>
+
+          {values.role === ROLES.ABOGADO ? (
+            <Row>
+              <Col md={12}>
+                <Form.Group className="mb-3" controlId="barNumber">
+                  <Form.Label>Matrícula</Form.Label>
+                  <Form.Control
+                    name="barNumber"
+                    value={values.barNumber}
+                    onChange={handleChange}
+                    isInvalid={Boolean(errors.barNumber)}
+                    type="text"
+                    placeholder="Ingresar matrícula"
+                  />
+                  {errors.barNumber ? (
+                    <Form.Text className="text-danger">{errors.barNumber}</Form.Text>
+                  ) : null}
+                </Form.Group>
+              </Col>
+            </Row>
+          ) : null}
 
           <Row>
             <Col md={12}>
