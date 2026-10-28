@@ -45,13 +45,10 @@ const NewCase = ({ onAddCase, onFormClosed, clients = [], lawyers = [], currentU
     initialValues,
     validate: validateCaseForm,
     onSubmit: async (formValues) => {
+      // Ids are Guid strings: clientId/lawyerId travel as strings.
       const payload = {
         ...formValues,
-        clientId: Number(formValues.clientId),
-        lawyerId:
-          currentUser?.role === ROLES.ABOGADO
-            ? Number(currentUser.id)
-            : Number(formValues.lawyerId),
+        lawyerId: currentUser?.role === ROLES.ABOGADO ? currentUser.id : formValues.lawyerId,
       };
 
       try {

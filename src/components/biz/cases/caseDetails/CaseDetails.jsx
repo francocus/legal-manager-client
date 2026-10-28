@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { Button, Col, Form, Modal, Row } from 'react-bootstrap';
+import { casesApi } from '../../../services/api/casesApi';
 import { initialCaseForm } from '../newCase/NewCase.data';
 import { CASE_STATUS_OPTIONS } from '../Cases.data';
 import { useForm } from '../../../services/hooks/useForm';
@@ -59,16 +60,22 @@ const CaseDetails = ({
     initialValues,
     validate: validateCaseForm,
     onSubmit: async (formValues) => {
+      // PUT /case/{id} accepts only title/area/description/notes and the
+      // status select is separate: PATCH /case/{id}/status. Ids are Guid
+      // strings and the select speaks lowercase, so status goes normalized.
+      const statusChanged =
+        String(formValues.status ?? '').toLowerCase() !==
+        String(initialValues.status ?? '').toLowerCase();
       const payload = {
         ...formValues,
-        clientId: Number(formValues.clientId),
         lawyerId:
-          currentUser?.role === ROLES.ABOGADO
-            ? Number(currentUser.id)
-            : Number(formValues.lawyerId),
+          currentUser?.role === ROLES.ABOGADO ? currentUser.id : formValues.lawyerId,
       };
 
       try {
+        if (statusChanged) {
+          await casesApi.setStatus(legalCase.id, String(formValues.status ?? '').toLowerCase());
+        }
         await onEditCase?.(payload);
         showToast({ variant: 'success', message: 'Expediente actualizado correctamente.' });
         onFormClosed?.();
@@ -165,7 +172,7 @@ const CaseDetails = ({
                 <Form.Label>Estado</Form.Label>
                 <Form.Select
                   name="status"
-                  value={values.status ?? 'activo'}
+                  value={String(values.status ?? '').toLowerCase() || 'activo'}
                   onChange={handleChange}
                 >
                   {CASE_STATUS_OPTIONS.map((option) => (

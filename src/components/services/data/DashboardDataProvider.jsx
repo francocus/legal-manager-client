@@ -4,7 +4,47 @@ import { AuthenticationContext } from '../auth/authentication.context';
 import { ROLES } from '../consts/roles';
 import { usersApi } from '../api/usersApi';
 import { casesApi } from '../api/casesApi';
-import { appointmentsApi } from '../api/appointmentsApi';
+import { appointmentsApi, sortAppointments } from '../api/appointmentsApi';
+import { mapCase } from '../../biz/cases/Cases.data';
+import { mapAppointment } from '../../biz/appointments/Appointments.data';
+
+// Backend authorization (UserController): /user/lawyers is open to every
+// authenticated role, /user/clients requires admin-or-lawyer and /user is
+// admin-only, so the bulk load fetches clients only for those roles.
+const canFetchClients = (role) => role === ROLES.SYSADMIN || role === ROLES.ABOGADO;
+
+// Resolver maps keyed by Guid ids: userNames[id] -> display name and
+// caseNumberById[caseId] -> case number. The session user is always included
+// so records owned by the session user never lose their display name.
+const buildNameById = (peopleLists, currentUser = null) => {
+  const nameById = {};
+
+  peopleLists.forEach((people) => {
+    (people ?? []).forEach((person) => {
+      if (person?.id) {
+        nameById[person.id] = person.name ?? '';
+      }
+    });
+  });
+
+  if (currentUser?.id) {
+    nameById[currentUser.id] = currentUser.name ?? '';
+  }
+
+  return nameById;
+};
+
+const buildCaseNumberById = (caseSource) => {
+  const caseNumberById = {};
+
+  (caseSource ?? []).forEach((legalCase) => {
+    if (legalCase?.id) {
+      caseNumberById[legalCase.id] = legalCase.caseNumber ?? '';
+    }
+  });
+
+  return caseNumberById;
+};
 
 export const DashboardDataProvider = ({ children }) => {
   const { token, user } = useContext(AuthenticationContext);
@@ -18,13 +58,29 @@ export const DashboardDataProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Resolver maps derived from the current state so every refresh remaps
+  // against the latest known people and case numbers.
+  const nameById = useMemo(
+    () => buildNameById([lawyers, clients, users], user),
+    [lawyers, clients, users, user],
+  );
+  const caseNumberById = useMemo(() => buildCaseNumberById(cases), [cases]);
+
   const refreshCases = useCallback(async () => {
-    setCases(await casesApi.getAll());
-  }, []);
+    const rawCases = await casesApi.getAllRaw();
+    setCases(rawCases.map((legalCase) => mapCase(legalCase, nameById)));
+  }, [nameById]);
 
   const refreshAppointments = useCallback(async () => {
-    setAppointments(await appointmentsApi.getAll());
-  }, []);
+    const rawAppointments = await appointmentsApi.getAllRaw();
+    setAppointments(
+      sortAppointments(
+        rawAppointments.map((appointment) =>
+          mapAppointment(appointment, nameById, caseNumberById),
+        ),
+      ),
+    );
+  }, [nameById, caseNumberById]);
 
   const refreshUsers = useCallback(async () => {
     setUsers(await usersApi.getAll());
@@ -45,33 +101,38 @@ export const DashboardDataProvider = ({ children }) => {
       setLoading(true);
       setError('');
 
-      const tasks = [refreshCases(), refreshAppointments()];
+      // Fetch the raw dto arrays for every role-fetchable resource in one
+      // parallel batch (users only for sysadmin), build the resolver maps from
+      // those lists, then map each resource exactly once.
+      const [rawCases, rawAppointments, fetchedLawyers, fetchedClients, fetchedUsers] =
+        await Promise.all([
+          casesApi.getAllRaw(),
+          appointmentsApi.getAllRaw(),
+          usersApi.getLawyers(),
+          canFetchClients(role) ? usersApi.getClients() : [],
+          role === ROLES.SYSADMIN ? usersApi.getAll() : [],
+        ]);
 
-      if (role === ROLES.SYSADMIN) {
-        tasks.push(refreshUsers());
-      }
-      if (role === ROLES.CLIENTE || role === ROLES.SYSADMIN) {
-        tasks.push(refreshLawyers());
-      }
-      if (role === ROLES.ABOGADO || role === ROLES.SYSADMIN) {
-        tasks.push(refreshClients());
-      }
+      const bulkNameById = buildNameById([fetchedLawyers, fetchedClients, fetchedUsers], user);
+      const bulkCaseNumberById = buildCaseNumberById(rawCases);
 
-      await Promise.all(tasks);
+      setUsers(fetchedUsers);
+      setLawyers(fetchedLawyers);
+      setClients(fetchedClients);
+      setCases(rawCases.map((legalCase) => mapCase(legalCase, bulkNameById)));
+      setAppointments(
+        sortAppointments(
+          rawAppointments.map((appointment) =>
+            mapAppointment(appointment, bulkNameById, bulkCaseNumberById),
+          ),
+        ),
+      );
     } catch (refreshError) {
       setError(refreshError.message || 'No se pudieron cargar los datos.');
     } finally {
       setLoading(false);
     }
-  }, [
-    token,
-    role,
-    refreshCases,
-    refreshAppointments,
-    refreshUsers,
-    refreshLawyers,
-    refreshClients,
-  ]);
+  }, [token, role, user]);
 
   useEffect(() => {
     refreshAll();
@@ -84,6 +145,8 @@ export const DashboardDataProvider = ({ children }) => {
       users,
       lawyers,
       clients,
+      nameById,
+      caseNumberById,
       loading,
       error,
       setError,
@@ -100,6 +163,8 @@ export const DashboardDataProvider = ({ children }) => {
       users,
       lawyers,
       clients,
+      nameById,
+      caseNumberById,
       loading,
       error,
       refreshAll,

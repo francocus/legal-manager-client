@@ -44,14 +44,23 @@ const AppointmentsContainer = () => {
 
   const isSysadmin = user?.role === ROLES.SYSADMIN;
 
-  const updateAppointment = async (appointment, payload) => {
-    await appointmentsApi.update(appointment.id, payload);
-    await refreshAppointments();
-  };
-
+  // Appointment lifecycle: confirm/cancel are dedicated PATCH endpoints, and
+  // 'pendiente'/'finalizado' have no update endpoint (the backend computes
+  // 'Finalizado' itself), so any other status value is rejected here.
   const handleStatus = async (appointment, status) => {
+    const statusAction = { confirmado: 'confirm', cancelado: 'cancel' }[status];
+
+    if (!statusAction) {
+      showToast({
+        variant: 'danger',
+        message: 'Solo se puede confirmar o cancelar un turno.',
+      });
+      return;
+    }
+
     try {
-      await updateAppointment(appointment, { status });
+      await appointmentsApi[statusAction](appointment.id);
+      await refreshAppointments();
       showToast({ variant: 'success', message: 'Turno actualizado correctamente.' });
     } catch (statusError) {
       showToast({
@@ -66,8 +75,10 @@ const AppointmentsContainer = () => {
     await refreshAppointments();
   };
 
+  // The edit modal emits a reschedule payload: { date, time, endTime }.
   const handleEdit = async (appointment, form) => {
-    await updateAppointment(appointment, form);
+    await appointmentsApi.reschedule(appointment.id, form);
+    await refreshAppointments();
     setAppointmentToEdit(null);
   };
 
