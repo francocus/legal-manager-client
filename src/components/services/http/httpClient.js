@@ -1,5 +1,5 @@
 import { API_URL } from '../consts/apiConsts';
-import { TOKEN_KEY } from '../consts/storageKeys';
+import { TOKEN_KEY, USER_KEY, SESSION_EXPIRED_KEY } from '../consts/storageKeys';
 
 const DEFAULT_ERROR_MESSAGE = 'No se pudo completar la operación.';
 
@@ -9,6 +9,21 @@ const readToken = () => {
   } catch {
     return null;
   }
+};
+
+// A 401 on an authenticated call means the JWT is expired or invalid: drop
+// the persisted session and bounce to login instead of leaving an empty
+// "logged in" UI behind. Non-auth calls (login/register) never clean up.
+const clearExpiredSession = () => {
+  try {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+    sessionStorage.setItem(SESSION_EXPIRED_KEY, 'true');
+  } catch {
+    // Blocked storage still allows the redirect below.
+  }
+
+  window.location.replace('/login');
 };
 
 export const getErrorMessage = async (response) => {
@@ -54,6 +69,13 @@ export const apiRequest = async (
   });
 
   if (!response.ok) {
+    // Expired/invalid JWT: clean up and bounce before surfacing the error.
+    // 403 is a permissions issue, not a session issue, so it keeps the plain
+    // error flow. The redirect is already scheduled when the caller sees it.
+    if (auth && response.status === 401) {
+      clearExpiredSession();
+    }
+
     throw new Error(await getErrorMessage(response));
   }
 
