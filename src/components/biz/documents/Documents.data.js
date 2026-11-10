@@ -22,6 +22,19 @@ export const formatFileSize = (sizeBytes = 0) => {
   return `${(sizeBytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
+// AI drafts awaiting their single review read as pending; after the review
+// they carry approve/discard; files uploaded by users wear no chip.
+export const getDocumentState = (doc = {}) => {
+  if (doc.isPendingReview) return { className: 'is-pending', label: 'Pendiente de revisión' };
+  if (doc.generatedByAi && doc.approved === true) {
+    return { className: 'is-active', label: 'Aprobado' };
+  }
+  if (doc.generatedByAi && doc.approved === false) {
+    return { className: 'is-closed', label: 'Descartado' };
+  }
+  return null;
+};
+
 // The backend dto sends camelCase; approved/reviewedAt only carry values
 // after the single AI review, and isPendingReview marks an unconditional
 // draft awaiting the keep/discard decision.
