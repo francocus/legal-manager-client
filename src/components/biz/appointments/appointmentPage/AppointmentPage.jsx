@@ -173,6 +173,7 @@ const AppointmentPage = () => {
       ) : null}
 
       <NewAppointment
+        key={editing ? (appointment?.id ?? 'new') : 'closed'}
         show={editing}
         appointment={appointment}
         onHide={() => setEditing(false)}

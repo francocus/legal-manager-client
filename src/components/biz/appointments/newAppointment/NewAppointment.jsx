@@ -16,6 +16,22 @@ import { useToast } from '../../../shared/toast/toast.context';
 
 const emptyForm = { lawyerId: '', date: '', time: '', reason: '' };
 const todayKey = getDateKey(addDays(new Date(), 1));
+
+// Initial form for every open cycle: editing reschedules only (date/time)
+// while creation starts empty, with the abogado's own lawyerId prefilled.
+const buildInitialForm = (appointment, user) => {
+  if (appointment) {
+    return {
+      date: appointment.date,
+      time: appointment.time,
+      reason: appointment.reason,
+    };
+  }
+  if (user?.role === 'abogado') {
+    return { ...emptyForm, lawyerId: user.id };
+  }
+  return { ...emptyForm };
+};
 const NewAppointment = ({
   show,
   onHide,
@@ -27,8 +43,10 @@ const NewAppointment = ({
   appointment,
 }) => {
   const { showToast } = useToast();
-  const [isEdit, setIsEdit] = useState(Boolean(appointment));
-  const [form, setForm] = useState(emptyForm);
+  // Every open cycle remounts this modal (callers key it), so state starts
+  // from lazy initializers instead of on-show reset effects.
+  const [isEdit] = useState(() => Boolean(appointment));
+  const [form, setForm] = useState(() => buildInitialForm(appointment, user));
   const [slots, setSlots] = useState([]);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -36,25 +54,6 @@ const NewAppointment = ({
     const n = new Date();
     return new Date(n.getFullYear(), n.getMonth(), 1);
   });
-
-  useEffect(() => {
-    if (!show) return;
-    setIsEdit(Boolean(appointment));
-    setMessage('');
-    const n = new Date();
-    setCalendarMonth(new Date(n.getFullYear(), n.getMonth(), 1));
-    // Editing reschedules only (date/time); reason, lawyer and status are
-    // not accepted for edit anymore.
-    setForm(
-      appointment
-        ? {
-            date: appointment.date,
-            time: appointment.time,
-            reason: appointment.reason,
-          }
-        : emptyForm,
-    );
-  }, [show, appointment]);
 
   useEffect(() => {
     const loadSlots = async () => {
@@ -127,12 +126,6 @@ const NewAppointment = ({
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (show && !isEdit && user?.role === 'abogado') {
-      setForm((prev) => ({ ...prev, lawyerId: user.id }));
-    }
-  }, [show, isEdit, user]);
 
   return (
     <Modal

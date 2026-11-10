@@ -34,20 +34,33 @@ const CaseDocuments = ({ legalCase, currentUser }) => {
   const canWrite = isSysadmin(currentUser?.role) || isLawyer(currentUser?.role);
   const isClosed = String(legalCase?.status ?? '').toLowerCase() === 'cerrado';
 
+  const caseId = legalCase?.id;
+
   const loadDocuments = useCallback(async () => {
-    if (!legalCase?.id) return;
+    if (!caseId) return;
     setLoading(true);
     try {
-      setDocuments(await documentsApi.getAll(legalCase.id));
+      setDocuments(await documentsApi.getAll(caseId));
     } catch (error) {
       showToast({ variant: 'danger', message: error.message });
     } finally {
       setLoading(false);
     }
-  }, [legalCase?.id, showToast]);
+  }, [caseId, showToast]);
 
   useEffect(() => {
-    loadDocuments();
+    let active = true;
+
+    (async () => {
+      // Yield to a callback frame so loadDocuments' setLoading is async.
+      await Promise.resolve();
+      if (!active) return;
+      await loadDocuments();
+    })();
+
+    return () => {
+      active = false;
+    };
   }, [loadDocuments]);
 
   const handleFileChange = (event) => {

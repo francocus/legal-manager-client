@@ -36,7 +36,6 @@ const ConfirmEmail = () => {
     // on a screen the user already left.
     let active = true;
 
-    setStatus('confirming');
     accountApi
       .confirmEmail(token)
       .then(() => {
