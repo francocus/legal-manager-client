@@ -152,6 +152,13 @@ const Login = () => {
             </Form>
 
             <p className="auth-switch-text">
+              ¿Olvidaste tu contraseña?{' '}
+              <Link to="/recuperar-contrasena" className="auth-link">
+                Recuperar contraseña
+              </Link>
+            </p>
+
+            <p className="auth-switch-text">
               ¿No tenés cuenta?{' '}
               <Link to="/register" className="auth-link">
                 Crear cuenta

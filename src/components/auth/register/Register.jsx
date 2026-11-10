@@ -1,7 +1,7 @@
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { Button, Form } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router';
-import { AuthenticationContext } from '../../services/auth/authentication.context';
+import { usersApi } from '../../services/api/usersApi';
 import ToggleTheme from '../../shared/toggleTheme/ToggleTheme.jsx';
 import { Scale } from 'lucide-react';
 import { useForm } from '../../services/hooks/useForm';
@@ -65,7 +65,6 @@ const validateRegisterForm = (values) => {
 };
 
 const Register = () => {
-  const { handleUserRegister } = useContext(AuthenticationContext);
   const navigate = useNavigate();
   const { showToast } = useToast();
 
@@ -77,14 +76,16 @@ const Register = () => {
     validate: validateRegisterForm,
     onSubmit: async ({ name, dni, email, password }) => {
       try {
-        await handleUserRegister({
+        // Registration no longer signs the user in: the account starts as
+        // email-pending, so no session is persisted for unconfirmed users.
+        await usersApi.register({
           name: name.trim(),
           dni,
           email: email.trim(),
           password,
           role: ROLES.CLIENTE,
         });
-        navigate('/dashboard', { replace: true });
+        navigate('/registro-pendiente', { state: { email }, replace: true });
       } catch (error) {
         showToast({
           variant: 'danger',

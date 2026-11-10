@@ -259,7 +259,8 @@
   margin-bottom: 8px;
 }
 
-.auth-box__head h1 {
+.auth-box__head h1,
+.auth-box__head h2 {
   margin: 0 0 8px;
   font-size: 1.9rem;
   letter-spacing: -0.02em;
