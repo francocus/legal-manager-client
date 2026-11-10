@@ -2,24 +2,30 @@ export const CASE_STATUS_OPTIONS = [
   { value: 'activo', label: 'Activo' },
   { value: 'pendiente', label: 'Pendiente' },
   { value: 'cerrado', label: 'Cerrado' },
-  { value: 'archivado', label: 'Archivado' },
 ];
 
-export const mapCase = (legalCase = {}) => ({
-  id: legalCase.id,
-  caseNumber: legalCase.caseNumber ?? '',
-  title: legalCase.title ?? '',
-  area: legalCase.area ?? '',
-  status: legalCase.status ?? 'activo',
-  startDate: legalCase.startDate ?? '',
-  lastUpdate: legalCase.lastUpdate ?? '',
-  description: legalCase.description ?? '',
-  notes: legalCase.notes ?? '',
-  clientId: legalCase.clientId ?? legalCase.client?.id ?? '',
-  lawyerId: legalCase.lawyerId ?? legalCase.lawyer?.id ?? '',
-  clientName: legalCase.client?.name ?? 'Sin cliente',
-  lawyerName: legalCase.lawyer?.name ?? 'Sin abogado',
-});
+// The backend sends flat dto rows with ids only (no nested client/lawyer
+// objects), so display names come from the userNames resolver map.
+export const mapCase = (legalCase = {}, userNames = {}) => {
+  const clientId = legalCase.clientId ?? legalCase.client?.id ?? '';
+  const lawyerId = legalCase.lawyerId ?? legalCase.lawyerIds?.[0] ?? legalCase.lawyer?.id ?? '';
+
+  return {
+    id: legalCase.id,
+    caseNumber: legalCase.caseNumber ?? '',
+    title: legalCase.title ?? '',
+    area: legalCase.area ?? '',
+    status: legalCase.status ?? 'activo',
+    startDate: legalCase.startDate ?? '',
+    lastUpdate: legalCase.lastUpdate ?? '',
+    description: legalCase.description ?? '',
+    notes: legalCase.notes ?? '',
+    clientId,
+    lawyerId,
+    clientName: userNames[clientId] ?? legalCase.client?.name ?? 'Sin cliente',
+    lawyerName: userNames[lawyerId] ?? legalCase.lawyer?.name ?? 'Sin abogado',
+  };
+};
 
 export const getStatusClass = (status = '') => {
   const normalizedStatus = status

@@ -11,7 +11,7 @@ import {
   parseDate,
 } from '../../calendar/Calendar.data';
 import { DAY_NAMES, SLOTS, MONTH_NAMES } from '../../../services/consts/calendarConsts';
-import { apiRequest } from '../../../services/http/httpClient';
+import { appointmentsApi } from '../../../services/api/appointmentsApi';
 import { useToast } from '../../../shared/toast/toast.context';
 
 const emptyForm = { lawyerId: '', date: '', time: '', reason: '' };
@@ -43,14 +43,14 @@ const NewAppointment = ({
     setMessage('');
     const n = new Date();
     setCalendarMonth(new Date(n.getFullYear(), n.getMonth(), 1));
+    // Editing reschedules only (date/time); reason, lawyer and status are
+    // not accepted for edit anymore.
     setForm(
       appointment
         ? {
             date: appointment.date,
             time: appointment.time,
             reason: appointment.reason,
-            status: appointment.status,
-            lawyerId: String(appointment.lawyerId),
           }
         : emptyForm,
     );
@@ -61,10 +61,8 @@ const NewAppointment = ({
       setSlots([]);
       if (isEdit || !form.lawyerId || !form.date) return;
       try {
-        const data = await apiRequest(
-          `/appointments/availability?lawyerId=${form.lawyerId}&date=${form.date}`,
-        );
-        setSlots(data?.slots ?? []);
+        const availableSlots = await appointmentsApi.getAvailability(form.lawyerId, form.date);
+        setSlots(availableSlots);
       } catch (_error) {
         setSlots([]);
       }
@@ -87,27 +85,33 @@ const NewAppointment = ({
       return setMessage(
         isEdit ? 'Completa fecha, horario y motivo.' : 'Completa abogado, fecha, horario y motivo.',
       );
+
+    // clientId is required by the contract: the cliente role always requests
+    // for itself (Guid from the claims), the other roles must select a client.
+    const clientId = form.clientId || (user?.role === 'cliente' ? user?.id : undefined);
+    if (!isEdit && user?.role !== 'cliente' && !clientId)
+      return setMessage('Selecciona un cliente para el turno.');
     if (!isEdit && form.date < todayKey)
       return setMessage('La fecha no puede ser anterior al día de hoy.');
     try {
       setLoading(true);
+      // Creating posts the contract body (no status: the backend computes
+      // 'Pendiente') with Guid string ids; editing reschedules only
+      // date/time/endTime.
       await onSubmit(
         isEdit
           ? appointment
           : {
               ...form,
-              lawyerId: Number(form.lawyerId),
+              clientId,
+              lawyerId: form.lawyerId,
               title: 'Solicitud de turno',
-              status: 'pendiente',
               endTime: addHour(form.time),
             },
         isEdit
           ? {
               date: form.date,
               time: form.time,
-              reason: form.reason,
-              status: form.status,
-              lawyerId: user?.role === 'sysadmin' ? Number(form.lawyerId) : undefined,
               endTime: addHour(form.time),
             }
           : undefined,
@@ -173,14 +177,16 @@ const NewAppointment = ({
             </Form.Group>
           )}
 
-          {user?.role !== 'abogado' && (!isEdit || user?.role === 'sysadmin') && (
+          {/* The lawyer is schedule-locked at creation; reschedule does not
+              accept lawyerId. */}
+          {user?.role !== 'abogado' && !isEdit && (
             <Form.Group className="mb-3">
               <Form.Label>Abogado</Form.Label>
               <Form.Select
                 value={form.lawyerId || ''}
                 onChange={(event) => setForm({ ...form, lawyerId: event.target.value, time: '' })}
               >
-                {!isEdit && <option value="">Seleccionar abogado</option>}
+                <option value="">Seleccionar abogado</option>
                 {lawyers?.map((lawyer) => (
                   <option key={lawyer.id} value={lawyer.id}>
                     {lawyer.name}
@@ -214,20 +220,6 @@ const NewAppointment = ({
                   ))}
                 </Form.Select>
               </Form.Group>
-              {user?.role === 'sysadmin' && (
-                <Form.Group className="mb-3">
-                  <Form.Label>Estado</Form.Label>
-                  <Form.Select
-                    value={form.status}
-                    onChange={(event) => setForm({ ...form, status: event.target.value })}
-                  >
-                    <option value="pendiente">Pendiente</option>
-                    <option value="confirmado">Confirmado</option>
-                    <option value="finalizado">Finalizado</option>
-                    <option value="cancelado">Cancelado</option>
-                  </Form.Select>
-                </Form.Group>
-              )}
             </>
           ) : (
             <div className="appointment-request-modal__grid">
@@ -320,12 +312,15 @@ const NewAppointment = ({
               </div>
             </div>
           )}
+          {/* Editing cannot change the reason: reschedule accepts only
+              date/time/endTime. */}
           <Form.Group className={isEdit ? '' : 'mt-3'}>
             <Form.Label>{isEdit ? 'Motivo' : 'Motivo breve'}</Form.Label>
             <Form.Control
               as="textarea"
               rows={3}
               value={form.reason}
+              readOnly={isEdit}
               placeholder={isEdit ? undefined : 'Motivo breve de la consulta...'}
               onChange={(event) => setForm({ ...form, reason: event.target.value })}
             />

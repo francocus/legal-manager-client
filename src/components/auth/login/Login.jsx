@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Button, Form } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router';
 import { AuthenticationContext } from '../../services/auth/authentication.context.jsx';
@@ -6,6 +6,7 @@ import ToggleTheme from '../../shared/toggleTheme/ToggleTheme.jsx';
 import { Scale } from 'lucide-react';
 import { useForm } from '../../services/hooks/useForm';
 import { isEmail, isRequired } from '../../services/validators/validators';
+import { SESSION_EXPIRED_KEY } from '../../services/consts/storageKeys';
 import { useToast } from '../../shared/toast/toast.context';
 import '../auth.css';
 
@@ -50,6 +51,18 @@ const Login = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
+
+  // Arrived here after a session-expiry redirect: show the notice once and
+  // clear the flag so it does not replay on regular navigation.
+  useEffect(() => {
+    if (sessionStorage.getItem(SESSION_EXPIRED_KEY)) {
+      sessionStorage.removeItem(SESSION_EXPIRED_KEY);
+      showToast({
+        variant: 'warning',
+        message: 'Tu sesión expiró. Iniciá sesión de nuevo.',
+      });
+    }
+  }, [showToast]);
 
   const { values, errors, submitting, handleChange, handleSubmit } = useForm({
     initialValues: { email: '', password: '' },
@@ -137,6 +150,13 @@ const Login = () => {
                 {submitting ? 'Ingresando…' : 'Iniciar sesión'}
               </Button>
             </Form>
+
+            <p className="auth-switch-text">
+              ¿Olvidaste tu contraseña?{' '}
+              <Link to="/recuperar-contrasena" className="auth-link">
+                Recuperar contraseña
+              </Link>
+            </p>
 
             <p className="auth-switch-text">
               ¿No tenés cuenta?{' '}

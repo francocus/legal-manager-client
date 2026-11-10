@@ -1,6 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import Login from './components/auth/login/Login.jsx';
 import Register from './components/auth/register/Register.jsx';
+import ForgotPassword from './components/auth/forgotPassword/ForgotPassword.jsx';
+import ResetPassword from './components/auth/resetPassword/ResetPassword.jsx';
+import ConfirmEmail from './components/auth/confirmEmail/ConfirmEmail.jsx';
+import RegisterPending from './components/auth/registerPending/RegisterPending.jsx';
 import Protected from './components/routes/protected/Protected.jsx';
 import NotFound from './components/routes/notFound/NotFound.jsx';
 import { DashboardDataProvider } from './components/services/data/DashboardDataProvider.jsx';
@@ -24,6 +28,10 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/recuperar-contrasena" element={<ForgotPassword />} />
+        <Route path="/restablecer-contrasena" element={<ResetPassword />} />
+        <Route path="/confirmar-email" element={<ConfirmEmail />} />
+        <Route path="/registro-pendiente" element={<RegisterPending />} />
         <Route
           path="/dashboard"
           element={

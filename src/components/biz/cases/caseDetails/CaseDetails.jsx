@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { Button, Col, Form, Modal, Row } from 'react-bootstrap';
+import { casesApi } from '../../../services/api/casesApi';
 import { initialCaseForm } from '../newCase/NewCase.data';
 import { CASE_STATUS_OPTIONS } from '../Cases.data';
 import { useForm } from '../../../services/hooks/useForm';
@@ -59,16 +60,22 @@ const CaseDetails = ({
     initialValues,
     validate: validateCaseForm,
     onSubmit: async (formValues) => {
+      // PUT /case/{id} accepts only title/area/description/notes and the
+      // status select is separate: PATCH /case/{id}/status. Ids are Guid
+      // strings and the select speaks lowercase, so status goes normalized.
+      const statusChanged =
+        String(formValues.status ?? '').toLowerCase() !==
+        String(initialValues.status ?? '').toLowerCase();
       const payload = {
         ...formValues,
-        clientId: Number(formValues.clientId),
         lawyerId:
-          currentUser?.role === ROLES.ABOGADO
-            ? Number(currentUser.id)
-            : Number(formValues.lawyerId),
+          currentUser?.role === ROLES.ABOGADO ? currentUser.id : formValues.lawyerId,
       };
 
       try {
+        if (statusChanged) {
+          await casesApi.setStatus(legalCase.id, String(formValues.status ?? '').toLowerCase());
+        }
         await onEditCase?.(payload);
         showToast({ variant: 'success', message: 'Expediente actualizado correctamente.' });
         onFormClosed?.();
@@ -115,6 +122,8 @@ const CaseDetails = ({
             <Col md={12}>
               <Form.Group className="mb-3" controlId="caseNumber">
                 <Form.Label>Número de expediente</Form.Label>
+                {/* PUT /case/{id} only persists title/area/description/notes,
+                    so these fields stay display-only in the edit modal. */}
                 <Form.Control
                   name="caseNumber"
                   value={values.caseNumber ?? ''}
@@ -122,6 +131,8 @@ const CaseDetails = ({
                   isInvalid={Boolean(errors.caseNumber)}
                   type="text"
                   placeholder="Ingresar número de expediente"
+                  className="opacity-50"
+                  disabled
                 />
                 {fieldError('caseNumber')}
               </Form.Group>
@@ -165,7 +176,7 @@ const CaseDetails = ({
                 <Form.Label>Estado</Form.Label>
                 <Form.Select
                   name="status"
-                  value={values.status ?? 'activo'}
+                  value={String(values.status ?? '').toLowerCase() || 'activo'}
                   onChange={handleChange}
                 >
                   {CASE_STATUS_OPTIONS.map((option) => (
@@ -188,6 +199,8 @@ const CaseDetails = ({
                   onChange={handleChange}
                   isInvalid={Boolean(errors.startDate)}
                   type="date"
+                  className="opacity-50"
+                  disabled
                 />
                 {fieldError('startDate')}
               </Form.Group>
@@ -201,6 +214,8 @@ const CaseDetails = ({
                   onChange={handleChange}
                   isInvalid={Boolean(errors.lastUpdate)}
                   type="date"
+                  className="opacity-50"
+                  disabled
                 />
                 {fieldError('lastUpdate')}
               </Form.Group>
@@ -250,6 +265,8 @@ const CaseDetails = ({
                   value={values.clientId ? String(values.clientId) : ''}
                   onChange={handleChange}
                   isInvalid={Boolean(errors.clientId)}
+                  className="opacity-50"
+                  disabled
                 >
                   <option value="">Seleccionar cliente</option>
                   {clients.map((client) => (
@@ -274,6 +291,8 @@ const CaseDetails = ({
                       value={values.lawyerId ? String(values.lawyerId) : ''}
                       onChange={handleChange}
                       isInvalid={Boolean(errors.lawyerId)}
+                      className="opacity-50"
+                      disabled
                     >
                       <option value="">Seleccionar abogado</option>
                       {lawyers.map((lawyer) => (

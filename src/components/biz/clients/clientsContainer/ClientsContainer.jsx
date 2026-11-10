@@ -24,7 +24,8 @@ const PAGE_SIZE = 10;
 const ClientsContainer = () => {
   const navigate = useNavigate();
   const { user: currentUser } = useContext(AuthenticationContext);
-  const { clients, loading, error, refreshClients } = useDashboardData();
+  const { clients, loading, error, refreshClients, refreshUsers } =
+    useDashboardData();
   const { showToast } = useToast();
 
   const [searchClient, setSearchClient] = useState('');
@@ -48,18 +49,29 @@ const ClientsContainer = () => {
 
   const handleAddClient = async (form) => {
     await usersApi.create({ ...form, role: ROLES.CLIENTE });
+    // GET /user is admins-only and this view is reachable by every role, so
+    // only the sysadmin can afford the users refresh (lawyers would 403).
     await refreshClients();
+    if (isAdmin) {
+      await refreshUsers();
+    }
   };
 
   const handleEditClient = async (form) => {
     await usersApi.update(form.id, { ...form, role: ROLES.CLIENTE });
     await refreshClients();
+    if (isAdmin) {
+      await refreshUsers();
+    }
   };
 
   const handleDeleteClient = async (id) => {
     try {
       await usersApi.remove(id);
       await refreshClients();
+      if (isAdmin) {
+        await refreshUsers();
+      }
       setClientToDelete(null);
       showToast({ variant: 'success', message: 'Cliente eliminado correctamente.' });
     } catch (deleteError) {

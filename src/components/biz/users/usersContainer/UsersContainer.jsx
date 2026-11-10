@@ -20,7 +20,8 @@ const PAGE_SIZE = 10;
 
 const UsersContainer = () => {
   const { user: currentUser } = useContext(AuthenticationContext);
-  const { users, loading, error, refreshUsers } = useDashboardData();
+  const { users, loading, error, refreshUsers, refreshLawyers, refreshClients } =
+    useDashboardData();
   const { showToast } = useToast();
 
   const [searchUser, setSearchUser] = useState('');
@@ -43,12 +44,19 @@ const UsersContainer = () => {
 
   const handleAddUser = async (form) => {
     await usersApi.create(form);
+    // User mutations also feed the lawyer/client selects in NewCase and
+    // NewAppointment: refresh both resolver lists alongside the table (this
+    // page is sysadmin-only, so both calls are allowed for the session role).
     await refreshUsers();
+    await refreshLawyers();
+    await refreshClients();
   };
 
   const handleEditUser = async (form) => {
     await usersApi.update(form.id, form);
     await refreshUsers();
+    await refreshLawyers();
+    await refreshClients();
   };
 
   const handleDeleteUser = async (id) => {
@@ -59,6 +67,8 @@ const UsersContainer = () => {
     try {
       await usersApi.remove(id);
       await refreshUsers();
+      await refreshLawyers();
+      await refreshClients();
       setUserToDelete(null);
       showToast({ variant: 'success', message: 'Usuario eliminado correctamente.' });
     } catch (deleteError) {

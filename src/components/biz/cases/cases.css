@@ -1350,3 +1350,133 @@
 .cases-list {
   align-content: start;
 }
+
+/* Documents panel inside the case page */
+.case-docs__hint {
+  margin: 0 0 14px 0;
+  color: #b7cada;
+  font-size: 0.9rem;
+}
+
+.case-docs__form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.case-docs__form .case-docs__field {
+  flex: 0 0 auto;
+  width: 200px;
+}
+
+.case-docs__form .case-docs__file {
+  width: auto;
+}
+
+.case-docs__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.case-docs__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: rgba(12, 16, 22, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+[data-bs-theme='light'] .case-docs__row {
+  background: rgba(244, 246, 248, 0.92);
+  border-color: rgba(15, 23, 32, 0.16);
+}
+
+.case-docs__info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.case-docs__name {
+  color: #ffffff;
+  font-weight: 700;
+  word-break: break-word;
+}
+
+[data-bs-theme='light'] .case-docs__name {
+  color: #0d1117;
+}
+
+.case-docs__tag {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  vertical-align: middle;
+  background: rgba(120, 172, 214, 0.16);
+  border: 1px solid rgba(120, 172, 214, 0.32);
+  color: #d8e9f8;
+}
+
+[data-bs-theme='light'] .case-docs__tag {
+  background: rgba(120, 172, 214, 0.15);
+  border-color: rgba(120, 172, 214, 0.3);
+  color: #29465e;
+}
+
+.case-docs__meta {
+  color: #b7cada;
+  font-size: 0.85rem;
+}
+
+[data-bs-theme='light'] .case-docs__meta,
+[data-bs-theme='light'] .case-docs__hint {
+  color: #45505d;
+}
+
+.case-docs__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.case-docs__button--danger:not(:disabled):hover {
+  filter: brightness(0.92);
+  box-shadow: 0 0 0 0.2rem rgba(217, 93, 93, 0.35);
+}
+
+.case-docs__badge {
+  text-transform: none;
+}
+
+.case-docs__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.case-docs__toolbar .case-docs__form {
+  margin-bottom: 0;
+}
+
+.case-docs__toolbar .case-docs__hint {
+  margin-bottom: 0;
+}

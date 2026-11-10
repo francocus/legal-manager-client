@@ -1,8 +1,12 @@
-import { ROLE_LABELS, ROLES } from '../../services/consts/roles';
+import { ROLE_LABELS, ROLES, mapApiRole } from '../../services/consts/roles';
 
 export const mapUser = (user = {}) => ({
   ...user,
-  name: user.name ?? [user.firstName, user.lastName].filter(Boolean).join(' ').trim(),
+  role: mapApiRole(user.type ?? user.role),
+  name:
+    user.name ??
+    user.fullName ??
+    [user.firstName, user.lastName].filter(Boolean).join(' ').trim(),
   active: user.active ?? true,
 });
 

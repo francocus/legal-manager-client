@@ -30,13 +30,22 @@ export const getAppointmentAccent = (appointment) => {
   return 'is-primary';
 };
 
-export const mapAppointment = (appointment = {}) => ({
-  ...appointment,
-  dateObject: appointment.date ? parseDate(appointment.date) : new Date(0),
-  clientName: appointment.client?.name ?? 'Cliente',
-  lawyerName: appointment.lawyer?.name ?? 'Abogado',
-  lawyerId: appointment.lawyer?.id ?? appointment.lawyerId,
-  clientId: appointment.client?.id ?? appointment.clientId,
-  caseNumber: appointment.case?.caseNumber ?? 'Sin expediente',
-  endTime: appointment.endTime || (appointment.time ? addHour(appointment.time) : ''),
-});
+// The backend sends flat dto rows with ids only (no nested client/lawyer/case
+// objects), so display names come from the userNames/caseNumbers resolver maps.
+// Backend time fields keep seconds ('HH:MM:SS') and are normalized to 'HH:MM'.
+export const mapAppointment = (appointment = {}, userNames = {}, caseNumbers = {}) => {
+  const time = appointment.time ? String(appointment.time).slice(0, 5) : '';
+  const endTime = appointment.endTime ? String(appointment.endTime).slice(0, 5) : '';
+
+  return {
+    ...appointment,
+    dateObject: appointment.date ? parseDate(appointment.date) : new Date(0),
+    time,
+    endTime: endTime || (time ? addHour(time) : ''),
+    clientName: userNames[appointment.clientId] ?? appointment.client?.name ?? 'Cliente',
+    lawyerName: userNames[appointment.lawyerId] ?? appointment.lawyer?.name ?? 'Abogado',
+    lawyerId: appointment.lawyerId ?? appointment.lawyer?.id,
+    clientId: appointment.clientId ?? appointment.client?.id,
+    caseNumber: caseNumbers[appointment.caseId] ?? appointment.case?.caseNumber ?? 'Sin expediente',
+  };
+};

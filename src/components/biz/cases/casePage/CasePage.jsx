@@ -9,6 +9,7 @@ import { useToast } from '../../../shared/toast/toast.context';
 import { formatDate } from '../../../services/utils/format';
 import { ROLES } from '../../../services/consts/roles';
 import CaseDetails from '../caseDetails/CaseDetails';
+import CaseDocuments from '../caseDocuments/CaseDocuments';
 import { getStatusClass, getStatusLabel } from '../Cases.data';
 import '../cases.css';
 
@@ -118,6 +119,8 @@ const CasePage = () => {
           <p className="app-text">{legalCase.notes}</p>
         </div>
       ) : null}
+
+      <CaseDocuments legalCase={legalCase} currentUser={user} />
 
       {editing ? (
         <CaseDetails
