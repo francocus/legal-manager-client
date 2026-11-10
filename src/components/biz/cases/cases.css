@@ -1463,3 +1463,20 @@
 .case-docs__badge {
   text-transform: none;
 }
+
+.case-docs__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.case-docs__toolbar .case-docs__form {
+  margin-bottom: 0;
+}
+
+.case-docs__toolbar .case-docs__hint {
+  margin-bottom: 0;
+}

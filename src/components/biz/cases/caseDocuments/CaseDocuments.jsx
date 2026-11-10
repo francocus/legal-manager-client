@@ -24,6 +24,8 @@ const CaseDocuments = ({ legalCase, currentUser }) => {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [workingDocId, setWorkingDocId] = useState(null);
   const [typeValue, setTypeValue] = useState('');
   const [file, setFile] = useState(null);
   const [fileInputKey, setFileInputKey] = useState(0);
@@ -109,6 +111,37 @@ const CaseDocuments = ({ legalCase, currentUser }) => {
     }
   };
 
+  const handleGenerateAiSummary = async () => {
+    setGenerating(true);
+    try {
+      await documentsApi.generateAiSummary(legalCase.id);
+      showToast({ variant: 'info', message: 'Resumen generado: revisalo y decidí si lo guardás o lo descartás.' });
+      await loadDocuments();
+    } catch (error) {
+      showToast({ variant: 'danger', message: error.message });
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleReview = async (doc, decision) => {
+    setWorkingDocId(doc.id);
+    try {
+      if (decision === 'approve') {
+        await documentsApi.approve(doc.id);
+        showToast({ variant: 'success', message: 'Resumen guardado como documento del expediente.' });
+      } else {
+        await documentsApi.discard(doc.id);
+        showToast({ variant: 'success', message: 'Resumen descartado.' });
+      }
+      await loadDocuments();
+    } catch (error) {
+      showToast({ variant: 'danger', message: error.message });
+    } finally {
+      setWorkingDocId(null);
+    }
+  };
+
   const handleDeleteConfirmed = async () => {
     const doc = pendingDelete;
     if (!doc) return;
@@ -123,38 +156,48 @@ const CaseDocuments = ({ legalCase, currentUser }) => {
       <h3 className="app-panel__title">Documentos</h3>
 
       {canWrite ? (
-        isClosed ? (
-          <p className="case-docs__hint">
-            El expediente está cerrado: no admite documentos nuevos.
-          </p>
-        ) : (
-          <form className="case-docs__form" onSubmit={handleUpload}>
-            <Form.Select
-              className="case-docs__field"
-              aria-label="Tipo de documento"
-              value={typeValue}
-              onChange={(event) => setTypeValue(event.target.value)}
-            >
-              <option value="">Seleccionar tipo</option>
-              {DOCUMENT_TYPE_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </Form.Select>
-            <Form.Control
-              key={fileInputKey}
-              className="case-docs__field case-docs__file"
-              type="file"
-              accept="application/pdf,.pdf"
-              aria-label="Archivo PDF (hasta 10 MB)"
-              onChange={handleFileChange}
-            />
-            <button type="submit" className="app-button app-button--primary" disabled={uploading}>
-              {uploading ? 'Subiendo...' : 'Subir documento'}
-            </button>
-          </form>
-        )
+        <div className="case-docs__toolbar">
+          {isClosed ? (
+            <p className="case-docs__hint">
+              El expediente está cerrado: no admite la subida de documentos nuevos.
+            </p>
+          ) : (
+            <form className="case-docs__form" onSubmit={handleUpload}>
+              <Form.Select
+                className="case-docs__field"
+                aria-label="Tipo de documento"
+                value={typeValue}
+                onChange={(event) => setTypeValue(event.target.value)}
+              >
+                <option value="">Seleccionar tipo</option>
+                {DOCUMENT_TYPE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </Form.Select>
+              <Form.Control
+                key={fileInputKey}
+                className="case-docs__field case-docs__file"
+                type="file"
+                accept="application/pdf,.pdf"
+                aria-label="Archivo PDF (hasta 10 MB)"
+                onChange={handleFileChange}
+              />
+              <button type="submit" className="app-button app-button--primary" disabled={uploading}>
+                {uploading ? 'Subiendo...' : 'Subir documento'}
+              </button>
+            </form>
+          )}
+          <button
+            type="button"
+            className="app-button app-button--primary"
+            disabled={generating}
+            onClick={handleGenerateAiSummary}
+          >
+            {generating ? 'Generando...' : 'Generar resumen con IA'}
+          </button>
+        </div>
       ) : null}
 
       {loading ? (
@@ -190,9 +233,30 @@ const CaseDocuments = ({ legalCase, currentUser }) => {
                       {docState.label}
                     </span>
                   ) : null}
+                  {canWrite && doc.isPendingReview ? (
+                    <>
+                      <button
+                        type="button"
+                        className="app-button app-button--primary"
+                        disabled={workingDocId === doc.id}
+                        onClick={() => handleReview(doc, 'approve')}
+                      >
+                        Guardar
+                      </button>
+                      <button
+                        type="button"
+                        className="app-button app-button--secondary"
+                        disabled={workingDocId === doc.id}
+                        onClick={() => handleReview(doc, 'discard')}
+                      >
+                        Descartar
+                      </button>
+                    </>
+                  ) : null}
                   <button
                     type="button"
                     className="app-button app-button--secondary"
+                    disabled={workingDocId === doc.id}
                     onClick={() => handleDownload(doc)}
                   >
                     Descargar
@@ -201,6 +265,7 @@ const CaseDocuments = ({ legalCase, currentUser }) => {
                     <button
                       type="button"
                       className="app-button app-button--secondary case-docs__button--danger"
+                      disabled={workingDocId === doc.id}
                       onClick={() => setPendingDelete(doc)}
                     >
                       Eliminar
