@@ -45,13 +45,16 @@ export const getErrorMessage = async (response) => {
   }
 };
 
+// A FormData body travels as multipart: the browser supplies the
+// Content-Type (including the boundary), so no explicit header is added.
 export const apiRequest = async (
   path,
   { method = 'GET', body, auth = true, headers = {} } = {},
 ) => {
   const finalHeaders = { ...headers };
+  const bodyIsFormData = body instanceof FormData;
 
-  if (body !== undefined) {
+  if (body !== undefined && !bodyIsFormData) {
     finalHeaders['Content-Type'] = 'application/json';
   }
 
@@ -65,7 +68,7 @@ export const apiRequest = async (
   const response = await fetch(`${API_URL}${path}`, {
     method,
     headers: finalHeaders,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    body: bodyIsFormData ? body : body !== undefined ? JSON.stringify(body) : undefined,
   });
 
   if (!response.ok) {
@@ -85,4 +88,34 @@ export const apiRequest = async (
 
   const raw = await response.text();
   return raw ? JSON.parse(raw) : null;
+};
+
+// Binary responses (document downloads) need the raw body instead of a JSON
+// parse, while 401/error handling stays identical to apiRequest. The filename
+// comes from the backend's Content-Disposition header when present; callers
+// fall back to their own known document.name.
+export const apiDownload = async (path, { auth = true } = {}) => {
+  const headers = {};
+
+  if (auth) {
+    const token = readToken();
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+  }
+
+  const response = await fetch(`${API_URL}${path}`, { headers });
+
+  if (!response.ok) {
+    if (auth && response.status === 401) {
+      clearExpiredSession();
+    }
+    throw new Error(await getErrorMessage(response));
+  }
+
+  const blob = await response.blob();
+  return {
+    blob,
+    fileName: response.headers.get('content-disposition')?.match(/filename="(.+)"/)?.[1] ?? null,
+  };
 };
