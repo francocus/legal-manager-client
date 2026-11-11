@@ -33,15 +33,7 @@ const CaseDetails = ({
 
   const validateCaseForm = (values) => {
     const errors = {};
-    const requiredFields = [
-      'caseNumber',
-      'title',
-      'area',
-      'startDate',
-      'lastUpdate',
-      'description',
-      'clientId',
-    ];
+    const requiredFields = ['caseNumber', 'title', 'area', 'startDate', 'lastUpdate', 'clientId'];
 
     if (currentUser?.role !== ROLES.ABOGADO) {
       requiredFields.push('lawyerId');
@@ -68,8 +60,7 @@ const CaseDetails = ({
         String(initialValues.status ?? '').toLowerCase();
       const payload = {
         ...formValues,
-        lawyerId:
-          currentUser?.role === ROLES.ABOGADO ? currentUser.id : formValues.lawyerId,
+        lawyerId: currentUser?.role === ROLES.ABOGADO ? currentUser.id : formValues.lawyerId,
       };
 
       try {

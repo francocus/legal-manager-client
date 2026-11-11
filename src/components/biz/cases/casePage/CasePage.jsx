@@ -139,7 +139,8 @@ const CasePage = () => {
             <Form.Select
               aria-label="Cambiar estado del expediente"
               value={legalCase.status}
-              disabled={changingStatus}
+              disabled={changingStatus || isClosed}
+              title={isClosed ? 'Un expediente cerrado no puede reabrirse' : 'Cambiar estado'}
               onChange={(e) => handleChangeStatus(e.target.value)}
               style={{ width: 'auto' }}
             >
@@ -181,6 +182,12 @@ const CasePage = () => {
             <dt>Última actualización</dt>
             <dd>{formatDate(legalCase.lastUpdate, preferences.dateFormat)}</dd>
           </div>
+          {legalCase.closingDate ? (
+            <div>
+              <dt>Fecha de cierre</dt>
+              <dd>{formatDate(legalCase.closingDate, preferences.dateFormat)}</dd>
+            </div>
+          ) : null}
         </dl>
       </div>
 
@@ -192,44 +199,50 @@ const CasePage = () => {
           </p>
         ) : (
           <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 12px' }}>
-            {(legalCase.lawyerIds ?? []).map((lid) => (
-              <li
-                key={lid}
-                style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}
-              >
-                <span>{lawyers.find((l) => l.id === lid)?.name ?? lid}</span>
-                {canWrite && !isClosed && (
-                  <button
-                    type="button"
-                    className="app-button app-button--secondary"
-                    style={{ padding: '2px 10px', fontSize: '0.8rem' }}
-                    disabled={(legalCase.lawyerIds ?? []).length <= 1}
-                    title={
-                      (legalCase.lawyerIds ?? []).length <= 1
-                        ? 'No se puede quitar el único abogado responsable del expediente'
-                        : 'Quitar abogado'
-                    }
-                    onClick={async () => {
-                      try {
-                        await casesApi.removeLawyer(legalCase.id, lid);
-                        await refreshCases();
-                        showToast({
-                          variant: 'success',
-                          message: 'Abogado quitado del expediente.',
-                        });
-                      } catch (err) {
-                        showToast({
-                          variant: 'danger',
-                          message: err.message || 'No se pudo quitar el abogado.',
-                        });
+            {(legalCase.lawyerIds ?? []).map((lid) => {
+              const lawyer = lawyers.find((l) => l.id === lid);
+              return (
+                <li
+                  key={lid}
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}
+                >
+                  <span>
+                    {lawyer?.name ?? lid}
+                    {lawyer?.phone ? ` • Tel: ${lawyer.phone}` : ''}
+                  </span>
+                  {canWrite && !isClosed && (
+                    <button
+                      type="button"
+                      className="app-button app-button--secondary"
+                      style={{ padding: '2px 10px', fontSize: '0.8rem' }}
+                      disabled={(legalCase.lawyerIds ?? []).length <= 1}
+                      title={
+                        (legalCase.lawyerIds ?? []).length <= 1
+                          ? 'No se puede quitar el único abogado responsable del expediente'
+                          : 'Quitar abogado'
                       }
-                    }}
-                  >
-                    Quitar
-                  </button>
-                )}
-              </li>
-            ))}
+                      onClick={async () => {
+                        try {
+                          await casesApi.removeLawyer(legalCase.id, lid);
+                          await refreshCases();
+                          showToast({
+                            variant: 'success',
+                            message: 'Abogado quitado del expediente.',
+                          });
+                        } catch (err) {
+                          showToast({
+                            variant: 'danger',
+                            message: err.message || 'No se pudo quitar el abogado.',
+                          });
+                        }
+                      }}
+                    >
+                      Quitar
+                    </button>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         )}
         {canWrite && !isClosed && (

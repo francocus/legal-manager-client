@@ -18,15 +18,7 @@ const NewCase = ({ onAddCase, onFormClosed, clients = [], lawyers = [], currentU
 
   const validateCaseForm = (values) => {
     const errors = {};
-    const requiredFields = [
-      'caseNumber',
-      'title',
-      'area',
-      'startDate',
-      'lastUpdate',
-      'description',
-      'clientId',
-    ];
+    const requiredFields = ['caseNumber', 'title', 'area', 'startDate', 'lastUpdate', 'clientId'];
 
     if (currentUser?.role !== ROLES.ABOGADO) {
       requiredFields.push('lawyerId');

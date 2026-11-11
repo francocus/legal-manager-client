@@ -19,6 +19,7 @@ export const mapCase = (legalCase = {}, userNames = {}) => {
     status: legalCase.status ?? 'activo',
     startDate: legalCase.startDate ?? '',
     lastUpdate: legalCase.lastUpdate ?? '',
+    closingDate: legalCase.closingDate ?? '',
     description: legalCase.description ?? '',
     notes: legalCase.notes ?? '',
     clientId,
