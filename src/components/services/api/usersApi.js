@@ -76,4 +76,17 @@ export const usersApi = {
   },
 
   remove: (id) => apiRequest(`/user/${id}`, { method: 'DELETE' }),
+
+  // PATCH /user/:id/role changes the role of a non-admin user (admins are
+  // command-created and immutable). barNumber and specialties only matter
+  // when the new role is "abogado"; nulls let the backend drop them.
+  changeRole: (id, payload) =>
+    apiRequest(`/user/${id}/role`, {
+      method: 'PATCH',
+      body: {
+        role: payload?.role,
+        barNumber: payload?.barNumber ?? null,
+        specialties: payload?.specialties ?? null,
+      },
+    }),
 };
