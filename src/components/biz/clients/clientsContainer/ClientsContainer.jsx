@@ -24,8 +24,7 @@ const PAGE_SIZE = 10;
 const ClientsContainer = () => {
   const navigate = useNavigate();
   const { user: currentUser } = useContext(AuthenticationContext);
-  const { clients, loading, error, refreshClients, refreshUsers } =
-    useDashboardData();
+  const { clients, loading, error, refreshClients, refreshUsers } = useDashboardData();
   const { showToast } = useToast();
 
   const [searchClient, setSearchClient] = useState('');
@@ -58,7 +57,7 @@ const ClientsContainer = () => {
   };
 
   const handleEditClient = async (form) => {
-    await usersApi.update(form.id, { ...form, role: ROLES.CLIENTE });
+    await usersApi.updateWithRoleFields(form.id, { ...form, role: ROLES.CLIENTE }, clientToEdit);
     await refreshClients();
     if (isAdmin) {
       await refreshUsers();
@@ -106,7 +105,11 @@ const ClientsContainer = () => {
             <UsersSearch onSearch={setSearchClient} />
           </div>
           {isAdmin ? (
-            <Button type="button" className="app-button app-button--primary" onClick={handleOpenNewClient}>
+            <Button
+              type="button"
+              className="app-button app-button--primary"
+              onClick={handleOpenNewClient}
+            >
               Crear cliente
             </Button>
           ) : null}

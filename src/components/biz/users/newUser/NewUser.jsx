@@ -160,38 +160,82 @@ const NewUser = ({ onAddUser, onFormClosed, fixedRole, entityLabel = 'usuario' }
           </Row>
 
           {values.role === ROLES.ABOGADO ? (
+            <>
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3" controlId="barNumber">
+                    <Form.Label>Matrícula *</Form.Label>
+                    <Form.Control
+                      name="barNumber"
+                      value={values.barNumber}
+                      onChange={handleChange}
+                      isInvalid={Boolean(errors.barNumber)}
+                      type="text"
+                      placeholder="Ingresar matrícula"
+                    />
+                    {errors.barNumber ? (
+                      <Form.Text className="text-danger">{errors.barNumber}</Form.Text>
+                    ) : null}
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3" controlId="phone">
+                    <Form.Label>Teléfono</Form.Label>
+                    <Form.Control
+                      name="phone"
+                      value={values.phone}
+                      onChange={handleChange}
+                      type="tel"
+                      placeholder="Ej. +54 9 11 1234-5678"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+              <Row>
+                <Col md={12}>
+                  <Form.Group className="mb-3" controlId="specialties">
+                    <Form.Label>Especialidades (separadas por coma)</Form.Label>
+                    <Form.Control
+                      name="specialties"
+                      value={values.specialties}
+                      onChange={handleChange}
+                      type="text"
+                      placeholder="Ej. Civil, Comercial, Laboral"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+            </>
+          ) : null}
+
+          {values.role === ROLES.CLIENTE ? (
             <Row>
-              <Col md={12}>
-                <Form.Group className="mb-3" controlId="barNumber">
-                  <Form.Label>Matrícula</Form.Label>
+              <Col md={6}>
+                <Form.Group className="mb-3" controlId="phone">
+                  <Form.Label>Teléfono</Form.Label>
                   <Form.Control
-                    name="barNumber"
-                    value={values.barNumber}
+                    name="phone"
+                    value={values.phone}
                     onChange={handleChange}
-                    isInvalid={Boolean(errors.barNumber)}
-                    type="text"
-                    placeholder="Ingresar matrícula"
+                    type="tel"
+                    placeholder="Ej. +54 9 11 1234-5678"
                   />
-                  {errors.barNumber ? (
-                    <Form.Text className="text-danger">{errors.barNumber}</Form.Text>
-                  ) : null}
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3" controlId="address">
+                  <Form.Label>Dirección</Form.Label>
+                  <Form.Control
+                    name="address"
+                    value={values.address}
+                    onChange={handleChange}
+                    type="text"
+                    placeholder="Ej. San Martín 123"
+                  />
                 </Form.Group>
               </Col>
             </Row>
           ) : null}
-
-          <Row>
-            <Col md={12}>
-              <Form.Check
-                checked={values.active}
-                onChange={handleChange}
-                type="switch"
-                id="active"
-                name="active"
-                label="Usuario activo"
-              />
-            </Col>
-          </Row>
         </Modal.Body>
 
         <Modal.Footer className="users-modal__footer">

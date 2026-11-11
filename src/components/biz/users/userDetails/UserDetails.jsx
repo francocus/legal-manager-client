@@ -4,15 +4,12 @@ import { initialUserForm } from '../newUser/NewUser.data';
 import { useForm } from '../../../services/hooks/useForm';
 import { formatDni, isDni, isEmail, isRequired } from '../../../services/validators/validators';
 import { ROLE_OPTIONS, ROLES } from '../../../services/consts/roles';
-import { usersApi } from '../../../services/api/usersApi';
 import { AuthenticationContext } from '../../../services/auth/authentication.context';
+import { usersApi } from '../../../services/api/usersApi';
 import { useToast } from '../../../shared/toast/toast.context';
 
 const capitalize = (value) => value.charAt(0).toUpperCase() + value.slice(1);
 
-// Specialties travel as a string array but are edited as one comma-separated
-// text field: "Familia, Laboral" <-> ["Familia", "Laboral"]. Empty text maps
-// to undefined so the changeRole payload sends null instead of an empty list.
 const specialtiesToText = (value) =>
   Array.isArray(value) ? value.join(', ') : String(value ?? '');
 
@@ -41,8 +38,6 @@ const UserDetails = ({ user, onEditUser, onFormClosed, fixedRole, entityLabel = 
   const { showToast } = useToast();
   const { user: currentUser } = useContext(AuthenticationContext);
 
-  // Role editing is sysadmin-only and never applies to sysadmin targets
-  // (admins are command-created): every other case keeps the role fixed.
   const canEditRole =
     !fixedRole && user?.role !== ROLES.SYSADMIN && currentUser?.role === ROLES.SYSADMIN;
 
@@ -50,8 +45,8 @@ const UserDetails = ({ user, onEditUser, onFormClosed, fixedRole, entityLabel = 
     () => ({
       ...initialUserForm,
       ...(user ?? {}),
-      ...(fixedRole ? { role: fixedRole } : {}),
       specialties: specialtiesToText(user?.specialties),
+      ...(fixedRole ? { role: fixedRole } : {}),
     }),
     [user, fixedRole],
   );
@@ -59,8 +54,6 @@ const UserDetails = ({ user, onEditUser, onFormClosed, fixedRole, entityLabel = 
   const validateForm = (formValues) => {
     const nextErrors = validateUserForm(formValues);
 
-    // Matrícula is only demanded when the submit actually promotes the user
-    // to abogado: an existing abogado editing display fields skips it.
     if (
       canEditRole &&
       formValues.role !== user?.role &&
@@ -78,14 +71,11 @@ const UserDetails = ({ user, onEditUser, onFormClosed, fixedRole, entityLabel = 
     validate: validateForm,
     onSubmit: async (formValues) => {
       try {
-        // A role change must land before the display-field PUT: when it fails
-        // (invalid role, active cases/appointments) the error is toasted here
-        // and the update below is never sent, so both succeed or neither does.
         if (canEditRole && formValues.role !== user?.role) {
           await usersApi.changeRole(formValues.id, {
             role: formValues.role,
-            barNumber: formValues.barNumber,
-            specialties: textToSpecialties(formValues.specialties),
+            barNumber: formValues.barNumber || null,
+            specialties: textToSpecialties(formValues.specialties) ?? null,
           });
         }
 
@@ -103,11 +93,6 @@ const UserDetails = ({ user, onEditUser, onFormClosed, fixedRole, entityLabel = 
       }
     },
   });
-
-  // Matrícula and specialties only show while a promotion to abogado is
-  // staged: a demotion hides them because the backend drops both fields.
-  const showLawyerFields =
-    canEditRole && values.role === ROLES.ABOGADO && values.role !== user?.role;
 
   useEffect(() => {
     reset(initialValues);
@@ -221,10 +206,10 @@ const UserDetails = ({ user, onEditUser, onFormClosed, fixedRole, entityLabel = 
             ) : null}
           </Row>
 
-          {showLawyerFields ? (
+          {values.role === ROLES.ABOGADO ? (
             <>
               <Row>
-                <Col md={12}>
+                <Col md={6}>
                   <Form.Group className="mb-3" controlId="barNumber">
                     <Form.Label>Matrícula</Form.Label>
                     <Form.Control
@@ -240,17 +225,29 @@ const UserDetails = ({ user, onEditUser, onFormClosed, fixedRole, entityLabel = 
                     ) : null}
                   </Form.Group>
                 </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3" controlId="phone">
+                    <Form.Label>Teléfono</Form.Label>
+                    <Form.Control
+                      name="phone"
+                      value={values.phone}
+                      onChange={handleChange}
+                      type="tel"
+                      placeholder="Ej. +54 9 11 1234-5678"
+                    />
+                  </Form.Group>
+                </Col>
               </Row>
               <Row>
                 <Col md={12}>
                   <Form.Group className="mb-3" controlId="specialties">
-                    <Form.Label>Especialidades</Form.Label>
+                    <Form.Label>Especialidades (separadas por coma)</Form.Label>
                     <Form.Control
                       name="specialties"
                       value={values.specialties}
                       onChange={handleChange}
                       type="text"
-                      placeholder="Ingresar especialidades separadas por comas"
+                      placeholder="Ej. Civil, Comercial, Laboral"
                     />
                   </Form.Group>
                 </Col>
@@ -258,18 +255,34 @@ const UserDetails = ({ user, onEditUser, onFormClosed, fixedRole, entityLabel = 
             </>
           ) : null}
 
-          <Row>
-            <Col md={12}>
-              <Form.Check
-                checked={values.active}
-                onChange={handleChange}
-                type="switch"
-                id="active"
-                name="active"
-                label="Usuario activo"
-              />
-            </Col>
-          </Row>
+          {values.role === ROLES.CLIENTE ? (
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3" controlId="phone">
+                  <Form.Label>Teléfono</Form.Label>
+                  <Form.Control
+                    name="phone"
+                    value={values.phone}
+                    onChange={handleChange}
+                    type="tel"
+                    placeholder="Ej. +54 9 11 1234-5678"
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3" controlId="address">
+                  <Form.Label>Dirección</Form.Label>
+                  <Form.Control
+                    name="address"
+                    value={values.address}
+                    onChange={handleChange}
+                    type="text"
+                    placeholder="Ej. San Martín 123"
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+          ) : null}
         </Modal.Body>
 
         <Modal.Footer className="users-modal__footer">
