@@ -79,6 +79,15 @@ export const AuthenticationContextProvider = ({ children }) => {
     setUser(null);
   };
 
+  const updateUserSession = (patch) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const next = { ...prev, ...patch };
+      localStorage.setItem(USER_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
+
   const contextValue = {
     token,
     user,
@@ -86,6 +95,7 @@ export const AuthenticationContextProvider = ({ children }) => {
     handleUserLogin,
     handleUserRegister,
     handleUserLogout,
+    updateUserSession,
   };
 
   return <AuthenticationContext value={contextValue}>{children}</AuthenticationContext>;

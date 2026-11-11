@@ -8,7 +8,8 @@ export const CASE_STATUS_OPTIONS = [
 // objects), so display names come from the userNames resolver map.
 export const mapCase = (legalCase = {}, userNames = {}) => {
   const clientId = legalCase.clientId ?? legalCase.client?.id ?? '';
-  const lawyerId = legalCase.lawyerId ?? legalCase.lawyerIds?.[0] ?? legalCase.lawyer?.id ?? '';
+  const lawyerIds = legalCase.lawyerIds ?? (legalCase.lawyerId ? [legalCase.lawyerId] : []);
+  const lawyerId = lawyerIds[0] ?? legalCase.lawyer?.id ?? '';
 
   return {
     id: legalCase.id,
@@ -18,12 +19,20 @@ export const mapCase = (legalCase = {}, userNames = {}) => {
     status: legalCase.status ?? 'activo',
     startDate: legalCase.startDate ?? '',
     lastUpdate: legalCase.lastUpdate ?? '',
+    closingDate: legalCase.closingDate ?? '',
     description: legalCase.description ?? '',
     notes: legalCase.notes ?? '',
     clientId,
     lawyerId,
+    lawyerIds,
     clientName: userNames[clientId] ?? legalCase.client?.name ?? 'Sin cliente',
-    lawyerName: userNames[lawyerId] ?? legalCase.lawyer?.name ?? 'Sin abogado',
+    lawyerName:
+      lawyerIds
+        .map((id) => userNames[id])
+        .filter(Boolean)
+        .join(', ') ||
+      legalCase.lawyer?.name ||
+      'Sin abogado',
   };
 };
 

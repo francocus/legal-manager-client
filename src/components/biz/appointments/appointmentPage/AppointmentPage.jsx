@@ -16,7 +16,8 @@ const AppointmentPage = () => {
   const { appointmentId } = useParams();
   const navigate = useNavigate();
   const { user } = useContext(AuthenticationContext);
-  const { appointments, clients, lawyers, loading, refreshAppointments } = useDashboardData();
+  const { appointments, cases, clients, lawyers, loading, refreshAppointments } =
+    useDashboardData();
   const { preferences } = usePreferences();
   const { showToast } = useToast();
   const [editing, setEditing] = useState(false);
@@ -180,6 +181,7 @@ const AppointmentPage = () => {
         onSubmit={handleEdit}
         lawyers={lawyers}
         clients={clients}
+        cases={cases}
         appointments={appointments}
         user={user}
       />

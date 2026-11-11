@@ -31,7 +31,7 @@ const STATUS_OPTIONS = [
 const AppointmentsContainer = () => {
   const navigate = useNavigate();
   const { user } = useContext(AuthenticationContext);
-  const { appointments, clients, lawyers, loading, error, refreshAppointments } =
+  const { appointments, cases, clients, lawyers, loading, error, refreshAppointments } =
     useDashboardData();
   const { showToast } = useToast();
 
@@ -258,6 +258,7 @@ const AppointmentsContainer = () => {
         onSubmit={appointmentToEdit ? handleEdit : handleRequest}
         lawyers={lawyers}
         clients={clients}
+        cases={cases}
         appointments={appointments}
         user={user}
       />

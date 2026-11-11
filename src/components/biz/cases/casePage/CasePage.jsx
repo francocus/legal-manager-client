@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react';
-import { Alert } from 'react-bootstrap';
+import { Alert, Form } from 'react-bootstrap';
 import { Link, useNavigate, useParams } from 'react-router';
 import { AuthenticationContext } from '../../../services/auth/authentication.context';
 import { useDashboardData } from '../../../services/data/dashboardData.context';
@@ -10,8 +10,57 @@ import { formatDate } from '../../../services/utils/format';
 import { ROLES } from '../../../services/consts/roles';
 import CaseDetails from '../caseDetails/CaseDetails';
 import CaseDocuments from '../caseDocuments/CaseDocuments';
-import { getStatusClass, getStatusLabel } from '../Cases.data';
+import { getStatusClass, getStatusLabel, CASE_STATUS_OPTIONS } from '../Cases.data';
 import '../cases.css';
+
+// Sub-component: dropdown + button to add a lawyer to the case.
+const AddLawyerRow = ({ caseId, assignedIds, lawyers, onAdded, onError }) => {
+  const available = lawyers.filter((l) => !assignedIds.includes(l.id));
+  const [selectedId, setSelectedId] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  if (available.length === 0) return null;
+
+  const handleAdd = async () => {
+    if (!selectedId) return;
+    try {
+      setLoading(true);
+      await casesApi.addLawyer(caseId, selectedId);
+      setSelectedId('');
+      await onAdded?.();
+    } catch (err) {
+      onError?.(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      <Form.Select
+        value={selectedId}
+        onChange={(e) => setSelectedId(e.target.value)}
+        style={{ flex: 1 }}
+        aria-label="Seleccionar abogado para agregar"
+      >
+        <option value="">Seleccionar abogado...</option>
+        {available.map((l) => (
+          <option key={l.id} value={l.id}>
+            {l.name}
+          </option>
+        ))}
+      </Form.Select>
+      <button
+        type="button"
+        className="app-button app-button--primary"
+        disabled={!selectedId || loading}
+        onClick={handleAdd}
+      >
+        {loading ? 'Agregando...' : 'Agregar'}
+      </button>
+    </div>
+  );
+};
 
 const CasePage = () => {
   const { caseId } = useParams();
@@ -21,15 +70,31 @@ const CasePage = () => {
   const { preferences } = usePreferences();
   const { showToast } = useToast();
   const [editing, setEditing] = useState(false);
+  const [changingStatus, setChangingStatus] = useState(false);
 
   const legalCase = cases.find((entry) => String(entry.id) === String(caseId));
   const canWrite = user?.role === ROLES.SYSADMIN || user?.role === ROLES.ABOGADO;
+  const isClosed = legalCase?.status === 'cerrado';
 
   const handleEditCase = async (payload) => {
     await casesApi.update(payload.id, payload);
     await refreshCases();
     showToast({ variant: 'success', message: 'Expediente actualizado correctamente.' });
     setEditing(false);
+  };
+
+  const handleChangeStatus = async (newStatus) => {
+    if (!newStatus || newStatus === legalCase.status) return;
+    try {
+      setChangingStatus(true);
+      await casesApi.setStatus(legalCase.id, newStatus);
+      await refreshCases();
+      showToast({ variant: 'success', message: 'Estado del expediente actualizado.' });
+    } catch (err) {
+      showToast({ variant: 'danger', message: err.message || 'No se pudo cambiar el estado.' });
+    } finally {
+      setChangingStatus(false);
+    }
   };
 
   if (loading) {
@@ -71,6 +136,22 @@ const CasePage = () => {
             Volver
           </button>
           {canWrite ? (
+            <Form.Select
+              aria-label="Cambiar estado del expediente"
+              value={legalCase.status}
+              disabled={changingStatus || isClosed}
+              title={isClosed ? 'Un expediente cerrado no puede reabrirse' : 'Cambiar estado'}
+              onChange={(e) => handleChangeStatus(e.target.value)}
+              style={{ width: 'auto' }}
+            >
+              {CASE_STATUS_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </Form.Select>
+          ) : null}
+          {canWrite && !isClosed ? (
             <button
               type="button"
               className="app-button app-button--primary"
@@ -90,10 +171,6 @@ const CasePage = () => {
             <dd>{legalCase.clientName}</dd>
           </div>
           <div>
-            <dt>Abogado</dt>
-            <dd>{legalCase.lawyerName}</dd>
-          </div>
-          <div>
             <dt>Área</dt>
             <dd>{legalCase.area || '—'}</dd>
           </div>
@@ -105,7 +182,86 @@ const CasePage = () => {
             <dt>Última actualización</dt>
             <dd>{formatDate(legalCase.lastUpdate, preferences.dateFormat)}</dd>
           </div>
+          {legalCase.closingDate ? (
+            <div>
+              <dt>Fecha de cierre</dt>
+              <dd>{formatDate(legalCase.closingDate, preferences.dateFormat)}</dd>
+            </div>
+          ) : null}
         </dl>
+      </div>
+
+      <div className="app-panel">
+        <h3 className="app-panel__title">Abogados asignados</h3>
+        {(legalCase.lawyerIds ?? []).length === 0 ? (
+          <p style={{ color: 'var(--app-text-muted, #9fb8cc)', margin: '0 0 12px' }}>
+            Sin abogados asignados.
+          </p>
+        ) : (
+          <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 12px' }}>
+            {(legalCase.lawyerIds ?? []).map((lid) => {
+              const lawyer = lawyers.find((l) => l.id === lid);
+              return (
+                <li
+                  key={lid}
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}
+                >
+                  <span>
+                    {lawyer?.name ?? lid}
+                    {lawyer?.phone ? ` • Tel: ${lawyer.phone}` : ''}
+                  </span>
+                  {canWrite && !isClosed && (
+                    <button
+                      type="button"
+                      className="app-button app-button--secondary"
+                      style={{ padding: '2px 10px', fontSize: '0.8rem' }}
+                      disabled={(legalCase.lawyerIds ?? []).length <= 1}
+                      title={
+                        (legalCase.lawyerIds ?? []).length <= 1
+                          ? 'No se puede quitar el único abogado responsable del expediente'
+                          : 'Quitar abogado'
+                      }
+                      onClick={async () => {
+                        try {
+                          await casesApi.removeLawyer(legalCase.id, lid);
+                          await refreshCases();
+                          showToast({
+                            variant: 'success',
+                            message: 'Abogado quitado del expediente.',
+                          });
+                        } catch (err) {
+                          showToast({
+                            variant: 'danger',
+                            message: err.message || 'No se pudo quitar el abogado.',
+                          });
+                        }
+                      }}
+                    >
+                      Quitar
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        {canWrite && !isClosed && (
+          <AddLawyerRow
+            caseId={legalCase.id}
+            assignedIds={legalCase.lawyerIds ?? []}
+            lawyers={lawyers}
+            onAdded={async () => {
+              await refreshCases();
+              showToast({ variant: 'success', message: 'Abogado agregado al expediente.' });
+            }}
+            onError={(err) =>
+              showToast({
+                variant: 'danger',
+                message: err.message || 'No se pudo agregar el abogado.',
+              })
+            }
+          />
+        )}
       </div>
 
       <div className="app-panel">

@@ -53,7 +53,7 @@ const UsersContainer = () => {
   };
 
   const handleEditUser = async (form) => {
-    await usersApi.update(form.id, form);
+    await usersApi.updateWithRoleFields(form.id, form, userToEdit);
     await refreshUsers();
     await refreshLawyers();
     await refreshClients();

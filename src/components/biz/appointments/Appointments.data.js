@@ -36,9 +36,12 @@ export const getAppointmentAccent = (appointment) => {
 export const mapAppointment = (appointment = {}, userNames = {}, caseNumbers = {}) => {
   const time = appointment.time ? String(appointment.time).slice(0, 5) : '';
   const endTime = appointment.endTime ? String(appointment.endTime).slice(0, 5) : '';
+  const rawStatus = appointment.effectiveStatus ?? appointment.status ?? 'pendiente';
+  const status = typeof rawStatus === 'string' ? rawStatus.toLowerCase() : String(rawStatus);
 
   return {
     ...appointment,
+    status,
     dateObject: appointment.date ? parseDate(appointment.date) : new Date(0),
     time,
     endTime: endTime || (time ? addHour(time) : ''),

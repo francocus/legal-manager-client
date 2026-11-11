@@ -14,7 +14,7 @@ import { DAY_NAMES, SLOTS, MONTH_NAMES } from '../../../services/consts/calendar
 import { appointmentsApi } from '../../../services/api/appointmentsApi';
 import { useToast } from '../../../shared/toast/toast.context';
 
-const emptyForm = { lawyerId: '', date: '', time: '', reason: '' };
+const emptyForm = { lawyerId: '', date: '', time: '', reason: '', caseId: '', area: '' };
 const todayKey = getDateKey(addDays(new Date(), 1));
 
 // Initial form for every open cycle: editing reschedules only (date/time)
@@ -25,6 +25,8 @@ const buildInitialForm = (appointment, user) => {
       date: appointment.date,
       time: appointment.time,
       reason: appointment.reason,
+      caseId: appointment.caseId || '',
+      area: appointment.area || '',
     };
   }
   if (user?.role === 'abogado') {
@@ -38,6 +40,7 @@ const NewAppointment = ({
   onSubmit,
   lawyers,
   clients,
+  cases = [],
   user,
   appointments = [],
   appointment,
@@ -77,6 +80,20 @@ const NewAppointment = ({
     .filter(({ lawyerId, status }) => String(lawyerId) === form.lawyerId && status !== 'cancelado')
     .reduce((dates, { date }) => ({ ...dates, [date]: true }), {});
 
+  const selectedClientId = form.clientId || (user?.role === 'cliente' ? user?.id : undefined);
+
+  const availableCases = cases.filter((c) => {
+    if (c.status === 'cerrado') return false;
+    if (selectedClientId && String(c.clientId) !== String(selectedClientId)) return false;
+    if (user?.role === 'abogado') {
+      const matchLawyer =
+        String(c.lawyerId) === String(user.id) ||
+        (c.lawyerIds ?? []).map(String).includes(String(user.id));
+      if (!matchLawyer) return false;
+    }
+    return true;
+  });
+
   const submit = async (event) => {
     event.preventDefault();
     setMessage('');
@@ -94,6 +111,9 @@ const NewAppointment = ({
       return setMessage('La fecha no puede ser anterior al día de hoy.');
     try {
       setLoading(true);
+      const selectedCase = availableCases.find((c) => c.id === form.caseId);
+      const resolvedArea = form.caseId ? selectedCase?.area : form.area || undefined;
+
       // Creating posts the contract body (no status: the backend computes
       // 'Pendiente') with Guid string ids; editing reschedules only
       // date/time/endTime.
@@ -104,6 +124,8 @@ const NewAppointment = ({
               ...form,
               clientId,
               lawyerId: form.lawyerId,
+              caseId: form.caseId || undefined,
+              area: resolvedArea,
               title: 'Solicitud de turno',
               endTime: addHour(form.time),
             },
@@ -187,6 +209,44 @@ const NewAppointment = ({
                 ))}
               </Form.Select>
             </Form.Group>
+          )}
+
+          {!isEdit && (
+            <>
+              <Form.Group className="mb-3">
+                <Form.Label>Expediente asociado (opcional)</Form.Label>
+                <Form.Select
+                  value={form.caseId || ''}
+                  onChange={(event) => setForm({ ...form, caseId: event.target.value })}
+                >
+                  <option value="">Sin expediente asociado</option>
+                  {availableCases.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.caseNumber ? `${c.caseNumber} — ` : ''}
+                      {c.title}
+                    </option>
+                  ))}
+                </Form.Select>
+                {form.caseId && (
+                  <Form.Text className="text-info" style={{ display: 'block', marginTop: 4 }}>
+                    Área legal heredada del expediente:{' '}
+                    {availableCases.find((c) => c.id === form.caseId)?.area || 'General'}
+                  </Form.Text>
+                )}
+              </Form.Group>
+
+              {!form.caseId && (
+                <Form.Group className="mb-3">
+                  <Form.Label>Área legal (opcional)</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Ej. Civil, Comercial, Laboral"
+                    value={form.area || ''}
+                    onChange={(event) => setForm({ ...form, area: event.target.value })}
+                  />
+                </Form.Group>
+              )}
+            </>
           )}
 
           {isEdit ? (
