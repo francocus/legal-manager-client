@@ -1,12 +1,29 @@
-import { useEffect, useMemo } from 'react';
+import { useContext, useEffect, useMemo } from 'react';
 import { Button, Col, Form, Modal, Row } from 'react-bootstrap';
 import { initialUserForm } from '../newUser/NewUser.data';
 import { useForm } from '../../../services/hooks/useForm';
 import { formatDni, isDni, isEmail, isRequired } from '../../../services/validators/validators';
-import { ROLE_OPTIONS } from '../../../services/consts/roles';
+import { ROLE_OPTIONS, ROLES } from '../../../services/consts/roles';
+import { usersApi } from '../../../services/api/usersApi';
+import { AuthenticationContext } from '../../../services/auth/authentication.context';
 import { useToast } from '../../../shared/toast/toast.context';
 
 const capitalize = (value) => value.charAt(0).toUpperCase() + value.slice(1);
+
+// Specialties travel as a string array but are edited as one comma-separated
+// text field: "Familia, Laboral" <-> ["Familia", "Laboral"]. Empty text maps
+// to undefined so the changeRole payload sends null instead of an empty list.
+const specialtiesToText = (value) =>
+  Array.isArray(value) ? value.join(', ') : String(value ?? '');
+
+const textToSpecialties = (text) => {
+  const list = String(text ?? '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  return list.length > 0 ? list : undefined;
+};
 
 const validateUserForm = (values) => {
   const errors = {};
@@ -22,16 +39,56 @@ const validateUserForm = (values) => {
 
 const UserDetails = ({ user, onEditUser, onFormClosed, fixedRole, entityLabel = 'usuario' }) => {
   const { showToast } = useToast();
+  const { user: currentUser } = useContext(AuthenticationContext);
+
+  // Role editing is sysadmin-only and never applies to sysadmin targets
+  // (admins are command-created): every other case keeps the role fixed.
+  const canEditRole =
+    !fixedRole && user?.role !== ROLES.SYSADMIN && currentUser?.role === ROLES.SYSADMIN;
+
   const initialValues = useMemo(
-    () => ({ ...initialUserForm, ...(user ?? {}), ...(fixedRole ? { role: fixedRole } : {}) }),
+    () => ({
+      ...initialUserForm,
+      ...(user ?? {}),
+      ...(fixedRole ? { role: fixedRole } : {}),
+      specialties: specialtiesToText(user?.specialties),
+    }),
     [user, fixedRole],
   );
 
+  const validateForm = (formValues) => {
+    const nextErrors = validateUserForm(formValues);
+
+    // Matrícula is only demanded when the submit actually promotes the user
+    // to abogado: an existing abogado editing display fields skips it.
+    if (
+      canEditRole &&
+      formValues.role !== user?.role &&
+      formValues.role === ROLES.ABOGADO &&
+      !isRequired(formValues.barNumber)
+    ) {
+      nextErrors.barNumber = 'Este campo es obligatorio.';
+    }
+
+    return nextErrors;
+  };
+
   const { values, errors, submitting, setValue, handleChange, reset, handleSubmit } = useForm({
     initialValues,
-    validate: validateUserForm,
+    validate: validateForm,
     onSubmit: async (formValues) => {
       try {
+        // A role change must land before the display-field PUT: when it fails
+        // (invalid role, active cases/appointments) the error is toasted here
+        // and the update below is never sent, so both succeed or neither does.
+        if (canEditRole && formValues.role !== user?.role) {
+          await usersApi.changeRole(formValues.id, {
+            role: formValues.role,
+            barNumber: formValues.barNumber,
+            specialties: textToSpecialties(formValues.specialties),
+          });
+        }
+
         await onEditUser?.(formValues);
         showToast({
           variant: 'success',
@@ -46,6 +103,11 @@ const UserDetails = ({ user, onEditUser, onFormClosed, fixedRole, entityLabel = 
       }
     },
   });
+
+  // Matrícula and specialties only show while a promotion to abogado is
+  // staged: a demotion hides them because the backend drops both fields.
+  const showLawyerFields =
+    canEditRole && values.role === ROLES.ABOGADO && values.role !== user?.role;
 
   useEffect(() => {
     reset(initialValues);
@@ -142,7 +204,12 @@ const UserDetails = ({ user, onEditUser, onFormClosed, fixedRole, entityLabel = 
               <Col md={6}>
                 <Form.Group className="mb-3" controlId="role">
                   <Form.Label>Rol</Form.Label>
-                  <Form.Select name="role" value={values.role} onChange={handleChange}>
+                  <Form.Select
+                    name="role"
+                    value={values.role}
+                    onChange={handleChange}
+                    disabled={!canEditRole}
+                  >
                     {ROLE_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
@@ -153,6 +220,43 @@ const UserDetails = ({ user, onEditUser, onFormClosed, fixedRole, entityLabel = 
               </Col>
             ) : null}
           </Row>
+
+          {showLawyerFields ? (
+            <>
+              <Row>
+                <Col md={12}>
+                  <Form.Group className="mb-3" controlId="barNumber">
+                    <Form.Label>Matrícula</Form.Label>
+                    <Form.Control
+                      name="barNumber"
+                      value={values.barNumber}
+                      onChange={handleChange}
+                      isInvalid={Boolean(errors.barNumber)}
+                      type="text"
+                      placeholder="Ingresar matrícula"
+                    />
+                    {errors.barNumber ? (
+                      <Form.Text className="text-danger">{errors.barNumber}</Form.Text>
+                    ) : null}
+                  </Form.Group>
+                </Col>
+              </Row>
+              <Row>
+                <Col md={12}>
+                  <Form.Group className="mb-3" controlId="specialties">
+                    <Form.Label>Especialidades</Form.Label>
+                    <Form.Control
+                      name="specialties"
+                      value={values.specialties}
+                      onChange={handleChange}
+                      type="text"
+                      placeholder="Ingresar especialidades separadas por comas"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+            </>
+          ) : null}
 
           <Row>
             <Col md={12}>
