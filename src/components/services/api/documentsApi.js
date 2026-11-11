@@ -2,9 +2,9 @@ import { apiDownload, apiRequest } from '../http/httpClient';
 import { mapDocument, typeValueToEnum } from '../../biz/documents/Documents.data';
 
 // Full .NET document contract (api/document): uploads are multipart,
-// the AI summary is generated into a draft document whose decision travels
-// through dedicated PATCH endpoints, and removal is always a logical
-// deactivation (DELETE), never a physical one.
+// AI summaries and constancias are generated into client-held drafts that
+// only reach the backend through an explicit save, and removal is always a
+// logical deactivation (DELETE), never a physical one.
 export const documentsApi = {
   getAll: async (caseId) =>
     ((await apiRequest(`/document/case/${caseId}`)) ?? []).map(mapDocument),
@@ -26,14 +26,26 @@ export const documentsApi = {
   // Content-Disposition header; callers fall back to their own known name.
   download: (id) => apiDownload(`/document/${id}/download`),
 
-  // Generates one AI summary draft for the case. 409 while another draft
-  // awaits its keep/discard decision; 502 when the LLM is unreachable.
-  generateAiSummary: async (caseId) =>
-    mapDocument(await apiRequest(`/document/case/${caseId}/generate-summary`, { method: 'POST' })),
+  // Generates one AI summary draft for the case. Confirm-first contract:
+  // the draft is NOT persisted, so this returns the raw dto untouched
+  // (it has no id/row yet, mapping it as a document would be wrong).
+  // 400 on invalid case, 409 on concurrent generation, 502 when the LLM is
+  // unreachable.
+  generateAiSummary: (caseId) =>
+    apiRequest(`/document/case/${caseId}/generate-summary`, { method: 'POST' }),
 
-  approve: (id) => apiRequest(`/document/${id}/approve`, { method: 'PATCH' }).then(mapDocument),
+  // Same confirm-first contract, but for a case constancia: the server
+  // always answers with an empty summaryText.
+  generateConstancia: (caseId) =>
+    apiRequest(`/document/case/${caseId}/generate-constancia`, { method: 'POST' }),
 
-  discard: (id) => apiRequest(`/document/${id}/discard`, { method: 'PATCH' }).then(mapDocument),
+  // Persists a client-held draft. AI drafts arrive already approved
+  // server-side; constancias persist with approved = null.
+  saveGenerated: ({ caseId, pdfBase64, summaryText, generatedByAi }) =>
+    apiRequest('/document/generated', {
+      method: 'POST',
+      body: { caseId, pdfBase64, summaryText, generatedByAi },
+    }).then(mapDocument),
 
   remove: (id) => apiRequest(`/document/${id}`, { method: 'DELETE' }),
 };

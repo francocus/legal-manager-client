@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Form } from 'react-bootstrap';
 import { documentsApi } from '../../../services/api/documentsApi';
 import {
@@ -25,41 +25,122 @@ const CaseDocuments = ({ legalCase, currentUser }) => {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [generating, setGenerating] = useState(false);
-  const [workingDocId, setWorkingDocId] = useState(null);
+  const [saving, setSaving] = useState(false);
   const [typeValue, setTypeValue] = useState('');
   const [file, setFile] = useState(null);
   const [fileInputKey, setFileInputKey] = useState(0);
+  const [dragActive, setDragActive] = useState(false);
   const [pendingDelete, setPendingDelete] = useState(null);
+  const [draft, setDraft] = useState(null);
+  const fileInputRef = useRef(null);
 
   const canWrite = isSysadmin(currentUser?.role) || isLawyer(currentUser?.role);
   const isClosed = String(legalCase?.status ?? '').toLowerCase() === 'cerrado';
 
+  const caseId = legalCase?.id;
+
   const loadDocuments = useCallback(async () => {
-    if (!legalCase?.id) return;
+    if (!caseId) return;
     setLoading(true);
     try {
-      setDocuments(await documentsApi.getAll(legalCase.id));
+      setDocuments(await documentsApi.getAll(caseId));
     } catch (error) {
       showToast({ variant: 'danger', message: error.message });
     } finally {
       setLoading(false);
     }
-  }, [legalCase?.id, showToast]);
+  }, [caseId, showToast]);
 
   useEffect(() => {
-    loadDocuments();
+    let active = true;
+
+    (async () => {
+      // Yield to a callback frame so loadDocuments' setLoading is async.
+      await Promise.resolve();
+      if (!active) return;
+      await loadDocuments();
+    })();
+
+    return () => {
+      active = false;
+    };
   }, [loadDocuments]);
 
-  const handleFileChange = (event) => {
-    const selected = event.target.files?.[0] ?? null;
+  // Draft PDFs travel as base64; build a blob URL for the inline preview and
+  // let the cleanup below hand it back to the browser on replace/unmount.
+  const draftObjectUrl = useMemo(() => {
+    if (!draft?.pdfBase64) return null;
+    const binary = atob(draft.pdfBase64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    return URL.createObjectURL(blob);
+  }, [draft]);
+
+  useEffect(() => {
+    return () => {
+      if (draftObjectUrl) URL.revokeObjectURL(draftObjectUrl);
+    };
+  }, [draftObjectUrl]);
+
+  const stageFile = (selected) => {
+    if (!selected) return;
+
+    const looksLikePdf =
+      selected.type === 'application/pdf' ||
+      String(selected.name ?? '').toLowerCase().endsWith('.pdf');
+    if (!looksLikePdf) {
+      showToast({ variant: 'warning', message: 'Solo se aceptan archivos PDF.' });
+      return;
+    }
+
+    if (selected.size > MAX_FILE_SIZE) {
+      showToast({ variant: 'warning', message: 'El archivo supera el tamaño máximo permitido (10 MB).' });
+      return;
+    }
+
     setFile(selected);
+  };
+
+  const handleFileInputChange = (event) => {
+    stageFile(event.target.files?.[0] ?? null);
+  };
+
+  const openFilePicker = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleDropzoneKeyDown = (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      fileInputRef.current?.click();
+    }
+  };
+
+  const handleDragOver = (event) => {
+    event.preventDefault();
+    setDragActive(true);
+  };
+
+  const handleDragLeave = () => {
+    setDragActive(false);
+  };
+
+  const handleDrop = (event) => {
+    event.preventDefault();
+    setDragActive(false);
+    stageFile(event.dataTransfer.files?.[0]);
+  };
+
+  const handleUnstageFile = () => {
+    setFile(null);
+    // Remounting the input clears the browser-held selection as well.
+    setFileInputKey((key) => key + 1);
   };
 
   const resetForm = () => {
     setTypeValue('');
-    setFile(null);
-    // Remounting the input clears the browser-held selection as well.
-    setFileInputKey((key) => key + 1);
+    handleUnstageFile();
   };
 
   const handleUpload = async (event) => {
@@ -67,18 +148,6 @@ const CaseDocuments = ({ legalCase, currentUser }) => {
 
     if (!typeValue || !file) {
       showToast({ variant: 'warning', message: 'Este campo es obligatorio.' });
-      return;
-    }
-
-    const looksLikePdf =
-      file.type === 'application/pdf' || String(file.name ?? '').toLowerCase().endsWith('.pdf');
-    if (!looksLikePdf) {
-      showToast({ variant: 'warning', message: 'Solo se aceptan archivos PDF.' });
-      return;
-    }
-
-    if (file.size > MAX_FILE_SIZE) {
-      showToast({ variant: 'warning', message: 'El archivo supera el tamaño máximo permitido (10 MB).' });
       return;
     }
 
@@ -111,12 +180,15 @@ const CaseDocuments = ({ legalCase, currentUser }) => {
     }
   };
 
-  const handleGenerateAiSummary = async () => {
+  // One draft at a time: generating again simply replaces the previous one.
+  const handleGenerate = async (kind) => {
     setGenerating(true);
     try {
-      await documentsApi.generateAiSummary(legalCase.id);
-      showToast({ variant: 'info', message: 'Resumen generado: revisalo y decidí si lo guardás o lo descartás.' });
-      await loadDocuments();
+      const raw =
+        kind === 'summary'
+          ? await documentsApi.generateAiSummary(caseId)
+          : await documentsApi.generateConstancia(caseId);
+      setDraft({ ...raw, generatedByAi: kind === 'summary' });
     } catch (error) {
       showToast({ variant: 'danger', message: error.message });
     } finally {
@@ -124,22 +196,33 @@ const CaseDocuments = ({ legalCase, currentUser }) => {
     }
   };
 
-  const handleReview = async (doc, decision) => {
-    setWorkingDocId(doc.id);
+  const handleSaveDraft = async () => {
+    setSaving(true);
     try {
-      if (decision === 'approve') {
-        await documentsApi.approve(doc.id);
-        showToast({ variant: 'success', message: 'Resumen guardado como documento del expediente.' });
-      } else {
-        await documentsApi.discard(doc.id);
-        showToast({ variant: 'success', message: 'Resumen descartado.' });
-      }
+      await documentsApi.saveGenerated({
+        caseId,
+        pdfBase64: draft.pdfBase64,
+        summaryText: draft.summaryText,
+        generatedByAi: draft.generatedByAi,
+      });
+      showToast({
+        variant: 'success',
+        message: draft.generatedByAi
+          ? 'Resumen guardado como documento del expediente.'
+          : 'Constancia guardada en el expediente.',
+      });
+      setDraft(null);
       await loadDocuments();
     } catch (error) {
       showToast({ variant: 'danger', message: error.message });
     } finally {
-      setWorkingDocId(null);
+      setSaving(false);
     }
+  };
+
+  const handleDiscardDraft = () => {
+    setDraft(null);
+    showToast({ variant: 'info', message: 'Borrador descartado. No se guardó nada.' });
   };
 
   const handleDeleteConfirmed = async () => {
@@ -162,41 +245,124 @@ const CaseDocuments = ({ legalCase, currentUser }) => {
               El expediente está cerrado: no admite la subida de documentos nuevos.
             </p>
           ) : (
-            <form className="case-docs__form" onSubmit={handleUpload}>
-              <Form.Select
-                className="case-docs__field"
-                aria-label="Tipo de documento"
-                value={typeValue}
-                onChange={(event) => setTypeValue(event.target.value)}
-              >
-                <option value="">Seleccionar tipo</option>
-                {DOCUMENT_TYPE_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </Form.Select>
-              <Form.Control
-                key={fileInputKey}
-                className="case-docs__field case-docs__file"
-                type="file"
-                accept="application/pdf,.pdf"
-                aria-label="Archivo PDF (hasta 10 MB)"
-                onChange={handleFileChange}
-              />
-              <button type="submit" className="app-button app-button--primary" disabled={uploading}>
-                {uploading ? 'Subiendo...' : 'Subir documento'}
-              </button>
-            </form>
+            <>
+              <form className="case-docs__form" onSubmit={handleUpload}>
+                <div
+                  className={`case-docs__dropzone${dragActive ? ' case-docs__dropzone--active' : ''}`}
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Zona para arrastrar o elegir un archivo PDF"
+                  onClick={openFilePicker}
+                  onKeyDown={handleDropzoneKeyDown}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                >
+                  <input
+                    key={fileInputKey}
+                    ref={fileInputRef}
+                    type="file"
+                    accept="application/pdf,.pdf"
+                    aria-label="Archivo PDF (hasta 10 MB)"
+                    hidden
+                    onChange={handleFileInputChange}
+                  />
+                  <span className="case-docs__dropzone-title">Arrastrá tu PDF acá</span>
+                  <span className="case-docs__dropzone-subtitle">o hacé clic para buscar archivos</span>
+                </div>
+                {file ? (
+                  <p className="case-docs__staged">
+                    Listo para subir: {file.name}
+                    <button
+                      type="button"
+                      className="app-button app-button--secondary case-docs__unstage"
+                      onClick={handleUnstageFile}
+                    >
+                      Quitar
+                    </button>
+                  </p>
+                ) : null}
+                <div className="case-docs__upload-row">
+                  <Form.Select
+                    className="case-docs__field"
+                    aria-label="Tipo de documento"
+                    value={typeValue}
+                    onChange={(event) => setTypeValue(event.target.value)}
+                  >
+                    <option value="">Seleccionar tipo</option>
+                    {DOCUMENT_TYPE_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </Form.Select>
+                  <button
+                    type="submit"
+                    className="app-button app-button--primary"
+                    disabled={uploading}
+                  >
+                    {uploading ? 'Subiendo...' : 'Subir documento'}
+                  </button>
+                </div>
+              </form>
+              <div className="case-docs__generate">
+                <button
+                  type="button"
+                  className="app-button app-button--primary"
+                  disabled={generating || saving}
+                  onClick={() => handleGenerate('summary')}
+                >
+                  {generating ? 'Generando...' : 'Generar resumen con IA'}
+                </button>
+                <button
+                  type="button"
+                  className="app-button app-button--secondary"
+                  disabled={generating || saving}
+                  onClick={() => handleGenerate('constancia')}
+                >
+                  {generating ? 'Generando...' : 'Generar constancia'}
+                </button>
+              </div>
+            </>
           )}
-          <button
-            type="button"
-            className="app-button app-button--primary"
-            disabled={generating}
-            onClick={handleGenerateAiSummary}
-          >
-            {generating ? 'Generando...' : 'Generar resumen con IA'}
-          </button>
+        </div>
+      ) : null}
+
+      {draft && canWrite && !isClosed ? (
+        <div className="case-docs__draft">
+          <h4 className="case-docs__draft-title">
+            {draft.generatedByAi ? 'Borrador del resumen con IA' : 'Borrador de constancia'}
+          </h4>
+          <div className="case-docs__preview">
+            <object data={draftObjectUrl} type="application/pdf" width="100%" height="420">
+              Tu navegador no puede mostrar el PDF en esta vista.
+            </object>
+          </div>
+          {draft.generatedByAi && draft.summaryText ? (
+            <details className="case-docs__draft-summary">
+              <summary>Ver texto del resumen</summary>
+              <p>{draft.summaryText}</p>
+            </details>
+          ) : null}
+          <div className="case-docs__draft-actions">
+            <button
+              type="button"
+              className="app-button app-button--primary"
+              disabled={saving}
+              onClick={handleSaveDraft}
+            >
+              {saving ? 'Guardando...' : 'Guardar'}
+            </button>
+            <button
+              type="button"
+              className="app-button app-button--secondary"
+              disabled={saving}
+              onClick={handleDiscardDraft}
+            >
+              Descartar
+            </button>
+          </div>
+          <p className="case-docs__draft-note">Nada queda guardado hasta que toques Guardar.</p>
         </div>
       ) : null}
 
@@ -233,30 +399,9 @@ const CaseDocuments = ({ legalCase, currentUser }) => {
                       {docState.label}
                     </span>
                   ) : null}
-                  {canWrite && doc.isPendingReview ? (
-                    <>
-                      <button
-                        type="button"
-                        className="app-button app-button--primary"
-                        disabled={workingDocId === doc.id}
-                        onClick={() => handleReview(doc, 'approve')}
-                      >
-                        Guardar
-                      </button>
-                      <button
-                        type="button"
-                        className="app-button app-button--secondary"
-                        disabled={workingDocId === doc.id}
-                        onClick={() => handleReview(doc, 'discard')}
-                      >
-                        Descartar
-                      </button>
-                    </>
-                  ) : null}
                   <button
                     type="button"
                     className="app-button app-button--secondary"
-                    disabled={workingDocId === doc.id}
                     onClick={() => handleDownload(doc)}
                   >
                     Descargar
@@ -265,7 +410,6 @@ const CaseDocuments = ({ legalCase, currentUser }) => {
                     <button
                       type="button"
                       className="app-button app-button--secondary case-docs__button--danger"
-                      disabled={workingDocId === doc.id}
                       onClick={() => setPendingDelete(doc)}
                     >
                       Eliminar

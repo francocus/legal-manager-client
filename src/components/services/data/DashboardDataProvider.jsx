@@ -98,9 +98,6 @@ export const DashboardDataProvider = ({ children }) => {
     if (!token) return;
 
     try {
-      setLoading(true);
-      setError('');
-
       // Fetch the raw dto arrays for every role-fetchable resource in one
       // parallel batch (users only for sysadmin), build the resolver maps from
       // those lists, then map each resource exactly once.
@@ -135,8 +132,22 @@ export const DashboardDataProvider = ({ children }) => {
   }, [token, role, user]);
 
   useEffect(() => {
-    refreshAll();
-  }, [refreshAll]);
+    if (!token) return undefined;
+    let active = true;
+
+    (async () => {
+      // Yield to a callback frame so every setState in this refetch is async.
+      await Promise.resolve();
+      if (!active) return;
+      setLoading(true);
+      setError('');
+      await refreshAll();
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [refreshAll, token]);
 
   const contextValue = useMemo(
     () => ({

@@ -246,6 +246,9 @@ const AppointmentsContainer = () => {
       />
 
       <NewAppointment
+        key={
+          showRequest || Boolean(appointmentToEdit) ? (appointmentToEdit?.id ?? 'new') : 'closed'
+        }
         show={showRequest || Boolean(appointmentToEdit)}
         appointment={appointmentToEdit}
         onHide={() => {
