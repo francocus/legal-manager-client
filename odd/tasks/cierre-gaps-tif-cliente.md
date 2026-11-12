@@ -76,6 +76,14 @@ renombrado sysadmin→admin). Rama de trabajo: `feat/cierre-gaps-tif-cliente`.
   `2ae50bf`). Los turnos ya normalizaban.
 - Placeholder de búsqueda por vista (UsersSearch parametrizado) (commit
   `5134f86`).
+- Letras sin cambio de color en hover (los "Volver" eran `<Link>` y Bootstrap
+  los pintaba azul al hover; color declarado en todos los hovers de
+  `app-button`, ambos temas) (commit `c750736`).
+- Menú desplegado de los select por tema: `color-scheme` en `:root` estaba
+  hardcodeado dark en `index.css` → agregado flip `[data-bs-theme='light'] { color-scheme: light }`;
+  opciones pineadas por tema en `ui.css` (oscuro #0a0d12, claro blanco)
+  (commit `c750736`).
+- Idle de scrollbars a 0.5s a pedido del usuario (commit `6bb01aa`).
 
 - Bug encontrado al verificar contra el backend (`master`, `JsonStringEnumConverter`):
   los dtos de documentos llegan con `type` como **string** ("Escrito"/"Generado") y el
