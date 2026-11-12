@@ -155,6 +155,54 @@ renombrado sysadmin→admin). Rama de trabajo: `feat/cierre-gaps-tif-cliente`.
   matrícula obligatoria, save → chip ABOGADO, democión → chip CLIENTE.
   Nota: el modal de bienvenida y los modales tapaban clicks de CDP → en los
   scripts se cierran y se hace scrollIntoView de la fila antes de clickear.
+
+## Borrado actual y papelera (pendiente de diseño, pedido 2026-11-12)
+
+**Qué pasa hoy cuando se “borra” algo: siempre baja lógica.**
+
+- Expediente: `CaseService` llama `caseItem.Deactivate()` → `Active = false`
+  (`CaseService.cs:163`). Nada se elimina físicamente.
+- Turno: `AppointmentService` llama `appointment.Deactivate()` →
+  `Active = false` (`AppointmentService.cs:170`).
+- Usuario: `UserService.DeleteAsync` llama `user.Deactivate()` →
+  `Active = false` (`UserService.cs:262`), con guard de expedientes/turnos
+  activos propios.
+- Consecuencia de listado: `GenericRepository.GetAllAsync` filtra
+  `e => e.Active`, así que los dados de baja **no aparecen en ninguna vista**
+  ni en la API (los paged usan el mismo filtro).
+- Consecuencia de promoción: los guards de `ChangeRoleAsync`
+  (`HasAnyCaseAsClientAsync` / `HasAnyAppointmentAsClientAsync`) consultan
+  **sin** filtrar `Active` (`CasesRepository.cs:21-22`), así que un registro
+  inactivo invisible bloquea el pasaje cliente→abogado — fue el caso de la
+  cuenta de Agus (bloqueada por un expediente o turno de baja que ninguna
+  vista muestra).
+- Índices únicos por tipo (`UX_Clients_Email/Dni`, `UX_Lawyers_*`,
+  `UX_Admins_*` en `LegalManagerDbContext`) filtran `[Active] = 1`: el email
+  y el DNI de una cuenta dada de baja **quedan libres** para una cuenta
+  nueva. El borrado físico directo choca con las FK Restrict de casos/turnos
+  hacia las filas de tipo (TPC) — por eso los guards cuentan todo.
+
+**Pedido del usuario (a diseñar antes de implementar):**
+
+1. Sección de papelera visible solo para admin con los expedientes y turnos
+   dados de baja (“etc.” por definir: ¿también usuarios/documentos?).
+2. Solo el admin puede dar la **baja física** desde ahí (confirmación fuerte:
+   es irreversible).
+3. Alternativa que planteó: **purga automática a los 12 meses** de estar en
+   la papelera (“que se baje solo”), en vez de (o además de) el borrado
+   manual.
+
+**Decisiones abiertas antes de construir:**
+
+- ¿La papelera permite **restaurar** (re-activar) además de borrar físico?
+- ¿Purga automática 12 meses, solo borrado manual, o ambos?
+- ¿Alcance: expedientes + turnos, o también usuarios (el hard-delete de un
+  usuario choca con FKs de casos/turnos que lo referencian, incluso de baja)?
+- Políticas de FK para el borrado físico de un expediente con turnos
+  vinculados (aunque estén de baja): bloquear, o cascada (borra los turnos
+  físicamente también) + limpiar la fila join `CaseLawyer`.
+- Dónde vive la purga automática si se elige: job de fondo en el backend
+  (hosted service) o chequeo lazy en cada listado.
 - Idle de scrollbars a 0.5s a pedido del usuario (commit `6bb01aa`).
 
 - Bug encontrado al verificar contra el backend (`master`, `JsonStringEnumConverter`):
