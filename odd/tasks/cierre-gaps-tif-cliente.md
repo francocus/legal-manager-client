@@ -95,6 +95,28 @@ renombrado sysadmin→admin). Rama de trabajo: `feat/cierre-gaps-tif-cliente`.
   conservan el popup nativo pineado de `c750736`. Alternativa descartada por
   ahora: componente `AppSelect` propio (reescribiría ~13 usages perdiendo
   teclado/a11y/móvil nativos).
+- Corrección de cobertura (79f5c59): el primer opt-in a (0,1,1) perdía por
+  especificidad contra `.users-form .form-select` y `.cases-form .form-select`
+  (0,2,0, edit/crear usuario y expedientes) → esos forms seguían con popup
+  nativo; `select[class]` (0,2,1) y los pins de option a (0,2,2) le ganan a
+  todos los módulos. Además el control cerrado en base mode estira un wrapper
+  de shadow UA con el texto pegado arriba → geometría normalizada dentro de
+  `@supports (appearance: base-select)`: height/min-height 46px, padding-block
+  11px y line-height 22px (= alto del wrapper estirado), nowrap + clip para
+  valores largos; no-supporting browsers conservan el centrado nativo.
+  Verificado E2E con CDP contra la API real (login admin en Azure): appearance
+  base-select en toolbar users, modal editar usuario, expedientes y cases, dark
+  y light; capturas del picker abierto y del valor centrado en todos los
+  shapes (harness + app real).
+- Botón de período del calendario (e675278): el centro decía siempre "Hoy" →
+  ahora nombra el scope mientras el calendario está en el período actual
+  ("Esta semana" en semana, "Este mes" en mes) y cambia a "Volver" cuando la
+  navegación sale de él (flechas o click en otra fecha); siempre vuelve a
+  hoy. Min-width 96px para que las flechas no salten entre labels. Verificado
+  con CDP leyendo los 4 estados.
+- Hallazgo E2E: el toast de bienvenida ("¡Bienvenido...") tapa los controles
+  del hero del calendario ~4-5s tras loguear (contenedor tipo modal con
+  pointer-events); transitorio, no se tocó.
 - Idle de scrollbars a 0.5s a pedido del usuario (commit `6bb01aa`).
 
 - Bug encontrado al verificar contra el backend (`master`, `JsonStringEnumConverter`):
