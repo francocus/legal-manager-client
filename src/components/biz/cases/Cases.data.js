@@ -16,7 +16,9 @@ export const mapCase = (legalCase = {}, userNames = {}) => {
     caseNumber: legalCase.caseNumber ?? '',
     title: legalCase.title ?? '',
     area: legalCase.area ?? '',
-    status: legalCase.status ?? 'activo',
+    // The backend serializes enums as their member name ("Cerrado"), while
+    // the UI speaks lowercase everywhere (guards, selects, filters).
+    status: String(legalCase.status ?? 'activo').toLowerCase(),
     startDate: legalCase.startDate ?? '',
     lastUpdate: legalCase.lastUpdate ?? '',
     closingDate: legalCase.closingDate ?? '',
