@@ -56,6 +56,25 @@ renombrado sysadmin→admin). Rama de trabajo: `feat/cierre-gaps-tif-cliente`.
 - UX reportada por el usuario: la pantalla Recuperar contraseña (vista del
   formulario) no tenía salida al login. Agregado el enlace "Volver al inicio de
   sesión" con el patrón auth-switch-text/auth-link (commit `45918c9`).
+- Botón "Crear cliente" alineado a la familia crear (`.clients-create`, sombra
+  18/30/0.4, weight 800, hover con color declarado) (commit `1cb0d7c`).
+- Skin global de `.form-select` en `ui.css` (toolbar, perfil, tipo de documento)
+  (commit `7a29d1c`).
+- Auto-ocultado de scrollbars: `.is-scrolling` en `<html>` vía listener único
+  capture+passive, thumb transparente en reposo con gutter reservado (sin CLS),
+  hover revela para agarrar (commit `d368e50`).
+- Avatar compartido `.app-avatar` en detalle de expediente/turno + fix light del
+  avatar de cliente; overrides light para `--primary`/`--danger` (commit
+  `0efe578`).
+- Congruencia dark de botones: sombra 18/30/0.4 y weight 800 unificados, lift
+  -2px global, vidrio secundario estándar en modales, alturas 46px, sombra de
+  auth por var de tema (commit `a91954e`).
+- Bug del status: el backend manda el nombre del enum capitalizado ("Cerrado")
+  y `mapCase` lo pasaba crudo → guard de cerrado inoperante, select mostrando
+  "Activo" y filtro roto. Normalizado a minúsculas en `mapCase` (commit
+  `2ae50bf`). Los turnos ya normalizaban.
+- Placeholder de búsqueda por vista (UsersSearch parametrizado) (commit
+  `5134f86`).
 
 - Bug encontrado al verificar contra el backend (`master`, `JsonStringEnumConverter`):
   los dtos de documentos llegan con `type` como **string** ("Escrito"/"Generado") y el
