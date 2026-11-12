@@ -62,7 +62,8 @@ renombrado sysadmin→admin). Rama de trabajo: `feat/cierre-gaps-tif-cliente`.
   (commit `7a29d1c`).
 - Auto-ocultado de scrollbars: `.is-scrolling` en `<html>` vía listener único
   capture+passive, thumb transparente en reposo con gutter reservado (sin CLS),
-  hover revela para agarrar (commit `d368e50`).
+  hover revela para agarrar (commit `d368e50`); idle bajado a 0.5s a pedido del
+  usuario y verificado con inyección de overflow (commit `6bb01aa`).
 - Avatar compartido `.app-avatar` en detalle de expediente/turno + fix light del
   avatar de cliente; overrides light para `--primary`/`--danger` (commit
   `0efe578`).
