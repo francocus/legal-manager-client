@@ -170,10 +170,10 @@ const CasesContainer = () => {
         show={Boolean(caseToDelete)}
         onHide={() => setCaseToDelete(null)}
         onConfirm={() => handleDeleteCase(caseToDelete?.id)}
-        title="Eliminar expediente"
-        message="¿Estás seguro que deseas eliminar el expediente"
+        title="Dar de baja"
+        message="El registro queda desactivado y no se elimina físicamente. ¿Estás seguro que deseas dar de baja el expediente"
         itemName={caseToDelete?.caseNumber}
-        confirmLabel="Sí, deseo eliminarlo"
+        confirmLabel="Sí, dar de baja"
       />
 
       {loading ? (

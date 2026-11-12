@@ -433,10 +433,10 @@ const CaseDocuments = ({ legalCase, currentUser }) => {
         show={Boolean(pendingDelete)}
         onHide={() => setPendingDelete(null)}
         onConfirm={handleDeleteConfirmed}
-        title="Eliminar documento"
-        message="¿Estás seguro que deseas eliminar el documento"
+        title="Dar de baja"
+        message="El registro queda desactivado y no se elimina físicamente. ¿Estás seguro que deseas dar de baja el documento"
         itemName={pendingDelete?.fileName}
-        confirmLabel="Sí, deseo eliminarlo"
+        confirmLabel="Sí, dar de baja"
       />
     </section>
   );

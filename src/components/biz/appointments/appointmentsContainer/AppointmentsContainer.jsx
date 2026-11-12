@@ -221,10 +221,10 @@ const AppointmentsContainer = () => {
         show={Boolean(appointmentToDelete)}
         onHide={() => setAppointmentToDelete(null)}
         onConfirm={() => handleDeleteAppointment(appointmentToDelete?.id)}
-        title="Eliminar turno"
-        message="¿Estás seguro que deseas eliminar el turno de"
+        title="Dar de baja"
+        message="El registro queda desactivado y no se elimina físicamente. ¿Estás seguro que deseas dar de baja el turno de"
         itemName={appointmentToDelete?.clientName}
-        confirmLabel="Sí, deseo eliminarlo"
+        confirmLabel="Sí, dar de baja"
       />
 
       <ConfirmDialog

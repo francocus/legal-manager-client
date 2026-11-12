@@ -135,10 +135,10 @@ const ClientsContainer = () => {
         show={Boolean(clientToDelete)}
         onHide={() => setClientToDelete(null)}
         onConfirm={() => handleDeleteClient(clientToDelete?.id)}
-        title="Eliminar cliente"
-        message="¿Estás seguro que deseas eliminar al cliente"
+        title="Dar de baja"
+        message="El registro queda desactivado y no se elimina físicamente. ¿Estás seguro que deseas dar de baja al cliente"
         itemName={clientToDelete?.name}
-        confirmLabel="Sí, deseo eliminarlo"
+        confirmLabel="Sí, dar de baja"
       />
 
       {loading ? (
