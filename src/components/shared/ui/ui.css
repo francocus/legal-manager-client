@@ -242,3 +242,62 @@ a {
   border-color: rgba(15, 23, 32, 0.14);
   color: #0d1117;
 }
+
+/*
+ * Shared select skin: every <select> in the app travels through Bootstrap's
+ * .form-select class, so one global rule keeps bare dropdowns (toolbar status
+ * picker, add-lawyer picker, document type, profile preferences) on the same
+ * glass aesthetic as the per-module forms and filter chips. Module styles are
+ * more specific and keep winning where they already exist.
+ */
+.form-select {
+  min-height: 46px;
+  border-radius: 16px;
+  border: 1px solid rgba(170, 195, 220, 0.22);
+  background-color: rgba(5, 8, 12, 0.95);
+  color: #f5f8fb;
+  box-shadow: none;
+  padding-right: 2.5rem;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23c3ccd6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M2 5l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.85rem center;
+  background-size: 14px 14px;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.form-select:focus {
+  border-color: rgba(160, 195, 230, 0.55);
+  background-color: rgba(8, 13, 20, 0.98);
+  color: #ffffff;
+  box-shadow: 0 0 0 0.22rem rgba(110, 160, 200, 0.26);
+  outline: none;
+}
+
+.form-select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.form-select option {
+  background: #0a0d12;
+  color: #ffffff;
+}
+
+[data-bs-theme='light'] .form-select {
+  background-color: rgba(15, 23, 32, 0.035);
+  border-color: rgba(15, 23, 32, 0.14);
+  color: #0a0e14;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%230a0e14' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M2 5l6 6 6-6'/%3E%3C/svg%3E");
+}
+
+[data-bs-theme='light'] .form-select:focus {
+  background-color: #ffffff;
+  border-color: rgba(70, 100, 130, 0.55);
+  color: #0a0e14;
+  box-shadow: 0 0 0 0.22rem rgba(70, 100, 130, 0.16);
+}
