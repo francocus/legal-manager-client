@@ -71,3 +71,17 @@ Este documento registra la comprobación exhaustiva del código fuente del front
 Tras la verificación pormenorizada del esquema del TIF, las entidades del dominio, el diccionario de datos y las reglas de negocio, **el frontend cumple al 100% con todas las especificaciones documentadas en la Plantilla TIF**.
 
 No quedan requerimientos funcionales ni reglas de negocio pendientes en el frontend.
+
+---
+
+## 5. Ajustes Adicionales de Usabilidad y Roles
+
+1. **Eliminación de paginación por botones (`< 1 2 >`)**:
+   - Se removió el paginador de botones y flechas en todas las vistas (`Turnos`, `Expedientes`, `Clientes` y `Usuarios`).
+   - Todos los listados y tablas se muestran de forma continua en una sola vista con scroll vertical natural.
+2. **Separación estricta entre Clientes y Usuarios**:
+   - En la pestaña **Usuarios**, se filtraron por completo los clientes (su gestión es exclusiva de la pestaña **Clientes**).
+   - Solo se listan, filtran y crean miembros del personal del estudio: **Administrador** y **Abogado**.
+   - Los modales de creación (`NewUser`) y edición (`UserDetails`) dentro de la pestaña Usuarios restringen la selección de roles a Administrador y Abogado.
+3. **Estandarización de `sysadmin` a `admin` / `Administrador`**:
+   - Se unificaron las constantes, chips, rutas protegidas y textos de la interfaz bajo `admin` y `Administrador` (compatible con el enum `UserType.Admin` del backend), manteniendo compatibilidad retroactiva transparente.
