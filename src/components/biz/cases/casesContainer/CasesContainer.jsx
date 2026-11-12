@@ -5,20 +5,16 @@ import { AuthenticationContext } from '../../../services/auth/authentication.con
 import { useDashboardData } from '../../../services/data/dashboardData.context';
 import { casesApi } from '../../../services/api/casesApi';
 import { useToast } from '../../../shared/toast/toast.context';
-import { usePagination } from '../../../services/hooks/usePagination';
 import ConfirmDialog from '../../../shared/confirmDialog/ConfirmDialog';
 import { SkeletonRows } from '../../../shared/skeleton/Skeleton';
 import EmptyState from '../../../shared/emptyState/EmptyState';
-import Pagination from '../../../shared/pagination/Pagination';
 import CaseDetails from '../caseDetails/CaseDetails';
 import NewCase from '../newCase/NewCase';
 import CasesItem from '../casesItem/CasesItem';
 import CasesSearch from '../casesSearch/CasesSearch';
 import { CASE_STATUS_OPTIONS, getStatusLabel } from '../Cases.data';
-import { ROLES } from '../../../services/consts/roles';
+import { ROLES, isAdmin } from '../../../services/consts/roles';
 import '../cases.css';
-
-const PAGE_SIZE = 10;
 
 const CasesContainer = () => {
   const navigate = useNavigate();
@@ -93,22 +89,20 @@ const CasesContainer = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const { page, setPage, totalPages, pageItems } = usePagination(filteredCases, PAGE_SIZE);
-
   const hasScrollableContent = !loading && filteredCases.length > 0;
-  const isSysadmin = currentUser?.role === ROLES.SYSADMIN;
-  const canWrite = isSysadmin || currentUser?.role === ROLES.ABOGADO;
+  const userIsAdmin = isAdmin(currentUser?.role);
+  const canWrite = userIsAdmin || currentUser?.role === ROLES.ABOGADO;
 
   return (
     <section className={`cases-panel${hasScrollableContent ? ' has-scroll-content' : ''}`}>
       <header className="cases-header">
         <div className="cases-header__copy">
           <p>
-            {isSysadmin
+            {userIsAdmin
               ? 'Gestión de expedientes'
               : 'Visualizá y gestioná el estado de los expedientes'}
           </p>
-          <h2>{isSysadmin ? 'Gestión de expedientes' : 'Expedientes asignados'}</h2>
+          <h2>{userIsAdmin ? 'Gestión de expedientes' : 'Expedientes asignados'}</h2>
         </div>
 
         <div className="cases-header__controls">
@@ -186,7 +180,7 @@ const CasesContainer = () => {
         <SkeletonRows rows={5} />
       ) : filteredCases.length > 0 ? (
         <>
-          {isSysadmin ? (
+          {userIsAdmin ? (
             <div className="cases-table-wrap">
               <table className="cases-table">
                 <thead>
@@ -199,7 +193,7 @@ const CasesContainer = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {pageItems.map((legalCase) => (
+                  {filteredCases.map((legalCase) => (
                     <tr
                       key={legalCase.id}
                       className="case-admin-row is-clickable"
@@ -266,7 +260,7 @@ const CasesContainer = () => {
             </div>
           ) : (
             <div className="cases-list">
-              {pageItems.map((legalCase) => (
+              {filteredCases.map((legalCase) => (
                 <CasesItem
                   key={legalCase.id}
                   id={legalCase.id}
@@ -297,7 +291,6 @@ const CasesContainer = () => {
               ))}
             </div>
           )}
-          <Pagination page={page} totalPages={totalPages} onChange={setPage} />
         </>
       ) : (
         <EmptyState

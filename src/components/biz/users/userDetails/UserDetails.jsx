@@ -3,7 +3,7 @@ import { Button, Col, Form, Modal, Row } from 'react-bootstrap';
 import { initialUserForm } from '../newUser/NewUser.data';
 import { useForm } from '../../../services/hooks/useForm';
 import { formatDni, isDni, isEmail, isRequired } from '../../../services/validators/validators';
-import { ROLE_OPTIONS, ROLES } from '../../../services/consts/roles';
+import { ROLE_OPTIONS, ROLES, isAdmin } from '../../../services/consts/roles';
 import { AuthenticationContext } from '../../../services/auth/authentication.context';
 import { usersApi } from '../../../services/api/usersApi';
 import { useToast } from '../../../shared/toast/toast.context';
@@ -34,12 +34,25 @@ const validateUserForm = (values) => {
   return errors;
 };
 
-const UserDetails = ({ user, onEditUser, onFormClosed, fixedRole, entityLabel = 'usuario' }) => {
+const UserDetails = ({
+  user,
+  onEditUser,
+  onFormClosed,
+  fixedRole,
+  allowedRoles,
+  entityLabel = 'usuario',
+}) => {
   const { showToast } = useToast();
   const { user: currentUser } = useContext(AuthenticationContext);
 
-  const canEditRole =
-    !fixedRole && user?.role !== ROLES.SYSADMIN && currentUser?.role === ROLES.SYSADMIN;
+  const userIsAdmin = isAdmin(currentUser?.role);
+  const targetIsAdmin = isAdmin(user?.role);
+  const canEditRole = !fixedRole && !targetIsAdmin && userIsAdmin;
+
+  const roleOptions = useMemo(() => {
+    if (!allowedRoles) return ROLE_OPTIONS;
+    return ROLE_OPTIONS.filter((option) => allowedRoles.includes(option.value));
+  }, [allowedRoles]);
 
   const initialValues = useMemo(
     () => ({
@@ -195,7 +208,7 @@ const UserDetails = ({ user, onEditUser, onFormClosed, fixedRole, entityLabel = 
                     onChange={handleChange}
                     disabled={!canEditRole}
                   >
-                    {ROLE_OPTIONS.map((option) => (
+                    {roleOptions.map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
                       </option>

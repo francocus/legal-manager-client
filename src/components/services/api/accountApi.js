@@ -11,7 +11,11 @@ export const accountApi = {
     apiRequest('/auth/forgot-password', { method: 'POST', body: { email }, auth: false }),
 
   resetPassword: (token, newPassword) =>
-    apiRequest('/auth/reset-password', { method: 'POST', body: { token, newPassword }, auth: false }),
+    apiRequest('/auth/reset-password', {
+      method: 'POST',
+      body: { token, newPassword },
+      auth: false,
+    }),
 
   resendConfirmation: (email) =>
     apiRequest('/auth/resend-confirmation', { method: 'POST', body: { email }, auth: false }),

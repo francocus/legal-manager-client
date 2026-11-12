@@ -6,8 +6,7 @@ import { mapDocument, typeValueToEnum } from '../../biz/documents/Documents.data
 // only reach the backend through an explicit save, and removal is always a
 // logical deactivation (DELETE), never a physical one.
 export const documentsApi = {
-  getAll: async (caseId) =>
-    ((await apiRequest(`/document/case/${caseId}`)) ?? []).map(mapDocument),
+  getAll: async (caseId) => ((await apiRequest(`/document/case/${caseId}`)) ?? []).map(mapDocument),
 
   getById: async (id) => mapDocument(await apiRequest(`/document/${id}`)),
 

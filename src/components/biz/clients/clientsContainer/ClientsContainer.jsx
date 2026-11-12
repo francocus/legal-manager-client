@@ -6,20 +6,16 @@ import { AuthenticationContext } from '../../../services/auth/authentication.con
 import { useDashboardData } from '../../../services/data/dashboardData.context';
 import { usersApi } from '../../../services/api/usersApi';
 import { useToast } from '../../../shared/toast/toast.context';
-import { usePagination } from '../../../services/hooks/usePagination';
 import ConfirmDialog from '../../../shared/confirmDialog/ConfirmDialog';
 import { SkeletonRows } from '../../../shared/skeleton/Skeleton';
 import EmptyState from '../../../shared/emptyState/EmptyState';
-import Pagination from '../../../shared/pagination/Pagination';
 import NewUser from '../../users/newUser/NewUser';
 import UserDetails from '../../users/userDetails/UserDetails.jsx';
 import UserItem from '../../users/userItem/UserItem';
 import UsersSearch from '../../users/usersSearch/UsersSearch';
-import { ROLES } from '../../../services/consts/roles';
+import { ROLES, isAdmin } from '../../../services/consts/roles';
 import '../../users/users.css';
 import '../clients.css';
-
-const PAGE_SIZE = 10;
 
 const ClientsContainer = () => {
   const navigate = useNavigate();
@@ -32,7 +28,7 @@ const ClientsContainer = () => {
   const [clientToEdit, setClientToEdit] = useState(null);
   const [clientToDelete, setClientToDelete] = useState(null);
 
-  const isAdmin = currentUser?.role === ROLES.SYSADMIN;
+  const userIsAdmin = isAdmin(currentUser?.role);
 
   const handleOpenNewClient = () => {
     setClientToEdit(null);
@@ -49,9 +45,9 @@ const ClientsContainer = () => {
   const handleAddClient = async (form) => {
     await usersApi.create({ ...form, role: ROLES.CLIENTE });
     // GET /user is admins-only and this view is reachable by every role, so
-    // only the sysadmin can afford the users refresh (lawyers would 403).
+    // only the admin can afford the users refresh (lawyers would 403).
     await refreshClients();
-    if (isAdmin) {
+    if (userIsAdmin) {
       await refreshUsers();
     }
   };
@@ -59,7 +55,7 @@ const ClientsContainer = () => {
   const handleEditClient = async (form) => {
     await usersApi.updateWithRoleFields(form.id, { ...form, role: ROLES.CLIENTE }, clientToEdit);
     await refreshClients();
-    if (isAdmin) {
+    if (userIsAdmin) {
       await refreshUsers();
     }
   };
@@ -68,7 +64,7 @@ const ClientsContainer = () => {
     try {
       await usersApi.remove(id);
       await refreshClients();
-      if (isAdmin) {
+      if (userIsAdmin) {
         await refreshUsers();
       }
       setClientToDelete(null);
@@ -90,21 +86,19 @@ const ClientsContainer = () => {
       (client.dni && String(client.dni).toLowerCase().includes(lowerSearch)),
   );
 
-  const { page, setPage, totalPages, pageItems } = usePagination(filteredClients, PAGE_SIZE);
-
   return (
     <section className="clients-panel">
       <header className="clients-header">
         <div>
           <p className="app-page__eyebrow">Clientes</p>
-          <h2>{isAdmin ? 'Gestión de clientes' : 'Mis clientes'}</h2>
+          <h2>{userIsAdmin ? 'Gestión de clientes' : 'Mis clientes'}</h2>
         </div>
 
         <div className="clients-header__controls">
           <div className="users-search-wrap">
             <UsersSearch onSearch={setSearchClient} />
           </div>
-          {isAdmin ? (
+          {userIsAdmin ? (
             <Button
               type="button"
               className="app-button app-button--primary"
@@ -118,7 +112,7 @@ const ClientsContainer = () => {
 
       {error ? <Alert variant="danger">{error}</Alert> : null}
 
-      {isAdmin && showNewClient ? (
+      {userIsAdmin && showNewClient ? (
         <NewUser
           onAddUser={handleAddClient}
           onFormClosed={handleCloseForms}
@@ -127,7 +121,7 @@ const ClientsContainer = () => {
         />
       ) : null}
 
-      {isAdmin && clientToEdit ? (
+      {userIsAdmin && clientToEdit ? (
         <UserDetails
           user={clientToEdit}
           onEditUser={handleEditClient}
@@ -154,68 +148,62 @@ const ClientsContainer = () => {
           title="No se encontraron clientes"
           message="Probá con otro término de búsqueda."
         />
-      ) : isAdmin ? (
-        <>
-          <div className="users-table-wrap">
-            <table className="users-table">
-              <thead>
-                <tr>
-                  <th>Cliente / DNI</th>
-                  <th>Rol</th>
-                  <th>Contacto</th>
-                  <th>Estado</th>
-                  <th className="users-table__actions-head">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pageItems.map((client) => (
-                  <UserItem
-                    key={client.id}
-                    id={client.id}
-                    name={client.name}
-                    dni={client.dni}
-                    email={client.email}
-                    role={client.role}
-                    active={client.active}
-                    onSelect={() => navigate(`/dashboard/clients/${client.id}`)}
-                    onEdit={(selectedClient) => {
+      ) : userIsAdmin ? (
+        <div className="users-table-wrap">
+          <table className="users-table">
+            <thead>
+              <tr>
+                <th>Cliente / DNI</th>
+                <th>Rol</th>
+                <th>Contacto</th>
+                <th>Estado</th>
+                <th className="users-table__actions-head">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredClients.map((client) => (
+                <UserItem
+                  key={client.id}
+                  id={client.id}
+                  name={client.name}
+                  dni={client.dni}
+                  email={client.email}
+                  role={client.role}
+                  active={client.active}
+                  onSelect={() => navigate(`/dashboard/clients/${client.id}`)}
+                  onEdit={(selectedClient) => {
+                    setShowNewClient(false);
+                    setClientToDelete(null);
+                    setClientToEdit(selectedClient);
+                  }}
+                  onDelete={(id) => {
+                    const selectedClient = filteredClients.find((entry) => entry.id === id);
+                    if (selectedClient) {
                       setShowNewClient(false);
-                      setClientToDelete(null);
-                      setClientToEdit(selectedClient);
-                    }}
-                    onDelete={(id) => {
-                      const selectedClient = filteredClients.find((entry) => entry.id === id);
-                      if (selectedClient) {
-                        setShowNewClient(false);
-                        setClientToEdit(null);
-                        setClientToDelete(selectedClient);
-                      }
-                    }}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <Pagination page={page} totalPages={totalPages} onChange={setPage} />
-        </>
+                      setClientToEdit(null);
+                      setClientToDelete(selectedClient);
+                    }
+                  }}
+                />
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : (
-        <>
-          <div className="app-grid-cards">
-            {pageItems.map((client) => (
-              <Link key={client.id} to={`/dashboard/clients/${client.id}`} className="client-card">
-                <span className="client-card__avatar">
-                  <UserRound size={22} />
-                </span>
-                <span className="client-card__name">{client.name}</span>
-                <span className="client-card__meta">DNI {client.dni}</span>
-                <span className="client-card__meta">
-                  <Mail size={14} /> {client.email}
-                </span>
-              </Link>
-            ))}
-          </div>
-          <Pagination page={page} totalPages={totalPages} onChange={setPage} />
-        </>
+        <div className="app-grid-cards">
+          {filteredClients.map((client) => (
+            <Link key={client.id} to={`/dashboard/clients/${client.id}`} className="client-card">
+              <span className="client-card__avatar">
+                <UserRound size={22} />
+              </span>
+              <span className="client-card__name">{client.name}</span>
+              <span className="client-card__meta">DNI {client.dni}</span>
+              <span className="client-card__meta">
+                <Mail size={14} /> {client.email}
+              </span>
+            </Link>
+          ))}
+        </div>
       )}
     </section>
   );

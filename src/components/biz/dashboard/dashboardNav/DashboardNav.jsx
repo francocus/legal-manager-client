@@ -2,7 +2,7 @@ import { NavLink } from 'react-router';
 import { ROLES } from '../../../services/consts/roles';
 
 const NAV_ITEMS = {
-  [ROLES.SYSADMIN]: [
+  [ROLES.ADMIN]: [
     { to: '/dashboard/calendar', label: 'Calendario' },
     { to: '/dashboard/appointments', label: 'Turnos' },
     { to: '/dashboard/cases', label: 'Expedientes' },

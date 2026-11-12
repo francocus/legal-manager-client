@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import { getStatusClass, getStatusLabel } from '../../cases/Cases.data';
+import { isAdmin } from '../../../services/consts/roles';
 
 const CasesItem = ({
   currentUser,
@@ -13,8 +14,8 @@ const CasesItem = ({
   onEdit,
   onDelete,
 }) => {
-  const canEdit = currentUser?.role === 'sysadmin' || currentUser?.role === 'abogado';
-  const canDelete = currentUser?.role === 'sysadmin';
+  const canEdit = isAdmin(currentUser?.role) || currentUser?.role === 'abogado';
+  const canDelete = isAdmin(currentUser?.role);
 
   return (
     <article className="cases-item">

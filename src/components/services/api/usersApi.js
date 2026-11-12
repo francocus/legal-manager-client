@@ -50,7 +50,7 @@ export const usersApi = {
   create: (payload) => {
     const body = toPersonBody(payload);
 
-    if (payload?.role === ROLES.SYSADMIN) {
+    if (payload?.role === ROLES.ADMIN || payload?.role === 'sysadmin') {
       return apiRequest('/user/admin', { method: 'POST', body });
     }
 

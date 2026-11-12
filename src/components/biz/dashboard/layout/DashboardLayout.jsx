@@ -9,7 +9,7 @@ import { ROLES } from '../../../services/consts/roles';
 import './DashboardLayout.css';
 
 const EYEBROWS = {
-  [ROLES.SYSADMIN]: 'Panel de Administración',
+  [ROLES.ADMIN]: 'Panel de Administración',
   [ROLES.ABOGADO]: 'Panel del estudio',
   [ROLES.CLIENTE]: 'Mi panel',
 };
@@ -35,7 +35,9 @@ const DashboardLayout = () => {
           <div className="dashboard-actions">
             <NavLink
               to="/dashboard/home"
-              className={({ isActive }) => `app-icon-button dashboard-home${isActive ? ' is-active' : ''}`}
+              className={({ isActive }) =>
+                `app-icon-button dashboard-home${isActive ? ' is-active' : ''}`
+              }
               aria-label="Inicio"
               title="Inicio"
             >

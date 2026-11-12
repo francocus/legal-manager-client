@@ -23,12 +23,18 @@ const validateUserForm = (values) => {
   return errors;
 };
 
-const NewUser = ({ onAddUser, onFormClosed, fixedRole, entityLabel = 'usuario' }) => {
+const NewUser = ({ onAddUser, onFormClosed, fixedRole, allowedRoles, entityLabel = 'usuario' }) => {
   const { showToast } = useToast();
-  const initialValues = useMemo(
-    () => ({ ...initialUserForm, ...(fixedRole ? { role: fixedRole } : {}) }),
-    [fixedRole],
-  );
+
+  const defaultRole =
+    fixedRole || (allowedRoles && allowedRoles.length > 0 ? allowedRoles[0] : initialUserForm.role);
+
+  const initialValues = useMemo(() => ({ ...initialUserForm, role: defaultRole }), [defaultRole]);
+
+  const roleOptions = useMemo(() => {
+    if (!allowedRoles) return ROLE_OPTIONS;
+    return ROLE_OPTIONS.filter((option) => allowedRoles.includes(option.value));
+  }, [allowedRoles]);
 
   const { values, errors, submitting, setValue, handleChange, handleSubmit } = useForm({
     initialValues,
@@ -148,7 +154,7 @@ const NewUser = ({ onAddUser, onFormClosed, fixedRole, entityLabel = 'usuario' }
                 <Form.Group className="mb-3" controlId="role">
                   <Form.Label>Rol</Form.Label>
                   <Form.Select name="role" value={values.role} onChange={handleChange}>
-                    {ROLE_OPTIONS.map((option) => (
+                    {roleOptions.map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
                       </option>

@@ -294,6 +294,7 @@
   text-transform: uppercase;
 }
 
+.user-chip--role.is-admin,
 .user-chip--role.is-sysadmin {
   background: rgba(217, 93, 93, 0.22);
   border-color: rgba(217, 93, 93, 0.42);
@@ -775,6 +776,7 @@ body.users-modal-open {
   font-weight: 800 !important;
 }
 
+[data-bs-theme='light'] .user-chip--role.is-admin,
 [data-bs-theme='light'] .user-chip--role.is-sysadmin {
   background: rgba(217, 93, 93, 0.15) !important;
   border-color: rgba(217, 93, 93, 0.4) !important;

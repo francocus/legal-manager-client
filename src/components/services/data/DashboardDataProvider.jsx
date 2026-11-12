@@ -11,7 +11,8 @@ import { mapAppointment } from '../../biz/appointments/Appointments.data';
 // Backend authorization (UserController): /user/lawyers is open to every
 // authenticated role, /user/clients requires admin-or-lawyer and /user is
 // admin-only, so the bulk load fetches clients only for those roles.
-const canFetchClients = (role) => role === ROLES.SYSADMIN || role === ROLES.ABOGADO;
+const canFetchClients = (role) =>
+  role === ROLES.ADMIN || role === ROLES.ABOGADO || role === 'sysadmin';
 
 // Resolver maps keyed by Guid ids: userNames[id] -> display name and
 // caseNumberById[caseId] -> case number. The session user is always included
@@ -75,9 +76,7 @@ export const DashboardDataProvider = ({ children }) => {
     const rawAppointments = await appointmentsApi.getAllRaw();
     setAppointments(
       sortAppointments(
-        rawAppointments.map((appointment) =>
-          mapAppointment(appointment, nameById, caseNumberById),
-        ),
+        rawAppointments.map((appointment) => mapAppointment(appointment, nameById, caseNumberById)),
       ),
     );
   }, [nameById, caseNumberById]);
@@ -99,7 +98,7 @@ export const DashboardDataProvider = ({ children }) => {
 
     try {
       // Fetch the raw dto arrays for every role-fetchable resource in one
-      // parallel batch (users only for sysadmin), build the resolver maps from
+      // parallel batch (users only for admin), build the resolver maps from
       // those lists, then map each resource exactly once.
       const [rawCases, rawAppointments, fetchedLawyers, fetchedClients, fetchedUsers] =
         await Promise.all([
@@ -107,7 +106,7 @@ export const DashboardDataProvider = ({ children }) => {
           appointmentsApi.getAllRaw(),
           usersApi.getLawyers(),
           canFetchClients(role) ? usersApi.getClients() : [],
-          role === ROLES.SYSADMIN ? usersApi.getAll() : [],
+          role === ROLES.ADMIN || role === 'sysadmin' ? usersApi.getAll() : [],
         ]);
 
       const bulkNameById = buildNameById([fetchedLawyers, fetchedClients, fetchedUsers], user);

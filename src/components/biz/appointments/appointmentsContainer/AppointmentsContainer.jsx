@@ -5,7 +5,6 @@ import { AuthenticationContext } from '../../../services/auth/authentication.con
 import { useDashboardData } from '../../../services/data/dashboardData.context';
 import { appointmentsApi } from '../../../services/api/appointmentsApi';
 import { useToast } from '../../../shared/toast/toast.context';
-import { usePagination } from '../../../services/hooks/usePagination';
 import { normalizeText } from '../../calendar/Calendar.data.js';
 import AppointmentDetails from '../appointmentDetails/AppointmentDetails';
 import AppointmentItem from '../appointmentItem/AppointmentItem';
@@ -14,11 +13,8 @@ import NewAppointment from '../newAppointment/NewAppointment';
 import ConfirmDialog from '../../../shared/confirmDialog/ConfirmDialog';
 import { SkeletonRows } from '../../../shared/skeleton/Skeleton';
 import EmptyState from '../../../shared/emptyState/EmptyState';
-import Pagination from '../../../shared/pagination/Pagination';
-import { ROLES } from '../../../services/consts/roles';
+import { ROLES, isAdmin } from '../../../services/consts/roles';
 import '../appointments.css';
-
-const PAGE_SIZE = 8;
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'Todos los estados' },
@@ -42,7 +38,7 @@ const AppointmentsContainer = () => {
   const [appointmentToDelete, setAppointmentToDelete] = useState(null);
   const [appointmentToCancel, setAppointmentToCancel] = useState(null);
 
-  const isSysadmin = user?.role === ROLES.SYSADMIN;
+  const userIsAdmin = isAdmin(user?.role);
 
   // Appointment lifecycle: confirm/cancel are dedicated PATCH endpoints, and
   // 'pendiente'/'finalizado' have no update endpoint (the backend computes
@@ -122,18 +118,16 @@ const AppointmentsContainer = () => {
       )
     : roleFilteredAppointments;
 
-  const { page, setPage, totalPages, pageItems } = usePagination(filteredAppointments, PAGE_SIZE);
-
   return (
     <section
-      className={`appointments-panel ${isSysadmin ? 'appointments-panel--admin' : ''}${filteredAppointments.length > 0 ? ' has-scroll-content' : ''}`}
+      className={`appointments-panel ${userIsAdmin ? 'appointments-panel--admin' : ''}${filteredAppointments.length > 0 ? ' has-scroll-content' : ''}`}
     >
       <div className="appointments-toolbar">
         <div>
           <p className="appointments-toolbar__eyebrow">
-            {isSysadmin ? 'Gestión de turnos' : 'Visualizá y gestioná los turnos'}
+            {userIsAdmin ? 'Gestión de turnos' : 'Visualizá y gestioná los turnos'}
           </p>
-          <h2>{isSysadmin ? 'Gestión de turnos' : 'Turnos programados'}</h2>
+          <h2>{userIsAdmin ? 'Gestión de turnos' : 'Turnos programados'}</h2>
         </div>
 
         <div className="appointments-toolbar__actions">
@@ -179,9 +173,9 @@ const AppointmentsContainer = () => {
         />
       ) : (
         <>
-          {!isSysadmin && (
+          {!userIsAdmin && (
             <div className="appointments-cards-grid">
-              {pageItems.map((appointment) => (
+              {filteredAppointments.map((appointment) => (
                 <AppointmentDetails
                   key={appointment.id}
                   appointment={appointment}
@@ -194,7 +188,7 @@ const AppointmentsContainer = () => {
             </div>
           )}
 
-          {isSysadmin && (
+          {userIsAdmin && (
             <div className="appointments-table-wrap">
               <table className="appointments-table">
                 <thead>
@@ -207,7 +201,7 @@ const AppointmentsContainer = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {pageItems.map((appointment) => (
+                  {filteredAppointments.map((appointment) => (
                     <AppointmentItem
                       key={appointment.id}
                       appointment={appointment}
@@ -220,8 +214,6 @@ const AppointmentsContainer = () => {
               </table>
             </div>
           )}
-
-          <Pagination page={page} totalPages={totalPages} onChange={setPage} />
         </>
       )}
 
