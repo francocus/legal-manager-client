@@ -299,7 +299,8 @@ a {
    color-scheme (Bootstrap switches it per data-bs-theme); these pins keep
    the rows on the app palette in both themes. They sit in ui.css, which
    loads after every module stylesheet, so the older per-module dark pins
-   lose here in light mode. */
+   lose here in light mode. They also serve as the fallback for browsers
+   without the customizable select below. */
 [data-bs-theme='dark'] .form-select option,
 [data-bs-theme='dark'] select option {
   background: #0a0d12;
@@ -310,6 +311,73 @@ a {
 [data-bs-theme='light'] select option {
   background: #ffffff;
   color: #0a0e14;
+}
+
+/* Customizable select (Chromium/Edge 135+): with base-select the open picker
+   renders in-page, so it takes the app's rounded glass look instead of the
+   OS popup. The picker needs its own appearance opt-in to leave the UA look.
+   Browsers without support drop these declarations and keep the themed
+   native popup above. The attribute selector out-specifies every per-module
+   appearance:none so every select opts in. */
+[data-bs-theme] select,
+select::picker(select) {
+  appearance: base-select;
+}
+
+select::picker-icon {
+  display: none;
+}
+
+select::picker(select) {
+  padding: 6px;
+  border: 1px solid rgba(170, 195, 220, 0.22);
+  border-radius: 16px;
+  background: #0a0d12;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+}
+
+[data-bs-theme='dark'] select option {
+  padding: 9px 14px;
+  border-radius: 10px;
+  background: transparent;
+  color: #f5f8fb;
+}
+
+[data-bs-theme='dark'] select option:hover,
+[data-bs-theme='dark'] select option:focus {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+[data-bs-theme='dark'] select option:checked {
+  background: rgba(120, 160, 210, 0.16);
+  font-weight: 700;
+}
+
+[data-bs-theme='light'] select::picker(select) {
+  border-color: rgba(15, 23, 32, 0.14);
+  background: #ffffff;
+  box-shadow: 0 18px 40px rgba(15, 23, 32, 0.16);
+}
+
+[data-bs-theme='light'] select option {
+  padding: 9px 14px;
+  border-radius: 10px;
+  background: transparent;
+  color: #0a0e14;
+}
+
+[data-bs-theme='light'] select option:hover,
+[data-bs-theme='light'] select option:focus {
+  background: rgba(15, 23, 32, 0.05);
+}
+
+[data-bs-theme='light'] select option:checked {
+  background: rgba(15, 23, 32, 0.08);
+  font-weight: 700;
+}
+
+option::checkmark {
+  display: none;
 }
 
 [data-bs-theme='light'] .form-select {
