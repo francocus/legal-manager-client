@@ -346,6 +346,25 @@ select::picker(select) {
   }
 }
 
+/* Mirror the app scrollbar (index.css) into the picker: the global webkit
+   rules cannot reach a top-layer pseudo-element, so long pickers showed the
+   classic OS bar with arrow buttons. Standard scrollbar-color/width styles
+   the picker too — the webkit pseudo stack (picker + scrollbar) parses in
+   Chromium but is invalid per the selector grammar, so lightningcss's minify
+   rejects it. The reveal class (html.is-scrolling) cannot drive the picker
+   either — top-layer scroll events never reach the document capture
+   listener — so the thumb stays quietly visible at the same color the page
+   scrollbar uses while scrolling. Unknown pseudo selectors drop the whole
+   block in non-supporting browsers, which keep the native popup anyway. */
+select::picker(select) {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+[data-bs-theme='light'] select::picker(select) {
+  scrollbar-color: rgba(15, 23, 32, 0.18) transparent;
+}
+
 select::picker-icon {
   display: none;
 }
