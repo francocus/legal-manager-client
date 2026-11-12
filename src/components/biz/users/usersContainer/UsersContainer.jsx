@@ -16,9 +16,12 @@ import '../users.css';
 
 const STAFF_ROLES = [ROLES.ADMIN, ROLES.ABOGADO];
 
-const STAFF_ROLE_OPTIONS = [
+// Self-registered clients are promoted to lawyer from this view (backend
+// /user/{id}/role), so they stay listed and filterable alongside the staff.
+const USER_ROLE_OPTIONS = [
   { value: ROLES.ADMIN, label: 'Administrador' },
   { value: ROLES.ABOGADO, label: 'Abogado' },
+  { value: ROLES.CLIENTE, label: 'Cliente' },
 ];
 
 const UsersContainer = () => {
@@ -84,9 +87,7 @@ const UsersContainer = () => {
     }
   };
 
-  const staffUsers = users.filter((u) => u.role !== ROLES.CLIENTE && u.role !== 'cliente');
-
-  const filteredUsers = staffUsers.filter((user) => {
+  const filteredUsers = users.filter((user) => {
     if (roleFilter !== 'all' && user.role !== roleFilter) {
       return false;
     }
@@ -114,7 +115,7 @@ const UsersContainer = () => {
             aria-label="Filtrar por rol"
           >
             <option value="all">Todos los roles</option>
-            {STAFF_ROLE_OPTIONS.map((option) => (
+            {USER_ROLE_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
@@ -156,7 +157,6 @@ const UsersContainer = () => {
           user={userToEdit}
           onEditUser={handleEditUser}
           onFormClosed={handleCloseForms}
-          allowedRoles={STAFF_ROLES}
         />
       )}
 
