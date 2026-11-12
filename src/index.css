@@ -144,13 +144,28 @@ a {
   background: transparent;
 }
 
+/* The thumb only paints while .is-scrolling is on <html> (set by
+   scrollActivity.js while anything scrolls, dropped 1s after the last
+   event). The 6px gutter stays reserved, so hiding never shifts layout.
+   Hovering the strip still reveals the thumb, so the bar stays grabbable
+   with the mouse even while idle. */
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.18);
+  background: transparent;
   border-radius: 999px;
   border: none;
 }
 
+html.is-scrolling::-webkit-scrollbar-thumb,
+html.is-scrolling ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+}
+
 ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.32);
+}
+
+html.is-scrolling::-webkit-scrollbar-thumb:hover,
+html.is-scrolling ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.32);
 }
 
@@ -164,12 +179,22 @@ a {
 }
 
 [data-bs-theme='light'] ::-webkit-scrollbar-thumb {
-  background: rgba(15, 23, 32, 0.18);
+  background: transparent;
   border-radius: 999px;
   border: none;
 }
 
+html[data-bs-theme='light'].is-scrolling::-webkit-scrollbar-thumb,
+html[data-bs-theme='light'].is-scrolling ::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 32, 0.18);
+}
+
 [data-bs-theme='light'] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 23, 32, 0.32);
+}
+
+html[data-bs-theme='light'].is-scrolling::-webkit-scrollbar-thumb:hover,
+html[data-bs-theme='light'].is-scrolling ::-webkit-scrollbar-thumb:hover {
   background: rgba(15, 23, 32, 0.32);
 }
 
