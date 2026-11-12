@@ -1,6 +1,6 @@
 // Scroll activity marker: while anything in the document scrolls (the window
 // or any inner overflow container), <html> carries .is-scrolling so the styled
-// scrollbars show their thumb; one second after the last scroll event the
+// scrollbars show their thumb; half a second after the last scroll event the
 // class drops and the scrollbars fade out of view.
 //
 // One capture+passive listener on document catches every scroll target (scroll
@@ -12,7 +12,7 @@ let started = false;
 
 export const SCROLL_ACTIVITY_CLASS = 'is-scrolling';
 
-export function initScrollActivity({ idleMs = 1000 } = {}) {
+export function initScrollActivity({ idleMs = 500 } = {}) {
   if (started || typeof document === 'undefined') return;
   started = true;
 
