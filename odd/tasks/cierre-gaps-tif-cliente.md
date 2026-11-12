@@ -43,13 +43,25 @@ renombrado sysadmin→admin). Rama de trabajo: `feat/cierre-gaps-tif-cliente`.
 
 | # | Tarea | Estado | Commit (evidencia) |
 |---|-------|--------|--------------------|
-| 1 | Migración httpClient → axios + dependencia | pendiente | |
-| 2 | Guard de rol en /clients (App.jsx) | pendiente | |
-| 3 | Toast de auto-baja (UsersContainer) | pendiente | |
-| 4 | Chips de documentos al contrato confirm-first | pendiente | |
-| 5 | Copy "Dar de baja" en ConfirmDialogs | pendiente | |
-| 6 | THEME_KEY usada por ThemeContextProvider | pendiente | |
-| 7 | Corrección doc confirm-first | pendiente | |
+| 1 | Migración httpClient → axios + dependencia | done | `951f8c2` |
+| 2 | Guard de rol en /clients y /clients/:id (App.jsx) | done | `ca872ea` |
+| 3 | Toast de auto-baja (UsersContainer) | done | `ca872ea` |
+| 4 | Chips + labels de documentos al contrato confirm-first | done | `7360cfe` |
+| 5 | Copy "Dar de baja" en ConfirmDialogs | done | `5cccbf8` |
+| 6 | THEME_KEY usada por ThemeContextProvider | done | `519f312` |
+| 7 | Corrección doc confirm-first (+ sección 3) | done | `ffe5f47` |
+
+## Extras de la implementación
+
+- Bug encontrado al verificar contra el backend (`master`, `JsonStringEnumConverter`):
+  los dtos de documentos llegan con `type` como **string** ("Escrito"/"Generado") y el
+  cliente mapeaba ints (0-4), así que el listado mostraba tipo "—" para todos.
+  Corregido en `getTypeLabel` + predicado del chip (compatible con ambos shapes;
+  la subida sigue enviando ints, aceptados por el converter).
+- Verificación: `npm install` OK, `npm run lint` limpio, `npm run build` OK
+  (warnings preexistentes de chunk size). Smoke contra la API de Azure no pudo
+  ejecutarse (cold start / timeout); pendiente probar login + documentos desde el
+  navegador con la API levantada.
 
 Verificación del padre: `npm install`, `npm run lint`, `npm run build`, y spot-read
 del diff de `httpClient.js`. Commits por unidad de trabajo (Conventional Commits en
