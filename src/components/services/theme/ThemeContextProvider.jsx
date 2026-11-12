@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { ThemeContext } from './theme.context';
 import { DARK_THEME, LIGHT_THEME } from '../consts/themeConsts';
+import { THEME_KEY } from '../consts/storageKeys';
 
 const getInitialTheme = () => {
-  const stored = localStorage.getItem('theme');
+  const stored = localStorage.getItem(THEME_KEY);
   if (stored === DARK_THEME || stored === LIGHT_THEME) return stored;
 
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? DARK_THEME : LIGHT_THEME;
@@ -14,7 +15,7 @@ export const ThemeContextProvider = ({ children }) => {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-bs-theme', theme);
-    localStorage.setItem('theme', theme);
+    localStorage.setItem(THEME_KEY, theme);
   }, [theme]);
 
   const toggleTheme = () => {
