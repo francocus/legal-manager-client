@@ -130,6 +130,14 @@ renombrado sysadmin→admin). Rama de trabajo: `feat/cierre-gaps-tif-cliente`.
   que usa la barra de página mientras scrolleá).
   Verificado con CDP en harness con 40 opciones: scroll del picker, thumb en
   reposo y light/dark.
+- Placeholders light unificados al valor de "Buscar turno"
+  (rgba(60,71,84,0.55) weight 400): el global `[data-bs-theme='light']
+  .form-control::placeholder` de dashboard.css llevaba #5b6675 sólido con
+  !important y dejaba "Buscar expediente/cliente/usuario" más presentes que
+  la referencia. Borrado además el selector muerto de users.css (`input
+  .users-search...`, inputs no anidan). Dark sin cambios (auditoría: 0.5 vs
+  0.44 preexistente, el usuario lo considera bien). Verificado con CDP
+  midiendo getComputedStyle(el,'::placeholder') en las 4 vistas.
 - Idle de scrollbars a 0.5s a pedido del usuario (commit `6bb01aa`).
 
 - Bug encontrado al verificar contra el backend (`master`, `JsonStringEnumConverter`):
