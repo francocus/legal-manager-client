@@ -53,6 +53,10 @@ renombrado sysadmin→admin). Rama de trabajo: `feat/cierre-gaps-tif-cliente`.
 
 ## Extras de la implementación
 
+- UX reportada por el usuario: la pantalla Recuperar contraseña (vista del
+  formulario) no tenía salida al login. Agregado el enlace "Volver al inicio de
+  sesión" con el patrón auth-switch-text/auth-link (commit `45918c9`).
+
 - Bug encontrado al verificar contra el backend (`master`, `JsonStringEnumConverter`):
   los dtos de documentos llegan con `type` como **string** ("Escrito"/"Generado") y el
   cliente mapeaba ints (0-4), así que el listado mostraba tipo "—" para todos.
