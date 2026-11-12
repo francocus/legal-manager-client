@@ -570,7 +570,7 @@
 
 .cases-form__button:hover,
 .cases-form__button:focus-visible {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
 .cases-form__button:focus-visible {
@@ -599,7 +599,7 @@
   gap: 0.55rem;
   background: linear-gradient(135deg, #eef4fa, #b9cee2);
   color: #07090d;
-  font-weight: 900;
+  font-weight: 800;
   font-size: 1rem;
   line-height: 1;
   white-space: nowrap;
@@ -610,7 +610,7 @@
 .cases-form__button--primary:focus-visible {
   background: linear-gradient(135deg, #f8fbfe, #cadce9);
   color: #07090d;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
 .cases-modal__content .modal-header,
