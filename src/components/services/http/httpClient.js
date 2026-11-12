@@ -1,7 +1,12 @@
+import axios from 'axios';
 import { API_URL } from '../consts/apiConsts';
 import { TOKEN_KEY, USER_KEY, SESSION_EXPIRED_KEY } from '../consts/storageKeys';
 
 const DEFAULT_ERROR_MESSAGE = 'No se pudo completar la operación.';
+
+// Single shared instance: every call travels through the same base URL, so
+// the api/ layer keeps dealing only with backend-relative paths.
+const client = axios.create({ baseURL: API_URL });
 
 const readToken = () => {
   try {
@@ -26,68 +31,67 @@ const clearExpiredSession = () => {
   window.location.replace('/login');
 };
 
-export const getErrorMessage = async (response) => {
-  try {
-    const raw = await response.text();
+// Resolves the human-readable backend error message. Historically this
+// awaited a fetch Response body; since the move to axios it receives the
+// rejected axios error instead (error.response.data may be an object, e.g.
+// an RFC 7807 ProblemDetails carrying message/title/detail, or plain text).
+export const getErrorMessage = (error) => {
+  const payload = error?.response?.data;
 
-    if (!raw) {
-      return DEFAULT_ERROR_MESSAGE;
-    }
-
-    try {
-      const payload = JSON.parse(raw);
-      return payload?.message ?? payload?.title ?? payload?.detail ?? DEFAULT_ERROR_MESSAGE;
-    } catch {
-      return raw;
-    }
-  } catch {
+  if (payload == null) {
     return DEFAULT_ERROR_MESSAGE;
   }
+
+  if (typeof payload === 'string') {
+    return payload || DEFAULT_ERROR_MESSAGE;
+  }
+
+  return payload?.message ?? payload?.title ?? payload?.detail ?? DEFAULT_ERROR_MESSAGE;
 };
 
-// A FormData body travels as multipart: the browser supplies the
-// Content-Type (including the boundary), so no explicit header is added.
+// Single request path for the whole app: plain objects are JSON-serialized
+// by axios (which also sets the JSON Content-Type), while FormData bodies
+// pass through untouched so the browser supplies the multipart Content-Type
+// with the boundary. 204 or an empty payload resolves to null.
 export const apiRequest = async (
   path,
   { method = 'GET', body, auth = true, headers = {} } = {},
 ) => {
-  const finalHeaders = { ...headers };
-  const bodyIsFormData = body instanceof FormData;
-
-  if (body !== undefined && !bodyIsFormData) {
-    finalHeaders['Content-Type'] = 'application/json';
-  }
+  const requestHeaders = { ...headers };
 
   if (auth) {
     const token = readToken();
     if (token) {
-      finalHeaders.Authorization = `Bearer ${token}`;
+      requestHeaders.Authorization = `Bearer ${token}`;
     }
   }
 
-  const response = await fetch(`${API_URL}${path}`, {
-    method,
-    headers: finalHeaders,
-    body: bodyIsFormData ? body : body !== undefined ? JSON.stringify(body) : undefined,
-  });
+  try {
+    const response = await client.request({
+      url: path,
+      method,
+      headers: requestHeaders,
+      data: body,
+    });
 
-  if (!response.ok) {
+    if (response.status === 204) {
+      return null;
+    }
+
+    // Numbers and booleans stay falsy but valid payloads; only a genuinely
+    // empty body maps to null, matching the old text-based parse.
+    const data = response.data;
+    return data === '' || data == null ? null : data;
+  } catch (error) {
     // Expired/invalid JWT: clean up and bounce before surfacing the error.
     // 403 is a permissions issue, not a session issue, so it keeps the plain
     // error flow. The redirect is already scheduled when the caller sees it.
-    if (auth && response.status === 401) {
+    if (auth && error?.response?.status === 401) {
       clearExpiredSession();
     }
 
-    throw new Error(await getErrorMessage(response));
+    throw new Error(getErrorMessage(error));
   }
-
-  if (response.status === 204) {
-    return null;
-  }
-
-  const raw = await response.text();
-  return raw ? JSON.parse(raw) : null;
 };
 
 // Binary responses (document downloads) need the raw body instead of a JSON
@@ -104,18 +108,21 @@ export const apiDownload = async (path, { auth = true } = {}) => {
     }
   }
 
-  const response = await fetch(`${API_URL}${path}`, { headers });
+  try {
+    // responseType 'blob' bypasses axios' JSON transform, so the raw file
+    // arrives intact for the caller to hand to the browser.
+    const response = await client.get(path, { headers, responseType: 'blob' });
 
-  if (!response.ok) {
-    if (auth && response.status === 401) {
+    return {
+      blob: response.data,
+      fileName:
+        response.headers?.['content-disposition']?.match(/filename="(.+)"/)?.[1] ?? null,
+    };
+  } catch (error) {
+    if (auth && error?.response?.status === 401) {
       clearExpiredSession();
     }
-    throw new Error(await getErrorMessage(response));
-  }
 
-  const blob = await response.blob();
-  return {
-    blob,
-    fileName: response.headers.get('content-disposition')?.match(/filename="(.+)"/)?.[1] ?? null,
-  };
+    throw new Error(getErrorMessage(error));
+  }
 };
