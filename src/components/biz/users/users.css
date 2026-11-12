@@ -155,14 +155,20 @@
 }
 
 .users-table-wrap {
-  overflow: hidden;
+  /* Internal scroll (app scrollbar) instead of clip: long lists (clients,
+     users) were unreachable below the fold and the page got a stray
+     vertical jiggle from the clipped panel. */
+  overflow: auto;
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.04);
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 260px);
+  /* 288 = nav (91) + card bottom padding (48) + panel padding around the
+     table (141 fixed + 56 below): anything smaller left the page ~20px
+     taller than the viewport, so <html> always scrolled a little. */
+  max-height: calc(100vh - 288px);
 }
 
 .users-table thead {

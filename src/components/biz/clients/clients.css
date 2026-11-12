@@ -3,6 +3,16 @@
   padding: clamp(20px, 3vw, 36px) clamp(24px, 4vw, 48px) clamp(32px, 5vw, 56px);
 }
 
+/* The clients panel carries ~18px more fixed chrome than the users panel
+   (padding-top 36 vs none, plus its own header), so the shared table budget
+   (users.css, 100vh - 288px) leaves the page ~17px taller than the viewport
+   and <html> always scrolled a little. Trim the table budget here to match
+   this panel's real overhead; specificity beats the shared rule regardless
+   of stylesheet order. */
+.clients-panel .users-table-wrap {
+  max-height: calc(100vh - 306px);
+}
+
 .clients-header {
   display: flex;
   align-items: flex-end;
