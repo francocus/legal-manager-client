@@ -19,6 +19,7 @@ import CasePage from './components/biz/cases/casePage/CasePage.jsx';
 import ClientsContainer from './components/biz/clients/clientsContainer/ClientsContainer.jsx';
 import ClientPage from './components/biz/clients/clientPage/ClientPage.jsx';
 import UsersContainer from './components/biz/users/usersContainer/UsersContainer.jsx';
+import TrashContainer from './components/biz/trash/trashContainer/TrashContainer.jsx';
 import Profile from './components/biz/profile/Profile.jsx';
 import CalendarContainer from './components/biz/calendar/calendarContainer/CalendarContainer.jsx';
 
@@ -72,6 +73,14 @@ function App() {
             element={
               <Protected allowedRoles={[ROLES.ADMIN]}>
                 <UsersContainer />
+              </Protected>
+            }
+          />
+          <Route
+            path="papelera"
+            element={
+              <Protected allowedRoles={[ROLES.ADMIN]}>
+                <TrashContainer />
               </Protected>
             }
           />

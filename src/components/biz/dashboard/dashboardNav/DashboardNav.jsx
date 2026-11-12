@@ -8,6 +8,7 @@ const NAV_ITEMS = {
     { to: '/dashboard/cases', label: 'Expedientes' },
     { to: '/dashboard/clients', label: 'Clientes' },
     { to: '/dashboard/users', label: 'Usuarios' },
+    { to: '/dashboard/papelera', label: 'Papelera' },
   ],
   [ROLES.ABOGADO]: [
     { to: '/dashboard/calendar', label: 'Calendario' },
