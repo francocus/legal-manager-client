@@ -126,6 +126,12 @@
   font-size: 0.9rem;
 }
 
+/* Second line under the days meta (case children counters). */
+.trash-meta--muted {
+  color: rgba(195, 204, 214, 0.6);
+  font-size: 0.82rem;
+}
+
 .trash-chip {
   display: inline-block;
   padding: 0.28rem 0.54rem;
@@ -162,11 +168,30 @@
   color: #ffffff;
 }
 
+/* Trash pages reuse their source module's panel and fixed-layout tables
+   (table-layout: fixed with percentage columns). Their rows carry text action
+   buttons ("Borrar definitivamente") that need more room than the fixed
+   actions column leaves, so any table inside a panel holding trash rows falls
+   back to auto layout and drops the fixed column widths (the nth-child bump
+   keeps this above every module's per-column rules). Trash pages contain no
+   other tables, so the :has() scope cannot leak onto regular views. */
+:has(.trash-row-actions) table {
+  table-layout: auto;
+}
+
+:has(.trash-row-actions) table th:nth-child(n),
+:has(.trash-row-actions) table td:nth-child(n) {
+  width: auto;
+}
+
 .trash-row-actions {
   display: inline-flex;
-  gap: 10px;
-  justify-content: center;
-  flex-wrap: wrap;
+  /* Stacked: two text buttons side by side (Restaurar + Borrar definitivamente)
+      exceeded the actions column width and clipped the second one at the
+      panel edge. */
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
 }
 
 .trash-row-button {
@@ -294,6 +319,10 @@
 [data-bs-theme='light'] .trash-table__cell--muted,
 [data-bs-theme='light'] .trash-meta {
   color: #5b6675;
+}
+
+[data-bs-theme='light'] .trash-meta--muted {
+  color: rgba(15, 23, 32, 0.55);
 }
 
 [data-bs-theme='light'] .trash-main__name {

@@ -19,7 +19,10 @@ import CasePage from './components/biz/cases/casePage/CasePage.jsx';
 import ClientsContainer from './components/biz/clients/clientsContainer/ClientsContainer.jsx';
 import ClientPage from './components/biz/clients/clientPage/ClientPage.jsx';
 import UsersContainer from './components/biz/users/usersContainer/UsersContainer.jsx';
-import TrashContainer from './components/biz/trash/trashContainer/TrashContainer.jsx';
+import TurnosPapelera from './components/biz/trash/papeleras/turnosPapelera/TurnosPapelera.jsx';
+import ExpedientesPapelera from './components/biz/trash/papeleras/expedientesPapelera/ExpedientesPapelera.jsx';
+import ClientesPapelera from './components/biz/trash/papeleras/clientesPapelera/ClientesPapelera.jsx';
+import UsuariosPapelera from './components/biz/trash/papeleras/usuariosPapelera/UsuariosPapelera.jsx';
 import Profile from './components/biz/profile/Profile.jsx';
 import CalendarContainer from './components/biz/calendar/calendarContainer/CalendarContainer.jsx';
 
@@ -49,8 +52,24 @@ function App() {
           <Route path="calendar" element={<CalendarContainer />} />
           <Route path="appointments" element={<AppointmentsContainer />} />
           <Route path="appointments/:appointmentId" element={<AppointmentPage />} />
+          <Route
+            path="appointments/papelera"
+            element={
+              <Protected allowedRoles={[ROLES.ADMIN]}>
+                <TurnosPapelera />
+              </Protected>
+            }
+          />
           <Route path="cases" element={<CasesContainer />} />
           <Route path="cases/:caseId" element={<CasePage />} />
+          <Route
+            path="cases/papelera"
+            element={
+              <Protected allowedRoles={[ROLES.ADMIN]}>
+                <ExpedientesPapelera />
+              </Protected>
+            }
+          />
           <Route
             path="clients"
             element={
@@ -67,6 +86,14 @@ function App() {
               </Protected>
             }
           />
+          <Route
+            path="clients/papelera"
+            element={
+              <Protected allowedRoles={[ROLES.ADMIN]}>
+                <ClientesPapelera />
+              </Protected>
+            }
+          />
           <Route path="profile" element={<Profile />} />
           <Route
             path="users"
@@ -77,10 +104,10 @@ function App() {
             }
           />
           <Route
-            path="papelera"
+            path="users/papelera"
             element={
               <Protected allowedRoles={[ROLES.ADMIN]}>
-                <TrashContainer />
+                <UsuariosPapelera />
               </Protected>
             }
           />
