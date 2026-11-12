@@ -317,11 +317,33 @@ a {
    renders in-page, so it takes the app's rounded glass look instead of the
    OS popup. The picker needs its own appearance opt-in to leave the UA look.
    Browsers without support drop these declarations and keep the themed
-   native popup above. The attribute selector out-specifies every per-module
-   appearance:none so every select opts in. */
+   native popup above. select[class] adds the specificity needed to beat
+   every per-module appearance:none (.users-form .form-select and friends
+   live at 0,2,0; this is 0,2,1) so every select opts in. */
 [data-bs-theme] select,
+[data-bs-theme] select[class],
 select::picker(select) {
   appearance: base-select;
+}
+
+/* Closed control geometry in base mode: the UA stretches a shadow wrapper
+   and lays the value text at its top, so fixed-height controls showed the
+   value pinned to the top edge. Uniform height, symmetric block padding and
+   a line-height equal to the stretched wrapper's height center the value in
+   every control shape; nowrap keeps long values on one clipped line like
+   native selects do. Guarded so non-supporting browsers keep the native
+   rendering, which centers by itself. */
+@supports (appearance: base-select) {
+  [data-bs-theme] select[class] {
+    height: 46px;
+    min-height: 46px;
+    padding-block: 11px;
+    line-height: 22px;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 select::picker-icon {
@@ -336,19 +358,19 @@ select::picker(select) {
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
 }
 
-[data-bs-theme='dark'] select option {
+[data-bs-theme='dark'] select[class] option {
   padding: 9px 14px;
   border-radius: 10px;
   background: transparent;
   color: #f5f8fb;
 }
 
-[data-bs-theme='dark'] select option:hover,
-[data-bs-theme='dark'] select option:focus {
+[data-bs-theme='dark'] select[class] option:hover,
+[data-bs-theme='dark'] select[class] option:focus {
   background: rgba(255, 255, 255, 0.07);
 }
 
-[data-bs-theme='dark'] select option:checked {
+[data-bs-theme='dark'] select[class] option:checked {
   background: rgba(120, 160, 210, 0.16);
   font-weight: 700;
 }
@@ -359,19 +381,19 @@ select::picker(select) {
   box-shadow: 0 18px 40px rgba(15, 23, 32, 0.16);
 }
 
-[data-bs-theme='light'] select option {
+[data-bs-theme='light'] select[class] option {
   padding: 9px 14px;
   border-radius: 10px;
   background: transparent;
   color: #0a0e14;
 }
 
-[data-bs-theme='light'] select option:hover,
-[data-bs-theme='light'] select option:focus {
+[data-bs-theme='light'] select[class] option:hover,
+[data-bs-theme='light'] select[class] option:focus {
   background: rgba(15, 23, 32, 0.05);
 }
 
-[data-bs-theme='light'] select option:checked {
+[data-bs-theme='light'] select[class] option:checked {
   background: rgba(15, 23, 32, 0.08);
   font-weight: 700;
 }
