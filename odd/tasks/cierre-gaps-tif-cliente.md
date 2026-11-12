@@ -138,6 +138,23 @@ renombrado sysadmin→admin). Rama de trabajo: `feat/cierre-gaps-tif-cliente`.
   .users-search...`, inputs no anidan). Dark sin cambios (auditoría: 0.5 vs
   0.44 preexistente, el usuario lo considera bien). Verificado con CDP
   midiendo getComputedStyle(el,'::placeholder') en las 4 vistas.
+- Flujo registro → promoción a abogado desbloqueado: UsersContainer filtraba
+  FUERA a los clientes (`staffUsers`), así que el admin no veía a los
+  autoregistrados en ningún lado y el backend PATCH /user/{id}/role (creado
+  justo para eso, comenta el controlador) quedaba inaccesible. Ahora la
+  lista muestra a todos (clientes incluidos, chip CLIENTE ya estilizado), el
+  filtro de rol suma Cliente, y el edit modal ya no recibe allowedRoles:
+  UserDetails arma las opciones dinámicamente (target admin → solo su rol
+  bloqueado, porque el backend rechaza cambios de rol de admins; resto →
+  Abogado + Cliente, mostrando el rol actual, que antes quedaba vacío al
+  editar un cliente). Democión abogado→cliente habilitada con los guards del
+  backend (exige matrícula al promover; bloquea si tiene expedientes/turnos
+  como cliente o como abogado).
+  Verificado E2E con CDP (cuenta cliente QA registrada y confirmada por API):
+  fila visible con chip CLIENTE, modal con Rol "Cliente", pick Abogado →
+  matrícula obligatoria, save → chip ABOGADO, democión → chip CLIENTE.
+  Nota: el modal de bienvenida y los modales tapaban clicks de CDP → en los
+  scripts se cierran y se hace scrollIntoView de la fila antes de clickear.
 - Idle de scrollbars a 0.5s a pedido del usuario (commit `6bb01aa`).
 
 - Bug encontrado al verificar contra el backend (`master`, `JsonStringEnumConverter`):
