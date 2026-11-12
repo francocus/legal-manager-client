@@ -50,8 +50,22 @@ function App() {
           <Route path="appointments/:appointmentId" element={<AppointmentPage />} />
           <Route path="cases" element={<CasesContainer />} />
           <Route path="cases/:caseId" element={<CasePage />} />
-          <Route path="clients" element={<ClientsContainer />} />
-          <Route path="clients/:clientId" element={<ClientPage />} />
+          <Route
+            path="clients"
+            element={
+              <Protected allowedRoles={[ROLES.ADMIN, ROLES.ABOGADO]}>
+                <ClientsContainer />
+              </Protected>
+            }
+          />
+          <Route
+            path="clients/:clientId"
+            element={
+              <Protected allowedRoles={[ROLES.ADMIN, ROLES.ABOGADO]}>
+                <ClientPage />
+              </Protected>
+            }
+          />
           <Route path="profile" element={<Profile />} />
           <Route
             path="users"

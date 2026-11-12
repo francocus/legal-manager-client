@@ -64,6 +64,7 @@ const UsersContainer = () => {
 
   const handleDeleteUser = async (id) => {
     if (id === currentUser?.id) {
+      showToast({ variant: 'warning', message: 'No podés dar de baja tu propia cuenta.' });
       return;
     }
 
@@ -163,10 +164,10 @@ const UsersContainer = () => {
         show={Boolean(userToDelete)}
         onHide={() => setUserToDelete(null)}
         onConfirm={() => handleDeleteUser(userToDelete?.id)}
-        title="Eliminar usuario"
-        message="¿Estás seguro que deseas eliminar al usuario"
+        title="Dar de baja"
+        message="El registro queda desactivado y no se elimina físicamente. ¿Estás seguro que deseas dar de baja al usuario"
         itemName={userToDelete?.name}
-        confirmLabel="Sí, deseo eliminarlo"
+        confirmLabel="Sí, dar de baja"
       />
 
       {loading ? (
