@@ -101,10 +101,12 @@ const ClientsContainer = () => {
           {userIsAdmin ? (
             <Button
               type="button"
-              className="app-button app-button--primary"
+              className="clients-create"
+              title="Crear cliente"
+              aria-label="Crear cliente"
               onClick={handleOpenNewClient}
             >
-              Crear cliente
+              <span className="clients-create__text">Crear cliente</span>
             </Button>
           ) : null}
         </div>
