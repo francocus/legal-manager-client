@@ -712,9 +712,8 @@ body.users-modal-open {
   box-shadow: 0 0 0 0.22rem rgba(70, 100, 130, 0.16);
 }
 
-[data-bs-theme='light'] input .users-search.form-control::placeholder {
-  color: rgba(60, 71, 84, 0.55) !important;
-}
+/* Dead selector (inputs cannot nest): the dashboard light placeholder rule
+   covers this input, so the value lives there. */
 
 [data-bs-theme='light'] .users-create.btn,
 [data-bs-theme='light'] .users-create.btn-primary,

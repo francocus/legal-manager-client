@@ -752,8 +752,11 @@
   font-weight: 600 !important;
 }
 
+/* Light placeholders follow the "Buscar turno" reference (rgba(60,71,84,0.55)):
+   the solid #5b6675 this rule carried before read as more present than the
+   search bars that already looked right. */
 [data-bs-theme='light'] .form-control::placeholder {
-  color: #5b6675 !important;
+  color: rgba(60, 71, 84, 0.55) !important;
   font-weight: 400 !important;
 }
 
