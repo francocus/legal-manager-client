@@ -6,6 +6,7 @@ import { useDashboardData } from '../../../services/data/dashboardData.context';
 import { usePreferences } from '../../../services/preferences/preferences.context';
 import { appointmentsApi } from '../../../services/api/appointmentsApi';
 import { useToast } from '../../../shared/toast/toast.context';
+import { CalendarClock } from 'lucide-react';
 import { formatDate } from '../../../services/utils/format';
 import { ROLES } from '../../../services/consts/roles';
 import { getStatusClass } from '../Appointments.data';
@@ -82,10 +83,15 @@ const AppointmentPage = () => {
   return (
     <section className="app-page">
       <div className="app-page__header">
-        <div>
-          <p className="app-page__eyebrow">Turno</p>
-          <h2 className="app-page__title">{appointment.clientName}</h2>
-          <p className="app-page__subtitle">Con {appointment.lawyerName}</p>
+        <div className="app-identity">
+          <span className="app-avatar">
+            <CalendarClock size={24} />
+          </span>
+          <div>
+            <p className="app-page__eyebrow">Turno</p>
+            <h2 className="app-page__title">{appointment.clientName}</h2>
+            <p className="app-page__subtitle">Con {appointment.lawyerName}</p>
+          </div>
         </div>
         <div className="app-page__toolbar">
           <span className={`appointment-details__status ${getStatusClass(appointment.status)}`}>

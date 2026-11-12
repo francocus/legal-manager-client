@@ -206,3 +206,9 @@
   background: linear-gradient(135deg, #394452, #566170);
   color: #f4f6f8;
 }
+
+/* Light theme: the blue glass avatar needs dark ink or the icon washes out. */
+[data-bs-theme='light'] .client-card__avatar {
+  background: rgba(15, 23, 32, 0.08);
+  color: #3c4754;
+}
