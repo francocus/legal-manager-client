@@ -143,6 +143,7 @@ a {
 
 .app-button--ghost:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.06);
+  color: #c9d4e0;
 }
 
 .app-icon-button {
@@ -164,6 +165,7 @@ a {
 
 .app-icon-button:hover {
   background: rgba(255, 255, 255, 0.12);
+  color: #eef2f6;
   transform: translateY(-1px);
 }
 
@@ -235,6 +237,7 @@ a {
 
 [data-bs-theme='light'] .app-button--secondary:hover:not(:disabled) {
   background: rgba(15, 23, 32, 0.09);
+  color: #0d1117;
 }
 
 [data-bs-theme='light'] .app-button--ghost {
@@ -243,6 +246,7 @@ a {
 
 [data-bs-theme='light'] .app-button--ghost:hover:not(:disabled) {
   background: rgba(15, 23, 32, 0.06);
+  color: #3c4754;
 }
 
 [data-bs-theme='light'] .app-icon-button {
@@ -291,9 +295,21 @@ a {
   cursor: not-allowed;
 }
 
-.form-select option {
+/* Open dropdown rows: Chromium paints the native popup from the element's
+   color-scheme (Bootstrap switches it per data-bs-theme); these pins keep
+   the rows on the app palette in both themes. They sit in ui.css, which
+   loads after every module stylesheet, so the older per-module dark pins
+   lose here in light mode. */
+[data-bs-theme='dark'] .form-select option,
+[data-bs-theme='dark'] select option {
   background: #0a0d12;
-  color: #ffffff;
+  color: #f5f8fb;
+}
+
+[data-bs-theme='light'] .form-select option,
+[data-bs-theme='light'] select option {
+  background: #ffffff;
+  color: #0a0e14;
 }
 
 [data-bs-theme='light'] .form-select {
@@ -354,6 +370,7 @@ a {
 
 [data-bs-theme='light'] .app-button--primary:hover:not(:disabled) {
   background: linear-gradient(135deg, #394452, #566170);
+  color: #f4f6f8;
 }
 
 [data-bs-theme='light'] .app-button--danger {
@@ -364,4 +381,5 @@ a {
 
 [data-bs-theme='light'] .app-button--danger:hover:not(:disabled) {
   background: rgba(150, 60, 78, 0.16);
+  color: #8f3a4b;
 }

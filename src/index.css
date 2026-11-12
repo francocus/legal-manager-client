@@ -19,6 +19,13 @@
   color: #eef2f6;
 }
 
+/* The native select popup chrome follows the inherited color-scheme: keep
+   the app dark-first, but flip it when the light theme is active (same
+   specificity as :root, later in the file, so it wins while active). */
+[data-bs-theme='light'] {
+  color-scheme: light;
+}
+
 *,
 *::before,
 *::after {
