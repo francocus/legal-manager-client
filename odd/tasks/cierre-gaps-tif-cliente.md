@@ -117,6 +117,19 @@ renombrado sysadmin→admin). Rama de trabajo: `feat/cierre-gaps-tif-cliente`.
 - Hallazgo E2E: el toast de bienvenida ("¡Bienvenido...") tapa los controles
   del hero del calendario ~4-5s tras loguear (contenedor tipo modal con
   pointer-events); transitorio, no se tocó.
+- Barra de scroll del picker (8257255): los popups con listas largas mostraban
+  la barra nativa clásica (ancha, con flechitas) — el `::-webkit-scrollbar`
+  global de index.css no alcanza un pseudo-elemento de top layer. Estilizado
+  con `scrollbar-width: thin` + `scrollbar-color` (thumb 0.18 sobre track
+  transparente, por tema) sobre `::picker(select)`. Trampa de build: apilar
+  `::picker(select)::-webkit-scrollbar` parsea en Chromium pero viola la
+  gramática de selectores (un solo pseudo-elemento al final) y lightningcss
+  rechaza el minify → se usan las propiedades estándar. Trampa de revelado:
+  los scroll del picker nunca llegan al listener capture de document, así que
+  `is-scrolling` no lo maneja → thumb silenciosamente visible (el mismo color
+  que usa la barra de página mientras scrolleá).
+  Verificado con CDP en harness con 40 opciones: scroll del picker, thumb en
+  reposo y light/dark.
 - Idle de scrollbars a 0.5s a pedido del usuario (commit `6bb01aa`).
 
 - Bug encontrado al verificar contra el backend (`master`, `JsonStringEnumConverter`):
