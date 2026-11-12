@@ -96,7 +96,11 @@ const ClientsContainer = () => {
 
         <div className="clients-header__controls">
           <div className="users-search-wrap">
-            <UsersSearch onSearch={setSearchClient} />
+            <UsersSearch
+              onSearch={setSearchClient}
+              placeholder="Buscar cliente..."
+              ariaLabel="Buscar cliente"
+            />
           </div>
           {userIsAdmin ? (
             <Button
