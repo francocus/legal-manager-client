@@ -83,6 +83,18 @@ renombrado sysadmin→admin). Rama de trabajo: `feat/cierre-gaps-tif-cliente`.
   hardcodeado dark en `index.css` → agregado flip `[data-bs-theme='light'] { color-scheme: light }`;
   opciones pineadas por tema en `ui.css` (oscuro #0a0d12, claro blanco)
   (commit `c750736`).
+- Dropdown de los select como DOM real in-page (customizable select,
+  Chromium/Edge 135+): `appearance: base-select` en `[data-bs-theme] select` +
+  `select::picker(select)` (el picker necesita su propio opt-in, sin eso queda
+  el look default blanco con esquinas cuadradas), popup con radio 16px, borde y
+  sombra por tema, opciones con radio 10px y estados hover/checked pineados,
+  `::picker-icon` y `::checkmark` ocultos. Cubre los 3 selects crudos de
+  toolbars y todos los `Form.Select` de una vez (quedan cubiertos los futuros);
+  verificado con CDP (apariencia base-select + capturas del picker abierto con
+  hover y checked en dark y light). Browsers sin soporte ignoran estas reglas y
+  conservan el popup nativo pineado de `c750736`. Alternativa descartada por
+  ahora: componente `AppSelect` propio (reescribiría ~13 usages perdiendo
+  teclado/a11y/móvil nativos).
 - Idle de scrollbars a 0.5s a pedido del usuario (commit `6bb01aa`).
 
 - Bug encontrado al verificar contra el backend (`master`, `JsonStringEnumConverter`):
