@@ -73,7 +73,7 @@ const CasePage = () => {
   const [changingStatus, setChangingStatus] = useState(false);
 
   const legalCase = cases.find((entry) => String(entry.id) === String(caseId));
-  const canWrite = user?.role === ROLES.SYSADMIN || user?.role === ROLES.ABOGADO;
+  const canWrite = user?.role === ROLES.ADMIN || user?.role === ROLES.ABOGADO;
   const isClosed = legalCase?.status === 'cerrado';
 
   const handleEditCase = async (payload) => {

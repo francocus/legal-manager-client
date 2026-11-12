@@ -13,7 +13,7 @@ import { SkeletonRows } from '../../../shared/skeleton/Skeleton';
 import { useToast } from '../../../shared/toast/toast.context';
 import { usePreferences } from '../../../services/preferences/preferences.context';
 import { formatDate } from '../../../services/utils/format';
-import { isLawyer, isSysadmin } from '../../../services/consts/roles';
+import { isAdmin, isLawyer } from '../../../services/consts/roles';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
@@ -34,7 +34,7 @@ const CaseDocuments = ({ legalCase, currentUser }) => {
   const [draft, setDraft] = useState(null);
   const fileInputRef = useRef(null);
 
-  const canWrite = isSysadmin(currentUser?.role) || isLawyer(currentUser?.role);
+  const canWrite = isAdmin(currentUser?.role) || isLawyer(currentUser?.role);
   const isClosed = String(legalCase?.status ?? '').toLowerCase() === 'cerrado';
 
   const caseId = legalCase?.id;
@@ -88,14 +88,19 @@ const CaseDocuments = ({ legalCase, currentUser }) => {
 
     const looksLikePdf =
       selected.type === 'application/pdf' ||
-      String(selected.name ?? '').toLowerCase().endsWith('.pdf');
+      String(selected.name ?? '')
+        .toLowerCase()
+        .endsWith('.pdf');
     if (!looksLikePdf) {
       showToast({ variant: 'warning', message: 'Solo se aceptan archivos PDF.' });
       return;
     }
 
     if (selected.size > MAX_FILE_SIZE) {
-      showToast({ variant: 'warning', message: 'El archivo supera el tamaño máximo permitido (10 MB).' });
+      showToast({
+        variant: 'warning',
+        message: 'El archivo supera el tamaño máximo permitido (10 MB).',
+      });
       return;
     }
 
@@ -268,7 +273,9 @@ const CaseDocuments = ({ legalCase, currentUser }) => {
                     onChange={handleFileInputChange}
                   />
                   <span className="case-docs__dropzone-title">Arrastrá tu PDF acá</span>
-                  <span className="case-docs__dropzone-subtitle">o hacé clic para buscar archivos</span>
+                  <span className="case-docs__dropzone-subtitle">
+                    o hacé clic para buscar archivos
+                  </span>
                 </div>
                 {file ? (
                   <p className="case-docs__staged">
@@ -389,8 +396,8 @@ const CaseDocuments = ({ legalCase, currentUser }) => {
                     ) : null}
                   </span>
                   <span className="case-docs__meta">
-                    {getTypeLabel(doc.type)} · {formatDate(doc.uploadDate, preferences.dateFormat)} ·{' '}
-                    {formatFileSize(doc.sizeBytes)}
+                    {getTypeLabel(doc.type)} · {formatDate(doc.uploadDate, preferences.dateFormat)}{' '}
+                    · {formatFileSize(doc.sizeBytes)}
                   </span>
                 </div>
                 <div className="case-docs__actions">

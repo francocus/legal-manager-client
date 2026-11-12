@@ -22,7 +22,8 @@ const AppointmentDetails = ({ appointment, user, onStatus, onCancel, onEdit }) =
         </h3>
         <p className="appointment-card__reason">{appointment.reason}</p>
         <p className="appointment-card__meta">
-          {isClient ? 'Abogado' : 'Cliente'}: {isClient ? appointment.lawyerName : appointment.clientName}
+          {isClient ? 'Abogado' : 'Cliente'}:{' '}
+          {isClient ? appointment.lawyerName : appointment.clientName}
         </p>
       </Link>
 

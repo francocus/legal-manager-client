@@ -21,8 +21,9 @@ export const mapUser = (user = {}) => ({
 
 export const getRoleClass = (role) => {
   switch (role) {
-    case ROLES.SYSADMIN:
-      return 'is-sysadmin';
+    case ROLES.ADMIN:
+    case 'sysadmin':
+      return 'is-admin';
     case ROLES.ABOGADO:
       return 'is-abogado';
     case ROLES.CLIENTE:

@@ -56,7 +56,7 @@ function App() {
           <Route
             path="users"
             element={
-              <Protected allowedRoles={[ROLES.SYSADMIN]}>
+              <Protected allowedRoles={[ROLES.ADMIN]}>
                 <UsersContainer />
               </Protected>
             }

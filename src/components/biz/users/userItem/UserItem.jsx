@@ -1,6 +1,17 @@
 import { getRoleClass, getActiveClass, getRoleLabel } from '../../users/User.data.js';
 
-const UserItem = ({ id, name, dni, email, role, active, onEdit, onDelete, onSelect, isCurrentUser }) => {
+const UserItem = ({
+  id,
+  name,
+  dni,
+  email,
+  role,
+  active,
+  onEdit,
+  onDelete,
+  onSelect,
+  isCurrentUser,
+}) => {
   const handleRowClick = onSelect
     ? () => onSelect({ id, name, dni, email, role, active })
     : undefined;

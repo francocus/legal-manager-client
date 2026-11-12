@@ -14,7 +14,7 @@ const Home = () => {
   const { preferences } = usePreferences();
 
   const role = user?.role;
-  const isStaff = role === ROLES.SYSADMIN || role === ROLES.ABOGADO;
+  const isStaff = role === ROLES.ADMIN || role === ROLES.ABOGADO;
 
   const upcomingAppointments = useMemo(() => {
     const todayKey = new Date().toISOString().slice(0, 10);

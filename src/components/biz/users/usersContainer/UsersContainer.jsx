@@ -4,19 +4,22 @@ import { AuthenticationContext } from '../../../services/auth/authentication.con
 import { useDashboardData } from '../../../services/data/dashboardData.context';
 import { usersApi } from '../../../services/api/usersApi';
 import { useToast } from '../../../shared/toast/toast.context';
-import { usePagination } from '../../../services/hooks/usePagination';
 import ConfirmDialog from '../../../shared/confirmDialog/ConfirmDialog';
 import { SkeletonRows } from '../../../shared/skeleton/Skeleton';
 import EmptyState from '../../../shared/emptyState/EmptyState';
-import Pagination from '../../../shared/pagination/Pagination';
 import NewUser from '../newUser/NewUser';
 import UserDetails from '../userDetails/UserDetails.jsx';
 import UserItem from '../userItem/UserItem';
 import UsersSearch from '../usersSearch/UsersSearch';
-import { ROLE_OPTIONS } from '../../../services/consts/roles';
+import { ROLES } from '../../../services/consts/roles';
 import '../users.css';
 
-const PAGE_SIZE = 10;
+const STAFF_ROLES = [ROLES.ADMIN, ROLES.ABOGADO];
+
+const STAFF_ROLE_OPTIONS = [
+  { value: ROLES.ADMIN, label: 'Administrador' },
+  { value: ROLES.ABOGADO, label: 'Abogado' },
+];
 
 const UsersContainer = () => {
   const { user: currentUser } = useContext(AuthenticationContext);
@@ -46,7 +49,7 @@ const UsersContainer = () => {
     await usersApi.create(form);
     // User mutations also feed the lawyer/client selects in NewCase and
     // NewAppointment: refresh both resolver lists alongside the table (this
-    // page is sysadmin-only, so both calls are allowed for the session role).
+    // page is admin-only, so both calls are allowed for the session role).
     await refreshUsers();
     await refreshLawyers();
     await refreshClients();
@@ -80,7 +83,9 @@ const UsersContainer = () => {
     }
   };
 
-  const filteredUsers = users.filter((user) => {
+  const staffUsers = users.filter((u) => u.role !== ROLES.CLIENTE && u.role !== 'cliente');
+
+  const filteredUsers = staffUsers.filter((user) => {
     if (roleFilter !== 'all' && user.role !== roleFilter) {
       return false;
     }
@@ -91,8 +96,6 @@ const UsersContainer = () => {
       (user.dni && String(user.dni).toLowerCase().includes(lowerSearch))
     );
   });
-
-  const { page, setPage, totalPages, pageItems } = usePagination(filteredUsers, PAGE_SIZE);
 
   return (
     <section className="users-panel">
@@ -110,7 +113,7 @@ const UsersContainer = () => {
             aria-label="Filtrar por rol"
           >
             <option value="all">Todos los roles</option>
-            {ROLE_OPTIONS.map((option) => (
+            {STAFF_ROLE_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
@@ -139,13 +142,20 @@ const UsersContainer = () => {
         </Alert>
       )}
 
-      {showNewUser && <NewUser onAddUser={handleAddUser} onFormClosed={handleCloseForms} />}
+      {showNewUser && (
+        <NewUser
+          onAddUser={handleAddUser}
+          onFormClosed={handleCloseForms}
+          allowedRoles={STAFF_ROLES}
+        />
+      )}
 
       {userToEdit && (
         <UserDetails
           user={userToEdit}
           onEditUser={handleEditUser}
           onFormClosed={handleCloseForms}
+          allowedRoles={STAFF_ROLES}
         />
       )}
 
@@ -162,49 +172,46 @@ const UsersContainer = () => {
       {loading ? (
         <SkeletonRows rows={5} />
       ) : filteredUsers.length > 0 ? (
-        <>
-          <div className="users-table-wrap">
-            <table className="users-table">
-              <thead>
-                <tr>
-                  <th>Usuario / DNI</th>
-                  <th>Rol</th>
-                  <th>Contacto</th>
-                  <th>Estado</th>
-                  <th className="users-table__actions-head">Acciones Admin</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pageItems.map((userEntry) => (
-                  <UserItem
-                    key={userEntry.id}
-                    id={userEntry.id}
-                    name={userEntry.name}
-                    dni={userEntry.dni}
-                    email={userEntry.email}
-                    role={userEntry.role}
-                    active={userEntry.active}
-                    isCurrentUser={userEntry.id === currentUser?.id}
-                    onEdit={(selectedUser) => {
+        <div className="users-table-wrap">
+          <table className="users-table">
+            <thead>
+              <tr>
+                <th>Usuario / DNI</th>
+                <th>Rol</th>
+                <th>Contacto</th>
+                <th>Estado</th>
+                <th className="users-table__actions-head">Acciones Admin</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredUsers.map((userEntry) => (
+                <UserItem
+                  key={userEntry.id}
+                  id={userEntry.id}
+                  name={userEntry.name}
+                  dni={userEntry.dni}
+                  email={userEntry.email}
+                  role={userEntry.role}
+                  active={userEntry.active}
+                  isCurrentUser={userEntry.id === currentUser?.id}
+                  onEdit={(selectedUser) => {
+                    setShowNewUser(false);
+                    setUserToDelete(null);
+                    setUserToEdit(selectedUser);
+                  }}
+                  onDelete={(id) => {
+                    const selectedUser = filteredUsers.find((entry) => entry.id === id);
+                    if (selectedUser) {
                       setShowNewUser(false);
-                      setUserToDelete(null);
-                      setUserToEdit(selectedUser);
-                    }}
-                    onDelete={(id) => {
-                      const selectedUser = filteredUsers.find((entry) => entry.id === id);
-                      if (selectedUser) {
-                        setShowNewUser(false);
-                        setUserToEdit(null);
-                        setUserToDelete(selectedUser);
-                      }
-                    }}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <Pagination page={page} totalPages={totalPages} onChange={setPage} />
-        </>
+                      setUserToEdit(null);
+                      setUserToDelete(selectedUser);
+                    }
+                  }}
+                />
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : (
         <EmptyState
           title="No se encontraron usuarios"

@@ -67,7 +67,9 @@ const ForgotPassword = () => {
               <div className="auth-box__head">
                 <span className="auth-eyebrow">Recuperar acceso</span>
                 <h2>Revisá tu correo</h2>
-                <p>Te enviamos el enlace para restablecer tu contraseña. El enlace vence en 1 hora.</p>
+                <p>
+                  Te enviamos el enlace para restablecer tu contraseña. El enlace vence en 1 hora.
+                </p>
                 <p>(Revisá también la carpeta de spam.)</p>
               </div>
               <Button className="auth-submit" onClick={() => navigate('/login')}>

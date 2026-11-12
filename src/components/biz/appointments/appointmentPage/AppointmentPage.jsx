@@ -23,7 +23,7 @@ const AppointmentPage = () => {
   const [editing, setEditing] = useState(false);
 
   const appointment = appointments.find((entry) => String(entry.id) === String(appointmentId));
-  const canManage = user?.role === ROLES.SYSADMIN || user?.role === ROLES.ABOGADO;
+  const canManage = user?.role === ROLES.ADMIN || user?.role === ROLES.ABOGADO;
 
   // Appointment lifecycle: confirm/cancel are dedicated PATCH endpoints, and
   // other statuses have no update endpoint, so they are rejected here.
