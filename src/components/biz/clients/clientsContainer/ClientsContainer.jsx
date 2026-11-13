@@ -1,7 +1,7 @@
 import { useContext, useMemo, useState } from 'react';
 import { Alert, Button } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router';
-import { Mail, UserRound } from 'lucide-react';
+import { Mail, Phone, UserRound } from 'lucide-react';
 import { AuthenticationContext } from '../../../services/auth/authentication.context';
 import { useDashboardData } from '../../../services/data/dashboardData.context';
 import { usersApi } from '../../../services/api/usersApi';
@@ -240,9 +240,12 @@ const ClientsContainer = () => {
                 <UserRound size={22} />
               </span>
               <span className="client-card__name">{client.name}</span>
-              <span className="client-card__meta">DNI {client.dni}</span>
+              <span className="client-card__meta">DNI: {client.dni}</span>
               <span className="client-card__meta">
                 <Mail size={14} /> {client.email}
+              </span>
+              <span className="client-card__meta">
+                <Phone size={14} /> {client.phone || 'Sin teléfono registrado'}
               </span>
             </Link>
           ))}

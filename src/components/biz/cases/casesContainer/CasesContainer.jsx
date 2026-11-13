@@ -283,6 +283,7 @@ const CasesContainer = () => {
                   title={legalCase.title}
                   clientName={legalCase.clientName}
                   lawyerName={legalCase.lawyerName}
+                  lawyerIds={legalCase.lawyerIds}
                   area={legalCase.area}
                   status={legalCase.status}
                   currentUser={currentUser}

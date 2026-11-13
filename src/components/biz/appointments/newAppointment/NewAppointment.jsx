@@ -177,7 +177,7 @@ const NewAppointment = ({
 
           {!isEdit && user?.role !== 'cliente' && (
             <Form.Group className="mb-3">
-              <Form.Label>Cliente</Form.Label>
+              <Form.Label>Cliente <span className="text-danger">*</span></Form.Label>
               <Form.Select
                 value={form.clientId || ''}
                 onChange={(event) => setForm({ ...form, clientId: event.target.value })}
@@ -196,7 +196,7 @@ const NewAppointment = ({
               accept lawyerId. */}
           {user?.role !== 'abogado' && !isEdit && (
             <Form.Group className="mb-3">
-              <Form.Label>Abogado</Form.Label>
+              <Form.Label>Abogado <span className="text-danger">*</span></Form.Label>
               <Form.Select
                 value={form.lawyerId || ''}
                 onChange={(event) => setForm({ ...form, lawyerId: event.target.value, time: '' })}
@@ -252,7 +252,7 @@ const NewAppointment = ({
           {isEdit ? (
             <>
               <Form.Group className="mb-3">
-                <Form.Label>Fecha</Form.Label>
+                <Form.Label>Fecha <span className="text-danger">*</span></Form.Label>
                 <Form.Control
                   type="date"
                   value={form.date}
@@ -261,7 +261,7 @@ const NewAppointment = ({
               </Form.Group>
 
               <Form.Group className="mb-3">
-                <Form.Label>Horario</Form.Label>
+                <Form.Label>Horario <span className="text-danger">*</span></Form.Label>
                 <Form.Select
                   value={form.time}
                   onChange={(event) => setForm({ ...form, time: event.target.value })}
@@ -338,7 +338,7 @@ const NewAppointment = ({
                 </div>
               </div>
               <div className="appointment-request-modal__slots">
-                <strong>Horarios</strong>
+                <strong>Horarios <span className="text-danger">*</span></strong>
                 {form.date ? (
                   <span>
                     {DAY_NAMES[parseDate(form.date).getDay()]} {pad(parseDate(form.date).getDate())}{' '}
@@ -368,7 +368,7 @@ const NewAppointment = ({
           {/* Editing cannot change the reason: reschedule accepts only
               date/time/endTime. */}
           <Form.Group className={isEdit ? '' : 'mt-3'}>
-            <Form.Label>{isEdit ? 'Motivo' : 'Motivo breve'}</Form.Label>
+            <Form.Label>{isEdit ? 'Motivo' : 'Motivo breve'} <span className="text-danger">*</span></Form.Label>
             <Form.Control
               as="textarea"
               rows={3}

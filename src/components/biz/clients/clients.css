@@ -3,6 +3,11 @@
   display: grid;
   gap: 18px;
   padding-bottom: 28px;
+  width: 100%;
+  max-width: 100%;
+  margin-inline: auto;
+  padding-inline: clamp(24px, 4vw, 48px);
+  box-sizing: border-box;
 }
 
 .clients-header {
@@ -41,14 +46,13 @@
   align-self: end;
   flex-wrap: nowrap;
   gap: 12px;
-  flex: 0 0 auto;
+  flex: 1 1 540px;
 }
 
 .clients-header__controls .users-search-wrap {
-  width: 260px;
-  min-width: 260px;
-  max-width: 260px;
-  flex: 0 0 260px;
+  min-width: 0;
+  flex: 0 1 300px;
+  max-width: 300px;
 }
 
 .client-card {
@@ -239,4 +243,29 @@
 [data-bs-theme='light'] .client-card__avatar {
   background: rgba(15, 23, 32, 0.08);
   color: #3c4754;
+}
+
+@media (max-width: 980px) {
+  .clients-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .clients-header__controls {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    flex: 1 1 auto;
+  }
+
+  .clients-header__controls .users-search-wrap {
+    min-width: 100%;
+    max-width: none;
+  }
+}
+
+@media (max-width: 620px) {
+  .clients-panel {
+    width: 100%;
+    padding: 0 14px 20px;
+  }
 }

@@ -105,7 +105,7 @@ const Login = () => {
 
             <Form className="auth-form" onSubmit={handleSubmit} noValidate>
               <div className={`auth-field ${errors.email ? 'has-error' : ''}`}>
-                <label htmlFor="login-email">Correo electrónico</label>
+                <label htmlFor="login-email">Correo electrónico <span className="text-danger">*</span></label>
                 <div className="auth-input">
                   <MailIcon />
                   <Form.Control
@@ -122,7 +122,7 @@ const Login = () => {
               </div>
 
               <div className={`auth-field ${errors.password ? 'has-error' : ''}`}>
-                <label htmlFor="login-password">Contraseña</label>
+                <label htmlFor="login-password">Contraseña <span className="text-danger">*</span></label>
                 <div className="auth-input">
                   <LockIcon />
                   <Form.Control
