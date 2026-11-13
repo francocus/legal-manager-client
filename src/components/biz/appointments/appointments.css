@@ -2443,3 +2443,315 @@
 .appointments-cards-grid {
   align-content: start;
 }
+
+/* ==========================================================================
+   TURNOS / APPOINTMENTS: TICKET & VOUCHER SILHOUETTE
+   Distinct shape from cases: calendar stub, physical perforation notches,
+   floating status badge, and clear participant info.
+   ========================================================================== */
+
+.appointment-ticket {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  min-height: 140px;
+  width: 100%;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(16, 22, 32, 0.96) 0%, rgba(10, 14, 20, 0.98) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.appointment-ticket:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.38);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+/* 1. Left Stub: Dedicated Calendar Voucher */
+.appointment-ticket__stub {
+  flex: 0 0 102px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 14px 8px;
+  background: rgba(255, 255, 255, 0.025);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  text-align: center;
+  user-select: none;
+}
+
+.appointment-ticket__month {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #7dd3fc;
+}
+
+.appointment-ticket__day {
+  font-size: 2.2rem;
+  font-weight: 900;
+  line-height: 1;
+  color: #ffffff;
+  margin: 2px 0;
+  font-family: inherit;
+}
+
+.appointment-ticket__dayname {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.appointment-ticket__time-pill {
+  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #f1f5f9;
+  font-size: 0.73rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.appointment-ticket__time-icon {
+  color: #38bdf8;
+  flex-shrink: 0;
+}
+
+/* Status-themed Left Accent on Stub */
+.appointment-ticket.is-pending .appointment-ticket__stub {
+  background: linear-gradient(180deg, rgba(235, 177, 85, 0.12) 0%, rgba(235, 177, 85, 0.02) 100%);
+  border-left: 4px solid rgba(235, 177, 85, 0.85);
+}
+.appointment-ticket.is-pending .appointment-ticket__month {
+  color: #fbd38d;
+}
+
+.appointment-ticket.is-confirmed .appointment-ticket__stub {
+  background: linear-gradient(180deg, rgba(90, 140, 235, 0.12) 0%, rgba(90, 140, 235, 0.02) 100%);
+  border-left: 4px solid rgba(90, 140, 235, 0.85);
+}
+.appointment-ticket.is-confirmed .appointment-ticket__month {
+  color: #93c5fd;
+}
+
+.appointment-ticket.is-cancelled .appointment-ticket__stub {
+  background: linear-gradient(180deg, rgba(217, 93, 93, 0.12) 0%, rgba(217, 93, 93, 0.02) 100%);
+  border-left: 4px solid rgba(217, 93, 93, 0.85);
+}
+.appointment-ticket.is-cancelled .appointment-ticket__month {
+  color: #fca5a5;
+}
+
+.appointment-ticket.is-finished .appointment-ticket__stub {
+  background: linear-gradient(180deg, rgba(140, 158, 180, 0.12) 0%, rgba(140, 158, 180, 0.02) 100%);
+  border-left: 4px solid rgba(140, 158, 180, 0.85);
+}
+.appointment-ticket.is-finished .appointment-ticket__month {
+  color: #cbd5e1;
+}
+
+/* 2. Physical Perforated Ticket Divider with Circular Cutout Notches */
+.appointment-ticket__divider {
+  position: relative;
+  width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.appointment-ticket__perforation {
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  width: 0;
+  border-left: 2px dashed rgba(255, 255, 255, 0.18);
+}
+
+.appointment-ticket__notch {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: #07090d;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 2;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.appointment-ticket__notch--top {
+  top: -8px;
+  left: -8px;
+}
+
+.appointment-ticket__notch--bottom {
+  bottom: -8px;
+  left: -8px;
+}
+
+/* 3. Ticket Main Body */
+.appointment-ticket__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 14px 16px 14px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.appointment-ticket__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.appointment-ticket__top-badges {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.appointment-ticket__case-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  background: rgba(120, 150, 190, 0.12);
+  color: #cbd5e1;
+  border: 1px solid rgba(150, 180, 220, 0.18);
+}
+
+.appointment-ticket__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.appointment-ticket__content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+  flex: 1 1 auto;
+  justify-content: space-between;
+}
+
+.appointment-ticket__content:hover {
+  text-decoration: none;
+  color: inherit;
+}
+
+.appointment-ticket__titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.appointment-ticket__subject {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1.12rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.appointment-ticket__desc {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.appointment-ticket__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.appointment-ticket__participant {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.88rem;
+  color: #e2e8f0;
+}
+
+.appointment-ticket__participant-icon {
+  color: #38bdf8;
+  flex-shrink: 0;
+}
+
+.appointment-ticket__label {
+  color: #94a3b8;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.appointment-ticket__participant strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.appointment-ticket__duration {
+  font-size: 0.76rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* Light Theme Support */
+[data-bs-theme='light'] .appointment-ticket {
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.1);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+}
+[data-bs-theme='light'] .appointment-ticket:hover {
+  border-color: rgba(15, 23, 42, 0.2);
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
+}
+[data-bs-theme='light'] .appointment-ticket__stub {
+  background: #f8fafc;
+  border-right-color: rgba(15, 23, 42, 0.06);
+}
+[data-bs-theme='light'] .appointment-ticket__day {
+  color: #0f172a;
+}
+[data-bs-theme='light'] .appointment-ticket__notch {
+  background: #f1f5f9;
+  border-color: rgba(15, 23, 42, 0.1);
+}
+[data-bs-theme='light'] .appointment-ticket__perforation {
+  border-left-color: rgba(15, 23, 42, 0.15);
+}
+[data-bs-theme='light'] .appointment-ticket__subject {
+  color: #0f172a;
+}
+[data-bs-theme='light'] .appointment-ticket__participant strong {
+  color: #0f172a;
+}
+[data-bs-theme='light'] .appointment-ticket__footer {
+  border-top-color: rgba(15, 23, 42, 0.06);
+}

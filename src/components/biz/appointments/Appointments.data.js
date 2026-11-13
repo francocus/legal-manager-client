@@ -23,6 +23,22 @@ export const formatAppointmentDate = (dateStr) => {
   return `${days[date.getDay()]} ${d} ${months[date.getMonth()]}`;
 };
 
+export const parseAppointmentDateParts = (dateStr) => {
+  if (!dateStr) return { dayName: 'CITA', dayNumber: '--', monthName: '---' };
+  const parts = String(dateStr).split('-');
+  if (parts.length !== 3) return { dayName: 'CITA', dayNumber: '--', monthName: '---' };
+  const [y, m, d] = parts.map(Number);
+  const date = new Date(y, m - 1, d);
+  const days = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'];
+  const months = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
+  return {
+    dayName: days[date.getDay()] || 'CITA',
+    dayNumber: String(d).padStart(2, '0'),
+    monthName: months[date.getMonth()] || '---',
+    year: String(y),
+  };
+};
+
 export const getStatusClass = (status) => {
   const normalizedStatus = normalizeText(status).replace(/\s+/g, '-');
   if (normalizedStatus === 'confirmado') return 'is-confirmed';

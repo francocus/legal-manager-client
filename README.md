@@ -116,7 +116,7 @@ La aplicación implementa una matriz de permisos que adapta las barras de navega
 | **Configuración de Días y Horarios Libres de Atención** | ❌ No | ✅ Sí (su agenda) | ❌ No |
 | **Solicitud de Turnos** | ✅ Sí | ✅ Para sus clientes | ✅ Para sí mismo |
 | **Visualización de Calendario de Citas** | ✅ Global | 👁️ Su agenda | 👁️ Sus turnos |
-| **Acceso a Papelera de Reciclaje y Restauración** | ✅ Sí | ❌ No | ❌ No |
+| **Acceso a Papelera de Reciclaje y Restauración** | ✅ Sí (Total) | ✅ Sí (sus expedientes y turnos) | ❌ No |
 | **Edición de Perfil y Preferencias Visuales** | ✅ Sí | ✅ Sí | ✅ Sí |
 
 ---
@@ -124,11 +124,15 @@ La aplicación implementa una matriz de permisos que adapta las barras de navega
 ## 6. Módulos y Funcionalidades Destacadas
 
 ### A. Gestión de Expedientes y Cierre Definitivo Seguro
-- **Trazabilidad:** Cada expediente cuenta con título, número judicial único, cliente asignado, abogados participantes, fuero/área y estado (`Activo`, `Pendiente`, `Cerrado`).
+- **Trazabilidad y Actualización en Tiempo Real:** Cada expediente cuenta con título, número judicial único, cliente asignado, abogados participantes, fuero/área y estado (`Activo`, `Pendiente`, `Cerrado`). La fecha y hora de última actualización (`DD/MM/AAAA HH:mm hs`) se sincroniza reactivamente al momento exacto en que se adjuntan o generan nuevos documentos.
 - **Resúmenes Automáticos con Inteligencia Artificial:** Integración con la API de inferencia LLM para generar resúmenes ejecutivos a partir del historial procesal y notas de la causa. Esta funcionalidad se encuentra disponible tanto para expedientes en trámite como para expedientes archivados (`Cerrados`).
 - **Confirmación Estricta de Cierre:** El cierre de una causa legal es una operación irreversible. Para prevenir pérdidas accidentales, el sistema despliega un modal de advertencia que bloquea la acción hasta que el usuario ingrese exactamente el **Número de Expediente**, habilitando únicamente tras dicha validación el botón de cierre definitivo.
 
-### B. Agenda Profesional y Configuración de Horarios Libres
+### B. Agenda Profesional y Turnos con Silueta Ticket
+- **Tarjetas de Turnos en Formato Ticket / Pase de Cita:** Rediseño físico completo de las tarjetas de turnos (`.appointment-ticket`) para diferenciarlas inequívocamente de los expedientes:
+  - *Talón de Calendario (Stub):* Destaca mes (`NOV`), día en tipografía gigante (`14`), día de la semana y hora de inicio con acento temático por estado.
+  - *Troquelado Físico con Muescas:* Separador vertical con línea punteada y cortes semicirculares cóncavos en los extremos emulando un pase de atención.
+  - *Cuerpo Informativo:* Badge de estado, acciones directas de gestión (confirmar, reprogramar, cancelar y baja lógica), motivo principal y datos de cliente/abogado sin duplicaciones.
 - **Autonomía del Abogado:** Los abogados pueden configurar desde su panel de perfil los días de la semana en los que atienden y definir **cualquier horario** que consideren conveniente mediante un selector de hora libre (`HH:mm`), sin estar limitados a turnos predeterminados.
 - **Atajos Ergonómicos:** Incluye botones rápidos para cargar la grilla estándar sugerida (09:00, 10:30, 12:00, 14:00, 15:30, 17:00) o limpiar todos los horarios, visualizando cada turno como un chip interactivo con opción de eliminación puntual.
 - **Alerta de Agenda Inicial:** Si un abogado recién registrado no ha establecido aún su disponibilidad, el sistema le muestra un banner informativo recomendándole configurar sus horarios para que los clientes puedan solicitar citas.
@@ -136,15 +140,17 @@ La aplicación implementa una matriz de permisos que adapta las barras de navega
 
 ### C. Gestión de Clientes con Segmentación por Rol
 - **Vista de Administrador:** Visualiza la totalidad de los clientes registrados en la base de datos, con opción de búsqueda en tiempo real por nombre, DNI o correo, y acceso a formularios de alta y modificación.
-- **Vista de Abogado:** Filtra automáticamente el padrón de clientes mostrando exclusivamente aquellos que guardan relación profesional directa con el abogado autenticado (tenencia de expedientes o turnos en común). Al dar de alta un nuevo caso, se mantiene la posibilidad de seleccionar cualquier cliente registrado en el estudio.
+- **Vista de Abogado:** Filtra automáticamente el padrón de clientes mostrando exclusivamente aquellos que guardan relación profesional directa con el abogado autenticado (tenencia de expedientes o turnos en común), exponiendo nombre, DNI, correo electrónico y teléfono con iconografía dedicada. Al dar de alta un nuevo caso, se mantiene la posibilidad de seleccionar cualquier cliente registrado en el estudio.
 
-### D. Gestión de Usuarios y Roles (Exclusivo Admin)
+### D. Gestión de Usuarios y Formularios Ergonómicos
 - Permite la creación, edición y asignación de contraseñas seguras para Administradores y Abogados.
+- Todos los formularios de la aplicación (creación y edición de expedientes, turnos, usuarios y registro) incorporan el indicador visual de **asterisco rojo (`*`) en los campos obligatorios** para una óptima experiencia de usuario.
 - Se excluye expresamente a los clientes de esta vista para mantener separada la administración del personal del estudio de los justiciables.
 
 ### E. Papelera de Reciclaje (Baja Lógica y Restauración)
 - Interfaz gráfica que lista los registros que fueron dados de baja lógica (`Active == false`) clasificados por entidad (usuarios, clientes, expedientes y citas).
-- Permite a los administradores auditar la fecha de baja y restaurar inmediatamente el elemento a su estado activo anterior con un solo clic.
+- **Fecha y Hora de Baja:** La columna *"En la papelera"* refleja la marca temporal exacta de la desactivación (`DD/MM/AAAA HH:mm hs`).
+- **Permisos y Alineación:** Administradores y abogados (para sus casos y turnos asignados) pueden enviar a la papelera y restaurar registros con un solo clic, con la columna de *"Acciones"* perfectamente alineada con el botón de restauración.
 
 ---
 
@@ -181,6 +187,12 @@ La aplicación implementa una matriz de permisos que adapta las barras de navega
    npm run dev
    ```
    La aplicación levantará de forma predeterminada en `http://localhost:5173`.
+
+   > **Cuentas de Prueba Pre-configuradas (Seed):**  
+   > Para explorar inmediatamente el sistema sin necesidad de registrar nuevos usuarios, se pueden utilizar las credenciales confirmadas:
+   > - **Administrador:** `admin@legalmanager.local` / `Admin123!`
+   > - **Abogado:** `abogado@legalmanager.local` / `Abogado123!`
+   > - **Cliente:** `cliente@legalmanager.local` / `Cliente123!`
 
 5. **Verificación de Calidad y Linting:**
    ```bash

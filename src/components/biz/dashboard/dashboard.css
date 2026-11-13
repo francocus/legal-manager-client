@@ -425,7 +425,8 @@
 }
 
 .appointments-panel,
-.cases-panel {
+.cases-panel,
+.clients-panel {
   margin-top: 24px;
   padding-bottom: 28px;
 }
