@@ -209,6 +209,78 @@
     border-color 160ms ease;
 }
 
+/* Dedicated column distribution for Trash Expedientes and Documents to ensure
+   the 'Acciones' header and the 'Restaurar' action button align perfectly. */
+.cases-table.cases-table--trash-cases {
+  table-layout: fixed !important;
+  width: 100%;
+}
+
+.cases-table.cases-table--trash-cases th:nth-child(1),
+.cases-table.cases-table--trash-cases td:nth-child(1) {
+  width: 48% !important;
+  text-align: left;
+}
+
+.cases-table.cases-table--trash-cases th:nth-child(2),
+.cases-table.cases-table--trash-cases td:nth-child(2) {
+  width: 34% !important;
+  text-align: left;
+}
+
+.cases-table.cases-table--trash-cases th:nth-child(3),
+.cases-table.cases-table--trash-cases td:nth-child(3) {
+  width: 18% !important;
+  text-align: right !important;
+  padding-right: 24px !important;
+}
+
+.cases-table.cases-table--trash-cases .trash-row-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+}
+
+.cases-table.cases-table--trash-documents {
+  table-layout: fixed !important;
+  width: 100%;
+}
+
+.cases-table.cases-table--trash-documents th:nth-child(1),
+.cases-table.cases-table--trash-documents td:nth-child(1) {
+  width: 28% !important;
+}
+
+.cases-table.cases-table--trash-documents th:nth-child(2),
+.cases-table.cases-table--trash-documents td:nth-child(2) {
+  width: 24% !important;
+}
+
+.cases-table.cases-table--trash-documents th:nth-child(3),
+.cases-table.cases-table--trash-documents td:nth-child(3) {
+  width: 12% !important;
+}
+
+.cases-table.cases-table--trash-documents th:nth-child(4),
+.cases-table.cases-table--trash-documents td:nth-child(4) {
+  width: 20% !important;
+}
+
+.cases-table.cases-table--trash-documents th:nth-child(5),
+.cases-table.cases-table--trash-documents td:nth-child(5) {
+  width: 16% !important;
+  text-align: right !important;
+  padding-right: 24px !important;
+}
+
+.cases-table.cases-table--trash-documents .trash-row-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+}
+
 .trash-row-button--secondary {
   background: rgba(255, 255, 255, 0.07);
   border-color: rgba(255, 255, 255, 0.16);

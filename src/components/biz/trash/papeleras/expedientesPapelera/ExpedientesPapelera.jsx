@@ -60,7 +60,7 @@ const ExpedientesPapelera = () => {
               EMPTY_SECTION
             ) : (
               <div className="cases-table-wrap">
-                <table className="cases-table">
+                <table className="cases-table cases-table--trash-cases">
                   <thead>
                     <tr>
                       <th>Expediente / Título</th>
@@ -108,7 +108,7 @@ const ExpedientesPapelera = () => {
               EMPTY_SECTION
             ) : (
               <div className="cases-table-wrap">
-                <table className="cases-table">
+                <table className="cases-table cases-table--trash-documents">
                   <thead>
                     <tr>
                       <th>Documento</th>

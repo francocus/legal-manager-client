@@ -7,7 +7,7 @@ import { usePreferences } from '../../../services/preferences/preferences.contex
 import { casesApi } from '../../../services/api/casesApi';
 import { useToast } from '../../../shared/toast/toast.context';
 import { FolderOpen } from 'lucide-react';
-import { formatDate } from '../../../services/utils/format';
+import { formatDate, formatDateTime } from '../../../services/utils/format';
 import { ROLES } from '../../../services/consts/roles';
 import CaseDetails from '../caseDetails/CaseDetails';
 import CaseDocuments from '../caseDocuments/CaseDocuments';
@@ -214,7 +214,7 @@ const CasePage = () => {
           </div>
           <div>
             <dt>Última actualización</dt>
-            <dd>{formatDate(legalCase.lastUpdate, preferences.dateFormat)}</dd>
+            <dd>{formatDateTime(legalCase.lastUpdate, preferences.dateFormat)}</dd>
           </div>
           {legalCase.closingDate ? (
             <div>
