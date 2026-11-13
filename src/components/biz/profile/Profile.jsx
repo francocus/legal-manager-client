@@ -14,6 +14,24 @@ const DATE_FORMAT_OPTIONS = [
   { value: 'yyyy-mm-dd', label: 'AAAA-MM-DD' },
 ];
 
+const WEEK_DAYS = [
+  { id: 1, label: 'Lunes' },
+  { id: 2, label: 'Martes' },
+  { id: 3, label: 'Miércoles' },
+  { id: 4, label: 'Jueves' },
+  { id: 5, label: 'Viernes' },
+  { id: 6, label: 'Sábado' },
+];
+
+const STANDARD_SLOTS = [
+  '09:00',
+  '10:30',
+  '12:00',
+  '14:00',
+  '15:30',
+  '17:00',
+];
+
 const Profile = () => {
   const { user, updateUserSession } = useContext(AuthenticationContext);
   const { preferences, updatePreference } = usePreferences();
@@ -25,6 +43,9 @@ const Profile = () => {
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [savingContact, setSavingContact] = useState(false);
+  const [selectedDays, setSelectedDays] = useState([1, 2, 3, 4, 5]);
+  const [selectedSlots, setSelectedSlots] = useState(STANDARD_SLOTS);
+  const [savingSchedule, setSavingSchedule] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -38,6 +59,16 @@ const Profile = () => {
         setProfileData(data);
         setPhone(data.phone || '');
         setAddress(data.address || '');
+
+        if (data.schedule) {
+          try {
+            const parsed = typeof data.schedule === 'string' ? JSON.parse(data.schedule) : data.schedule;
+            if (Array.isArray(parsed?.days) && parsed.days.length > 0) setSelectedDays(parsed.days);
+            if (Array.isArray(parsed?.slots) && parsed.slots.length > 0) setSelectedSlots(parsed.slots);
+          } catch (_e) {
+            // keep defaults
+          }
+        }
 
         if (data.name && data.name !== user.name) {
           updateUserSession?.({ name: data.name, dni: data.dni });
@@ -58,6 +89,46 @@ const Profile = () => {
       active = false;
     };
   }, [user, updateUserSession]);
+
+  const handleSaveSchedule = async (e) => {
+    e.preventDefault();
+    if (!user?.id) return;
+    if (selectedDays.length === 0) {
+      showToast({ variant: 'danger', message: 'Debés seleccionar al menos un día de atención.' });
+      return;
+    }
+    if (selectedSlots.length === 0) {
+      showToast({ variant: 'danger', message: 'Debés seleccionar al menos un horario de atención.' });
+      return;
+    }
+    try {
+      setSavingSchedule(true);
+      const schedulePayload = {
+        days: [...selectedDays].sort((a, b) => a - b),
+        slots: [...selectedSlots].sort(),
+      };
+      const scheduleJson = JSON.stringify(schedulePayload);
+      await usersApi.updateLawyerSchedule(user.id, { schedule: scheduleJson });
+
+      setProfileData((prev) => ({
+        ...prev,
+        schedule: scheduleJson,
+      }));
+
+      updateUserSession?.({
+        schedule: scheduleJson,
+      });
+
+      showToast({ variant: 'success', message: 'Días y horarios de atención actualizados correctamente.' });
+    } catch (err) {
+      showToast({
+        variant: 'danger',
+        message: err.message || 'No se pudieron actualizar los horarios de atención.',
+      });
+    } finally {
+      setSavingSchedule(false);
+    }
+  };
 
   const handleSaveContact = async (e) => {
     e.preventDefault();
@@ -196,6 +267,89 @@ const Profile = () => {
               disabled={savingContact}
             >
               {savingContact ? 'Guardando...' : 'Guardar información de contacto'}
+            </Button>
+          </Form>
+        </div>
+      )}
+
+      {user?.role === ROLES.ABOGADO && (
+        <div className="app-panel" id="schedule">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <h3 className="app-panel__title" style={{ margin: 0 }}>
+              Días y horarios de atención
+            </h3>
+            {!profileData?.schedule ? (
+              <span className="badge bg-warning text-dark" style={{ fontSize: '0.8rem', padding: '6px 10px' }}>
+                Sin configurar
+              </span>
+            ) : (
+              <span className="badge bg-success" style={{ fontSize: '0.8rem', padding: '6px 10px' }}>
+                Configurado
+              </span>
+            )}
+          </div>
+          <p className="app-text" style={{ marginBottom: 16 }}>
+            Seleccioná los días de la semana y los horarios en los que tus clientes podrán solicitar turnos con vos.
+          </p>
+          <Form onSubmit={handleSaveSchedule}>
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ display: 'block', fontWeight: 700, marginBottom: 8, color: '#eef2f6' }}>
+                Días de atención
+              </label>
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                {WEEK_DAYS.map((day) => {
+                  const isChecked = selectedDays.includes(day.id);
+                  return (
+                    <button
+                      key={day.id}
+                      type="button"
+                      className={`app-button ${isChecked ? 'app-button--primary' : 'app-button--secondary'}`}
+                      style={{ padding: '6px 14px', fontSize: '0.9rem' }}
+                      onClick={() => {
+                        setSelectedDays((prev) =>
+                          isChecked ? prev.filter((d) => d !== day.id) : [...prev, day.id]
+                        );
+                      }}
+                    >
+                      {day.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 24 }}>
+              <label style={{ display: 'block', fontWeight: 700, marginBottom: 8, color: '#eef2f6' }}>
+                Horarios disponibles
+              </label>
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                {STANDARD_SLOTS.map((slot) => {
+                  const isChecked = selectedSlots.includes(slot);
+                  return (
+                    <button
+                      key={slot}
+                      type="button"
+                      className={`app-button ${isChecked ? 'app-button--primary' : 'app-button--secondary'}`}
+                      style={{ padding: '6px 14px', fontSize: '0.9rem' }}
+                      onClick={() => {
+                        setSelectedSlots((prev) =>
+                          isChecked ? prev.filter((s) => s !== slot) : [...prev, slot]
+                        );
+                      }}
+                    >
+                      {slot} hs
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <Button
+              type="submit"
+              className="app-button app-button--primary"
+              disabled={savingSchedule}
+            >
+              {savingSchedule ? 'Guardando horarios...' : 'Guardar horarios de atención'}
             </Button>
           </Form>
         </div>

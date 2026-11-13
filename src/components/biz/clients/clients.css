@@ -41,13 +41,14 @@
   align-self: end;
   flex-wrap: nowrap;
   gap: 12px;
-  flex: 1 1 540px;
+  flex: 0 0 auto;
 }
 
 .clients-header__controls .users-search-wrap {
-  min-width: 0;
-  flex: 0 1 300px;
-  max-width: 300px;
+  width: 260px;
+  min-width: 260px;
+  max-width: 260px;
+  flex: 0 0 260px;
 }
 
 .client-card {

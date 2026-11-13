@@ -67,6 +67,40 @@ const Home = () => {
         <p className="app-page__subtitle">Cargando...</p>
       ) : (
         <>
+          {role === ROLES.ABOGADO && !user?.schedule && (
+            <div
+              className="home-schedule-prompt"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 16,
+                padding: '16px 20px',
+                borderRadius: 16,
+                background:
+                  'radial-gradient(circle at top left, rgba(70, 130, 220, 0.16), transparent 70%), rgba(20, 30, 45, 0.85)',
+                border: '1px solid rgba(120, 172, 214, 0.35)',
+                marginBottom: 20,
+              }}
+            >
+              <div>
+                <h4 style={{ margin: '0 0 4px', color: '#ffffff', fontSize: '1rem', fontWeight: 700 }}>
+                  📅 Configurá tus días y horarios de atención
+                </h4>
+                <p style={{ margin: 0, color: '#c3d6e6', fontSize: '0.88rem' }}>
+                  Definí en qué días y franjas horarias tus clientes podrán solicitar turnos con vos.
+                </p>
+              </div>
+              <Link
+                to="/dashboard/profile"
+                className="app-button app-button--primary"
+                style={{ whiteSpace: 'nowrap' }}
+              >
+                Configurar horarios
+              </Link>
+            </div>
+          )}
+
           <div className="home-stats">
             <div className="app-panel home-stat">
               <span>Próximos turnos</span>
