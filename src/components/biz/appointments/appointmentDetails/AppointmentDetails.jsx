@@ -44,17 +44,9 @@ const AppointmentDetails = ({ appointment, user, onStatus, onCancel, onEdit, onD
       {/* 3. Ticket Main Body */}
       <div className="appointment-ticket__body">
         <div className="appointment-ticket__top">
-          <div className="appointment-ticket__top-badges">
-            <span className={`appointment-details__status ${getStatusClass(appointment.status)}`}>
-              {appointment.status}
-            </span>
-            {appointment.caseNumber && appointment.caseNumber !== 'Sin expediente' ? (
-              <span className="appointment-ticket__case-pill">
-                <FileText size={12} />
-                <span>Exp. {appointment.caseNumber}</span>
-              </span>
-            ) : null}
-          </div>
+          <span className={`appointment-details__status ${getStatusClass(appointment.status)}`}>
+            {appointment.status}
+          </span>
 
           {/* Action buttons inside header */}
           <div className="appointment-ticket__actions">
@@ -146,9 +138,10 @@ const AppointmentDetails = ({ appointment, user, onStatus, onCancel, onEdit, onD
               )}
             </div>
 
-            {appointment.endTime ? (
-              <span className="appointment-ticket__duration">
-                Hasta las {appointment.endTime} hs
+            {appointment.caseNumber && appointment.caseNumber !== 'Sin expediente' ? (
+              <span className="appointment-ticket__case-pill">
+                <FileText size={12} />
+                <span>Exp. {appointment.caseNumber}</span>
               </span>
             ) : null}
           </div>

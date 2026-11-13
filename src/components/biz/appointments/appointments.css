@@ -1368,7 +1368,7 @@
 
 .appointments-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 24px;
   align-items: stretch;
   margin-top: 12px;
@@ -2618,26 +2618,29 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  min-height: 32px;
 }
 
 .appointment-ticket__top-badges {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
 }
 
 .appointment-ticket__case-pill {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 2px 8px;
+  padding: 3px 9px;
   border-radius: 6px;
   font-size: 0.74rem;
   font-weight: 600;
+  white-space: nowrap;
   background: rgba(120, 150, 190, 0.12);
   color: #cbd5e1;
   border: 1px solid rgba(150, 180, 220, 0.18);
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .appointment-ticket__actions {
@@ -2645,6 +2648,19 @@
   align-items: center;
   gap: 6px;
   margin-left: auto;
+  flex-shrink: 0;
+}
+
+.appointment-ticket__actions .appointment-admin-action {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 9px;
+}
+
+.appointment-ticket__actions .appointment-admin-action svg {
+  width: 15px;
+  height: 15px;
 }
 
 .appointment-ticket__content {
@@ -2687,8 +2703,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  flex-wrap: wrap;
-  padding-top: 6px;
+  padding-top: 8px;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
