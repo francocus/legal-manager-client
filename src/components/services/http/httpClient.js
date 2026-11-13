@@ -39,7 +39,34 @@ export const getErrorMessage = (error) => {
   const payload = error?.response?.data;
 
   if (payload == null) {
-    return DEFAULT_ERROR_MESSAGE;
+    return error?.message && !error.response ? error.message : DEFAULT_ERROR_MESSAGE;
+  }
+
+  if (typeof payload === 'string') {
+    return payload || DEFAULT_ERROR_MESSAGE;
+  }
+
+  return payload?.message ?? payload?.title ?? payload?.detail ?? DEFAULT_ERROR_MESSAGE;
+};
+
+export const resolveErrorMessage = async (error) => {
+  let payload = error?.response?.data;
+
+  if (payload instanceof Blob) {
+    try {
+      const text = await payload.text();
+      try {
+        payload = JSON.parse(text);
+      } catch {
+        payload = text;
+      }
+    } catch {
+      payload = null;
+    }
+  }
+
+  if (payload == null) {
+    return error?.message && !error.response ? error.message : DEFAULT_ERROR_MESSAGE;
   }
 
   if (typeof payload === 'string') {
@@ -123,6 +150,6 @@ export const apiDownload = async (path, { auth = true } = {}) => {
       clearExpiredSession();
     }
 
-    throw new Error(getErrorMessage(error));
+    throw new Error(await resolveErrorMessage(error));
   }
 };
