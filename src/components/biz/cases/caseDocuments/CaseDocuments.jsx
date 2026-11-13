@@ -250,92 +250,90 @@ const CaseDocuments = ({ legalCase, currentUser }) => {
               El expediente está cerrado: no admite la subida de documentos nuevos.
             </p>
           ) : (
-            <>
-              <form className="case-docs__form" onSubmit={handleUpload}>
-                <div
-                  className={`case-docs__dropzone${dragActive ? ' case-docs__dropzone--active' : ''}`}
-                  role="button"
-                  tabIndex={0}
-                  aria-label="Zona para arrastrar o elegir un archivo PDF"
-                  onClick={openFilePicker}
-                  onKeyDown={handleDropzoneKeyDown}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                >
-                  <input
-                    key={fileInputKey}
-                    ref={fileInputRef}
-                    type="file"
-                    accept="application/pdf,.pdf"
-                    aria-label="Archivo PDF (hasta 10 MB)"
-                    hidden
-                    onChange={handleFileInputChange}
-                  />
-                  <span className="case-docs__dropzone-title">Arrastrá tu PDF acá</span>
-                  <span className="case-docs__dropzone-subtitle">
-                    o hacé clic para buscar archivos
-                  </span>
-                </div>
-                {file ? (
-                  <p className="case-docs__staged">
-                    Listo para subir: {file.name}
-                    <button
-                      type="button"
-                      className="app-button app-button--secondary case-docs__unstage"
-                      onClick={handleUnstageFile}
-                    >
-                      Quitar
-                    </button>
-                  </p>
-                ) : null}
-                <div className="case-docs__upload-row">
-                  <Form.Select
-                    className="case-docs__field"
-                    aria-label="Tipo de documento"
-                    value={typeValue}
-                    onChange={(event) => setTypeValue(event.target.value)}
-                  >
-                    <option value="">Seleccionar tipo</option>
-                    {DOCUMENT_TYPE_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </Form.Select>
+            <form className="case-docs__form" onSubmit={handleUpload}>
+              <div
+                className={`case-docs__dropzone${dragActive ? ' case-docs__dropzone--active' : ''}`}
+                role="button"
+                tabIndex={0}
+                aria-label="Zona para arrastrar o elegir un archivo PDF"
+                onClick={openFilePicker}
+                onKeyDown={handleDropzoneKeyDown}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
+                <input
+                  key={fileInputKey}
+                  ref={fileInputRef}
+                  type="file"
+                  accept="application/pdf,.pdf"
+                  aria-label="Archivo PDF (hasta 10 MB)"
+                  hidden
+                  onChange={handleFileInputChange}
+                />
+                <span className="case-docs__dropzone-title">Arrastrá tu PDF acá</span>
+                <span className="case-docs__dropzone-subtitle">
+                  o hacé clic para buscar archivos
+                </span>
+              </div>
+              {file ? (
+                <p className="case-docs__staged">
+                  Listo para subir: {file.name}
                   <button
-                    type="submit"
-                    className="app-button app-button--primary"
-                    disabled={uploading}
+                    type="button"
+                    className="app-button app-button--secondary case-docs__unstage"
+                    onClick={handleUnstageFile}
                   >
-                    {uploading ? 'Subiendo...' : 'Subir documento'}
+                    Quitar
                   </button>
-                </div>
-              </form>
-              <div className="case-docs__generate">
+                </p>
+              ) : null}
+              <div className="case-docs__upload-row">
+                <Form.Select
+                  className="case-docs__field"
+                  aria-label="Tipo de documento"
+                  value={typeValue}
+                  onChange={(event) => setTypeValue(event.target.value)}
+                >
+                  <option value="">Seleccionar tipo</option>
+                  {DOCUMENT_TYPE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Form.Select>
                 <button
-                  type="button"
+                  type="submit"
                   className="app-button app-button--primary"
-                  disabled={generating || saving}
-                  onClick={() => handleGenerate('summary')}
+                  disabled={uploading}
                 >
-                  {generating ? 'Generando...' : 'Generar resumen con IA'}
-                </button>
-                <button
-                  type="button"
-                  className="app-button app-button--secondary"
-                  disabled={generating || saving}
-                  onClick={() => handleGenerate('constancia')}
-                >
-                  {generating ? 'Generando...' : 'Generar constancia'}
+                  {uploading ? 'Subiendo...' : 'Subir documento'}
                 </button>
               </div>
-            </>
+            </form>
           )}
+          <div className="case-docs__generate">
+            <button
+              type="button"
+              className="app-button app-button--primary"
+              disabled={generating || saving}
+              onClick={() => handleGenerate('summary')}
+            >
+              {generating ? 'Generando...' : 'Generar resumen con IA'}
+            </button>
+            <button
+              type="button"
+              className="app-button app-button--secondary"
+              disabled={generating || saving}
+              onClick={() => handleGenerate('constancia')}
+            >
+              {generating ? 'Generando...' : 'Generar constancia'}
+            </button>
+          </div>
         </div>
       ) : null}
 
-      {draft && canWrite && !isClosed ? (
+      {draft && canWrite ? (
         <div className="case-docs__draft">
           <h4 className="case-docs__draft-title">
             {draft.generatedByAi ? 'Borrador del resumen con IA' : 'Borrador de constancia'}
