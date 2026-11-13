@@ -3,7 +3,6 @@ import { Alert } from 'react-bootstrap';
 import { useTrash } from '../shared/useTrash';
 import { getDaysMeta } from '../shared/trash.helpers';
 import TrashActions from '../shared/TrashActions';
-import ConfirmDialog from '../../../../shared/confirmDialog/ConfirmDialog';
 import { SkeletonRows } from '../../../../shared/skeleton/Skeleton';
 import EmptyState from '../../../../shared/emptyState/EmptyState';
 import { formatDate } from '../../../../services/utils/format';
@@ -11,12 +10,13 @@ import { getStatusClass } from '../../../appointments/Appointments.data';
 import '../../../appointments/appointments.css';
 import '../../trash.css';
 
-// Admin papelera for turnos: mirrors the AppointmentsContainer admin view
-// (same panel, toolbar and table chrome) while listing only trashed turnos.
+// Papelera for turnos (admins and lawyers): mirrors the AppointmentsContainer
+// panel, toolbar and table chrome while listing only trashed turnos. The
+// backend already filters lawyer items server-side, so both roles see exactly
+// the rows they may restore.
 const TurnosPapelera = () => {
   const navigate = useNavigate();
-  const { trash, loading, error, restore, itemToDelete, setItemToDelete, confirmDelete } =
-    useTrash();
+  const { trash, loading, error, restore } = useTrash();
   const appointments = trash.appointments;
 
   return (
@@ -87,16 +87,7 @@ const TurnosPapelera = () => {
                       <span className="trash-meta">{getDaysMeta(entry.deactivatedAt)}</span>
                     </td>
                     <td className="appointment-admin-cell appointment-admin-cell--actions">
-                      <TrashActions
-                        onRestore={() => restore('appointment', appointment.id)}
-                        onDelete={() =>
-                          setItemToDelete({
-                            kind: 'appointment',
-                            id: appointment.id,
-                            label: appointment.title || formatDate(appointment.date),
-                          })
-                        }
-                      />
+                      <TrashActions onRestore={() => restore('appointment', appointment.id)} />
                     </td>
                   </tr>
                 );
@@ -105,19 +96,6 @@ const TurnosPapelera = () => {
           </table>
         </div>
       )}
-
-      {/* ConfirmDialog always appends the item name plus a question mark, so
-          the required irreversible statement is followed by the confirmation
-          question ending on the bolded item label. */}
-      <ConfirmDialog
-        show={Boolean(itemToDelete)}
-        onHide={() => setItemToDelete(null)}
-        onConfirm={confirmDelete}
-        title="Borrar definitivamente"
-        message="Esta acción es irreversible: el registro y sus archivos se eliminan para siempre. ¿Estás seguro que deseas borrar definitivamente"
-        itemName={itemToDelete?.label}
-        confirmLabel="Sí, borrar para siempre"
-      />
     </section>
   );
 };

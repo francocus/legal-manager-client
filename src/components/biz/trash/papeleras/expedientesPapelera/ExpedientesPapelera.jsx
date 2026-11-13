@@ -3,7 +3,6 @@ import { Alert } from 'react-bootstrap';
 import { useTrash } from '../shared/useTrash';
 import { getChildrenMeta, getDaysMeta, getDocumentCaseLabel } from '../shared/trash.helpers';
 import TrashActions from '../shared/TrashActions';
-import ConfirmDialog from '../../../../shared/confirmDialog/ConfirmDialog';
 import { SkeletonRows } from '../../../../shared/skeleton/Skeleton';
 import EmptyState from '../../../../shared/emptyState/EmptyState';
 import { formatFileSize, getTypeLabel } from '../../../documents/Documents.data';
@@ -17,13 +16,14 @@ const EMPTY_SECTION = (
   />
 );
 
-// Admin papelera for expedientes: mirrors the CasesContainer header and table
-// chrome while listing trashed expedientes and, in a second stacked section,
-// their trashed documentos.
+// Papelera for expedientes (admins and lawyers): mirrors the CasesContainer
+// header and table chrome while listing trashed expedientes and, in a second
+// stacked section, their trashed documentos. The backend already filters
+// lawyer items server-side, so both roles see exactly the rows they may
+// restore.
 const ExpedientesPapelera = () => {
   const navigate = useNavigate();
-  const { trash, loading, error, restore, itemToDelete, setItemToDelete, confirmDelete } =
-    useTrash();
+  const { trash, loading, error, restore } = useTrash();
 
   return (
     <section className="cases-panel">
@@ -70,11 +70,10 @@ const ExpedientesPapelera = () => {
                   </thead>
                   <tbody>
                     {trash.cases.map((entry) => {
+                      // The children meta is informational only: it points
+                      // out linked turnos/documentos that live in the
+                      // papelera too, since restore is the only action.
                       const childrenMeta = getChildrenMeta(entry);
-                      // Cases with linked children still in the papelera
-                      // reject the hard delete on the backend, so the button
-                      // is disabled with a hint about deleting them first.
-                      const childrenPending = childrenMeta !== null;
                       return (
                         <tr key={entry.id}>
                           <td className="case-admin-cell case-admin-cell--main">
@@ -92,22 +91,7 @@ const ExpedientesPapelera = () => {
                             </div>
                           </td>
                           <td className="case-admin-cell case-admin-cell--actions">
-                            <TrashActions
-                              onRestore={() => restore('case', entry.id)}
-                              onDelete={() =>
-                                setItemToDelete({
-                                  kind: 'case',
-                                  id: entry.id,
-                                  label: entry.caseNumber,
-                                })
-                              }
-                              deleteDisabled={childrenPending}
-                              deleteTitle={
-                                childrenPending
-                                  ? 'Eliminá primero sus turnos y documentos de la papelera'
-                                  : undefined
-                              }
-                            />
+                            <TrashActions onRestore={() => restore('case', entry.id)} />
                           </td>
                         </tr>
                       );
@@ -157,16 +141,7 @@ const ExpedientesPapelera = () => {
                             <span className="trash-meta">{getDaysMeta(entry.deactivatedAt)}</span>
                           </td>
                           <td className="case-admin-cell case-admin-cell--actions">
-                            <TrashActions
-                              onRestore={() => restore('document', document.id)}
-                              onDelete={() =>
-                                setItemToDelete({
-                                  kind: 'document',
-                                  id: document.id,
-                                  label: document.fileName,
-                                })
-                              }
-                            />
+                            <TrashActions onRestore={() => restore('document', document.id)} />
                           </td>
                         </tr>
                       );
@@ -178,19 +153,6 @@ const ExpedientesPapelera = () => {
           </section>
         </div>
       )}
-
-      {/* ConfirmDialog always appends the item name plus a question mark, so
-          the required irreversible statement is followed by the confirmation
-          question ending on the bolded item label. */}
-      <ConfirmDialog
-        show={Boolean(itemToDelete)}
-        onHide={() => setItemToDelete(null)}
-        onConfirm={confirmDelete}
-        title="Borrar definitivamente"
-        message="Esta acción es irreversible: el registro y sus archivos se eliminan para siempre. ¿Estás seguro que deseas borrar definitivamente"
-        itemName={itemToDelete?.label}
-        confirmLabel="Sí, borrar para siempre"
-      />
     </section>
   );
 };

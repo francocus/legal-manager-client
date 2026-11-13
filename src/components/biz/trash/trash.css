@@ -169,12 +169,12 @@
 }
 
 /* Trash pages reuse their source module's panel and fixed-layout tables
-   (table-layout: fixed with percentage columns). Their rows carry text action
-   buttons ("Borrar definitivamente") that need more room than the fixed
-   actions column leaves, so any table inside a panel holding trash rows falls
-   back to auto layout and drops the fixed column widths (the nth-child bump
-   keeps this above every module's per-column rules). Trash pages contain no
-   other tables, so the :has() scope cannot leak onto regular views. */
+   (table-layout: fixed with percentage columns). Their rows carry a text
+   action button ("Restaurar") that may need more room than the fixed actions
+   column leaves, so any table inside a panel holding trash rows falls back to
+   auto layout and drops the fixed column widths (the nth-child bump keeps
+   this above every module's per-column rules). Trash pages contain no other
+   tables, so the :has() scope cannot leak onto regular views. */
 :has(.trash-row-actions) table {
   table-layout: auto;
 }
@@ -186,9 +186,8 @@
 
 .trash-row-actions {
   display: inline-flex;
-  /* Stacked: two text buttons side by side (Restaurar + Borrar definitivamente)
-      exceeded the actions column width and clipped the second one at the
-      panel edge. */
+  /* Centered in the actions column; a side by side button pair used to
+      exceed the column width and clip at the panel edge. */
   flex-direction: column;
   gap: 8px;
   align-items: center;
@@ -210,12 +209,6 @@
     border-color 160ms ease;
 }
 
-.trash-row-button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-  transform: none;
-}
-
 .trash-row-button--secondary {
   background: rgba(255, 255, 255, 0.07);
   border-color: rgba(255, 255, 255, 0.16);
@@ -225,17 +218,6 @@
 .trash-row-button--secondary:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.22);
-}
-
-.trash-row-button--danger {
-  background: rgba(140, 60, 76, 0.4);
-  border-color: rgba(220, 100, 116, 0.5);
-  color: #ffe5e5;
-}
-
-.trash-row-button--danger:hover:not(:disabled) {
-  background: rgba(160, 70, 88, 0.52);
-  border-color: rgba(220, 100, 116, 0.62);
 }
 
 /* Icon-only entry point shared by the toolbars that link to /papelera.
@@ -365,17 +347,6 @@
 
 [data-bs-theme='light'] .trash-row-button--secondary:hover:not(:disabled) {
   background: rgba(15, 23, 32, 0.09);
-}
-
-[data-bs-theme='light'] .trash-row-button--danger {
-  background: rgba(190, 60, 76, 0.14);
-  border-color: rgba(190, 60, 76, 0.3);
-  color: #8a1f1f;
-}
-
-[data-bs-theme='light'] .trash-row-button--danger:hover:not(:disabled) {
-  background: rgba(190, 60, 76, 0.22);
-  border-color: rgba(190, 60, 76, 0.4);
 }
 
 [data-bs-theme='light'] .trash-entry-button {

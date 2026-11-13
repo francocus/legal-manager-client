@@ -11,23 +11,15 @@ const RESTORE_BY_KIND = {
   user: trashApi.restoreUser,
 };
 
-const DELETE_BY_KIND = {
-  case: trashApi.hardDeleteCase,
-  appointment: trashApi.hardDeleteAppointment,
-  document: trashApi.hardDeleteDocument,
-  user: trashApi.hardDeleteUser,
-};
-
 // Shared state for the four per-module papelera views: one GET /trash feeds
-// every page, and each container picks the lists it renders. Restore needs no
-// confirmation; the delete errors are rethrown so the shared ConfirmDialog
-// stays open while the toast reports the API message.
+// every page, and each container picks the lists it renders. The papelera is
+// an archive of baja'd items with restore only; there is no physical delete
+// affordance, so restore is the single row action.
 export const useTrash = () => {
   const { showToast } = useToast();
   const [trash, setTrash] = useState(EMPTY_TRASH);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [itemToDelete, setItemToDelete] = useState(null);
 
   const fetchTrash = useCallback(async () => {
     try {
@@ -86,21 +78,5 @@ export const useTrash = () => {
     [reload, showToast],
   );
 
-  const confirmDelete = useCallback(async () => {
-    const { kind, id } = itemToDelete ?? {};
-    try {
-      await DELETE_BY_KIND[kind]?.(id);
-      setItemToDelete(null);
-      showToast({ variant: 'success', message: 'Eliminado definitivamente.' });
-      await reload();
-    } catch (deleteError) {
-      showToast({
-        variant: 'danger',
-        message: deleteError.message || 'No se pudo eliminar el registro.',
-      });
-      throw deleteError;
-    }
-  }, [itemToDelete, reload, showToast]);
-
-  return { trash, loading, error, reload, restore, itemToDelete, setItemToDelete, confirmDelete };
+  return { trash, loading, error, reload, restore };
 };

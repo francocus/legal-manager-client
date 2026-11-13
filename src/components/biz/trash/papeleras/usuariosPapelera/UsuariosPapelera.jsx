@@ -3,7 +3,6 @@ import { Alert } from 'react-bootstrap';
 import { useTrash } from '../shared/useTrash';
 import { getDaysMeta } from '../shared/trash.helpers';
 import TrashActions from '../shared/TrashActions';
-import ConfirmDialog from '../../../../shared/confirmDialog/ConfirmDialog';
 import { SkeletonRows } from '../../../../shared/skeleton/Skeleton';
 import EmptyState from '../../../../shared/emptyState/EmptyState';
 import { getRoleClass, getRoleLabel } from '../../../users/User.data';
@@ -14,8 +13,7 @@ import '../../trash.css';
 // chrome while listing every trashed user with its role chip.
 const UsuariosPapelera = () => {
   const navigate = useNavigate();
-  const { trash, loading, error, restore, itemToDelete, setItemToDelete, confirmDelete } =
-    useTrash();
+  const { trash, loading, error, restore } = useTrash();
   const users = trash.users;
 
   return (
@@ -80,16 +78,7 @@ const UsuariosPapelera = () => {
                     <span className="trash-meta">{getDaysMeta(entry.deactivatedAt)}</span>
                   </td>
                   <td className="user-cell user-cell--actions">
-                    <TrashActions
-                      onRestore={() => restore('user', entry.user.id)}
-                      onDelete={() =>
-                        setItemToDelete({
-                          kind: 'user',
-                          id: entry.user.id,
-                          label: entry.user.name,
-                        })
-                      }
-                    />
+                    <TrashActions onRestore={() => restore('user', entry.user.id)} />
                   </td>
                 </tr>
               ))}
@@ -97,19 +86,6 @@ const UsuariosPapelera = () => {
           </table>
         </div>
       )}
-
-      {/* ConfirmDialog always appends the item name plus a question mark, so
-          the required irreversible statement is followed by the confirmation
-          question ending on the bolded item label. */}
-      <ConfirmDialog
-        show={Boolean(itemToDelete)}
-        onHide={() => setItemToDelete(null)}
-        onConfirm={confirmDelete}
-        title="Borrar definitivamente"
-        message="Esta acción es irreversible: el registro y sus archivos se eliminan para siempre. ¿Estás seguro que deseas borrar definitivamente"
-        itemName={itemToDelete?.label}
-        confirmLabel="Sí, borrar para siempre"
-      />
     </section>
   );
 };

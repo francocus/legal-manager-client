@@ -52,16 +52,10 @@ export const trashApi = {
   },
 
   // Logical restores: the row leaves the trash and goes back to its module.
+  // The papelera keeps no physical delete paths: baja'd items are an archive
+  // with restore as the only action.
   restoreCase: (id) => apiRequest(`/trash/case/${id}/restore`, { method: 'POST' }),
   restoreAppointment: (id) => apiRequest(`/trash/appointment/${id}/restore`, { method: 'POST' }),
   restoreDocument: (id) => apiRequest(`/trash/document/${id}/restore`, { method: 'POST' }),
   restoreUser: (id) => apiRequest(`/trash/user/${id}/restore`, { method: 'POST' }),
-
-  // Physical deletes. Cases with linked children (and users with references)
-  // reject with a message about deleting them first, surfaced through
-  // apiRequest error handling.
-  hardDeleteCase: (id) => apiRequest(`/trash/case/${id}`, { method: 'DELETE' }),
-  hardDeleteAppointment: (id) => apiRequest(`/trash/appointment/${id}`, { method: 'DELETE' }),
-  hardDeleteDocument: (id) => apiRequest(`/trash/document/${id}`, { method: 'DELETE' }),
-  hardDeleteUser: (id) => apiRequest(`/trash/user/${id}`, { method: 'DELETE' }),
 };

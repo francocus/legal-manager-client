@@ -55,7 +55,7 @@ function App() {
           <Route
             path="appointments/papelera"
             element={
-              <Protected allowedRoles={[ROLES.ADMIN]}>
+              <Protected allowedRoles={[ROLES.ADMIN, ROLES.ABOGADO]}>
                 <TurnosPapelera />
               </Protected>
             }
@@ -65,7 +65,7 @@ function App() {
           <Route
             path="cases/papelera"
             element={
-              <Protected allowedRoles={[ROLES.ADMIN]}>
+              <Protected allowedRoles={[ROLES.ADMIN, ROLES.ABOGADO]}>
                 <ExpedientesPapelera />
               </Protected>
             }
