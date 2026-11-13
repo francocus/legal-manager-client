@@ -1,5 +1,6 @@
 import { useContext, useState } from 'react';
 import { Alert, Button } from 'react-bootstrap';
+import { useNavigate } from 'react-router';
 import { AuthenticationContext } from '../../../services/auth/authentication.context';
 import { useDashboardData } from '../../../services/data/dashboardData.context';
 import { usersApi } from '../../../services/api/usersApi';
@@ -13,15 +14,20 @@ import UserItem from '../userItem/UserItem';
 import UsersSearch from '../usersSearch/UsersSearch';
 import { ROLES } from '../../../services/consts/roles';
 import '../users.css';
+import '../../trash/trash.css';
 
 const STAFF_ROLES = [ROLES.ADMIN, ROLES.ABOGADO];
 
-const STAFF_ROLE_OPTIONS = [
+// Self-registered clients are promoted to lawyer from this view (backend
+// /user/{id}/role), so they stay listed and filterable alongside the staff.
+const USER_ROLE_OPTIONS = [
   { value: ROLES.ADMIN, label: 'Administrador' },
   { value: ROLES.ABOGADO, label: 'Abogado' },
+  { value: ROLES.CLIENTE, label: 'Cliente' },
 ];
 
 const UsersContainer = () => {
+  const navigate = useNavigate();
   const { user: currentUser } = useContext(AuthenticationContext);
   const { users, loading, error, refreshUsers, refreshLawyers, refreshClients } =
     useDashboardData();
@@ -64,6 +70,7 @@ const UsersContainer = () => {
 
   const handleDeleteUser = async (id) => {
     if (id === currentUser?.id) {
+      showToast({ variant: 'warning', message: 'No podés dar de baja tu propia cuenta.' });
       return;
     }
 
@@ -83,9 +90,7 @@ const UsersContainer = () => {
     }
   };
 
-  const staffUsers = users.filter((u) => u.role !== ROLES.CLIENTE && u.role !== 'cliente');
-
-  const filteredUsers = staffUsers.filter((user) => {
+  const filteredUsers = users.filter((user) => {
     if (roleFilter !== 'all' && user.role !== roleFilter) {
       return false;
     }
@@ -113,7 +118,7 @@ const UsersContainer = () => {
             aria-label="Filtrar por rol"
           >
             <option value="all">Todos los roles</option>
-            {STAFF_ROLE_OPTIONS.map((option) => (
+            {USER_ROLE_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
@@ -123,6 +128,18 @@ const UsersContainer = () => {
           <div className="users-search-wrap">
             <UsersSearch onSearch={setSearchUser} />
           </div>
+
+          <button
+            type="button"
+            className="trash-entry-button"
+            title="Papelera"
+            aria-label="Papelera"
+            onClick={() => navigate('/dashboard/users/papelera')}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M9 3.75h6l1 1.5H20v1.5H4v-1.5h4l1-1.5Zm1.5 5.25h1.5v7.5h-1.5v-7.5Zm4.5 0h1.5v7.5H15v-7.5Zm-8.25 0h1.5v7.5h-1.5v-7.5Zm1.5 11.25h9A1.75 1.75 0 0 0 19 18v-8.25H5V18c0 .97.78 1.75 1.75 1.75Z" />
+            </svg>
+          </button>
 
           <Button
             type="button"
@@ -155,7 +172,6 @@ const UsersContainer = () => {
           user={userToEdit}
           onEditUser={handleEditUser}
           onFormClosed={handleCloseForms}
-          allowedRoles={STAFF_ROLES}
         />
       )}
 
@@ -163,10 +179,10 @@ const UsersContainer = () => {
         show={Boolean(userToDelete)}
         onHide={() => setUserToDelete(null)}
         onConfirm={() => handleDeleteUser(userToDelete?.id)}
-        title="Eliminar usuario"
-        message="¿Estás seguro que deseas eliminar al usuario"
+        title="Dar de baja"
+        message="El registro queda desactivado y no se elimina físicamente. ¿Estás seguro que deseas dar de baja al usuario"
         itemName={userToDelete?.name}
-        confirmLabel="Sí, deseo eliminarlo"
+        confirmLabel="Sí, dar de baja"
       />
 
       {loading ? (

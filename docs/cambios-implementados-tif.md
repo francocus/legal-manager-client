@@ -19,7 +19,7 @@ Este documento registra la comprobación exhaustiva del código fuente del front
 | **Teléfono del abogado visible para clientes**: "El teléfono del abogado es visible para sus clientes; el cliente registra domicilio y teléfono de forma opcional." | **Conforme** | `CasePage.jsx` renderiza el teléfono del abogado en la lista de profesionales asignados (`• Tel: ...`). `Profile.jsx` permite a los clientes ingresar y editar teléfono y domicilio, y a los abogados editar su teléfono. |
 | **Unicidad de Email, DNI y CaseNumber**: Deben ser únicos en el sistema. | **Conforme** | El frontend valida formatos (DNI 7 u 8 dígitos, formato de correo) y el backend garantiza unicidad arrojando `Conflict (409)`, que el frontend captura y muestra en Toasts informativos. |
 | **Restricción de baja con dependencias**: "Un usuario no puede darse de baja si tiene expedientes o turnos activos; un expediente no puede darse de baja si tiene turnos activos." | **Conforme** | Toda operación de baja lógica presenta diálogo de confirmación previo y, en caso de conflicto por dependencias activas, el backend rechaza la baja y el frontend notifica la causa exacta al usuario mediante Toasts de alerta. |
-| **Resumen del expediente con IA y flujo de revisión**: El resumen se genera a partir de datos del caso, queda en borrador y requiere aprobación o descarte por un abogado. | **Conforme** | `CaseDocuments.jsx` dispone de la generación con IA (`POST /document/case/:id/generate-summary`), previsualización del borrador en PDF y botones para Aprobar (`PATCH /approve`) o Descartar (`PATCH /discard`), mostrando el badge distintivo "IA". Solo abogados/administradores pueden revisar. |
+| **Resumen del expediente con IA y flujo de revisión**: El resumen se genera a partir de datos del caso, queda en borrador y requiere aprobación o descarte por un abogado. | **Conforme** | `CaseDocuments.jsx` dispone de la generación con IA (`POST /document/case/:id/generate-summary`) y de constancias (`POST /document/case/:id/generate-constancia`): ambos devuelven un borrador PDF en base64 sin persistir nada, que el frontend previsualiza. Solo el botón "Guardar" persiste vía `POST /document/generated` (los documentos IA llegan ya aprobados por el backend, las constancias persisten con `approved = null`), mientras que "Descartar" descarta solo localmente. Muestra el badge distintivo "IA". Solo abogados/administradores pueden generar y guardar. |
 | **Restricciones de formato y tamaño de documentos**: "Solo se aceptan documentos en formato PDF, con un tamaño máximo de 10 MB por archivo." | **Conforme** | Validado en `CaseDocuments.jsx` previo al envío (`application/pdf`, `.pdf`, `<= 10 MB`), rechazando otros tipos de archivo o pesos superiores con advertencia visual. |
 | **Bloqueo de adjuntos en expediente cerrado**: "No se pueden adjuntar documentos a un expediente cerrado." | **Conforme** | `CaseDocuments.jsx` deshabilita la zona de arrastre (drag-and-drop), el selector de archivos y el botón de subida si `legalCase.status === 'cerrado'`. |
 
@@ -45,7 +45,7 @@ Este documento registra la comprobación exhaustiva del código fuente del front
 16. **Subir documento PDF real (escrito, expediente, prueba, contrato)**: Implementado en `CaseDocuments.jsx` con drag-and-drop y categorización por tipo.
 17. **Consultar, listar y descargar documentos**: Implementado en `CaseDocuments.jsx` con previsualización y descarga directa de binarios PDF.
 18. **Dar de baja (lógica) un documento**: Implementado en `CaseDocuments.jsx` (`DELETE /document/:id`).
-19. **Generación automática / IA y revisión**: Flujo completo de borrador, previsualización, aprobación y descarte en `CaseDocuments.jsx`.
+19. **Generación automática / IA y revisión**: Flujo confirm-first en `CaseDocuments.jsx`: generar resumen o constancia devuelve un borrador PDF en base64 sin persistir nada; el frontend lo previsualiza y solo "Guardar" persiste vía `POST /document/generated` (los documentos IA llegan ya aprobados por el backend, las constancias persisten con `approved = null`); "Descartar" descarta solo localmente.
 
 ---
 
@@ -57,7 +57,7 @@ Este documento registra la comprobación exhaustiva del código fuente del front
 * **Portal del Abogado**:
   * Navegación: Calendario, Turnos, Expedientes y Clientes.
   * Visualización y gestión acotada a los casos y citas en los que participa.
-  * Revisión y aprobación de documentos generados por IA.
+  * Generación de resúmenes por IA y constancias (borrador confirm-first: previsualización y guardado explícito).
 * **Portal del Cliente**:
   * Navegación: Calendario, Mis Turnos y Mis Expedientes.
   * Solicitud de turnos con validación de disponibilidad.

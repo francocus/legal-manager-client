@@ -5,7 +5,7 @@ import { useDashboardData } from '../../../services/data/dashboardData.context';
 import { getStatusClass } from '../../appointments/Appointments.data';
 import MonthView from '../monthView/MonthView';
 import WeekView from '../weekView/WeekView';
-import { addDays, addMonths, formatMonthTitle, getDateKey, getMonday, pad } from '../Calendar.data';
+import { addDays, addMonths, formatMonthTitle, getDateKey, getMonday, isSameDate, pad } from '../Calendar.data';
 import { MONTH_NAMES } from '../../../services/consts/calendarConsts';
 import '../../appointments/appointments.css';
 import '../../dashboard/dashboard.css';
@@ -59,6 +59,20 @@ const CalendarContainer = () => {
     );
   };
 
+  // The middle control always jumps back to today's period: it names the
+  // current scope while the calendar sits on it and reads "Volver" once the
+  // user navigates away with the arrows or picks another date.
+  const isCurrentPeriod =
+    viewMode === 'month'
+      ? cursorDate.getMonth() === today.getMonth() &&
+        cursorDate.getFullYear() === today.getFullYear()
+      : isSameDate(getMonday(cursorDate), getMonday(today));
+  const periodButtonLabel = isCurrentPeriod
+    ? viewMode === 'month'
+      ? 'Este mes'
+      : 'Esta semana'
+    : 'Volver';
+
   return (
     <section className="dashboard-content">
       <div className="dashboard-calendar">
@@ -74,7 +88,7 @@ const CalendarContainer = () => {
                 {'<'}
               </button>
               <button type="button" onClick={() => selectDate(today)}>
-                Hoy
+                {periodButtonLabel}
               </button>
               <button type="button" onClick={() => movePeriod(1)}>
                 {'>'}

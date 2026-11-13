@@ -6,6 +6,7 @@ import { useDashboardData } from '../../../services/data/dashboardData.context';
 import { usePreferences } from '../../../services/preferences/preferences.context';
 import { casesApi } from '../../../services/api/casesApi';
 import { useToast } from '../../../shared/toast/toast.context';
+import { FolderOpen } from 'lucide-react';
 import { formatDate } from '../../../services/utils/format';
 import { ROLES } from '../../../services/consts/roles';
 import CaseDetails from '../caseDetails/CaseDetails';
@@ -119,10 +120,15 @@ const CasePage = () => {
   return (
     <section className="app-page">
       <div className="app-page__header">
-        <div>
-          <p className="app-page__eyebrow">Expediente</p>
-          <h2 className="app-page__title">{legalCase.caseNumber}</h2>
-          <p className="app-page__subtitle">{legalCase.title}</p>
+        <div className="app-identity">
+          <span className="app-avatar">
+            <FolderOpen size={24} />
+          </span>
+          <div>
+            <p className="app-page__eyebrow">Expediente</p>
+            <h2 className="app-page__title">{legalCase.caseNumber}</h2>
+            <p className="app-page__subtitle">{legalCase.title}</p>
+          </div>
         </div>
         <div className="app-page__toolbar">
           <span className={`cases-item__status ${getStatusClass(legalCase.status)}`}>

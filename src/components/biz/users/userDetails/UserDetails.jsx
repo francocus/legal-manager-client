@@ -50,9 +50,22 @@ const UserDetails = ({
   const canEditRole = !fixedRole && !targetIsAdmin && userIsAdmin;
 
   const roleOptions = useMemo(() => {
-    if (!allowedRoles) return ROLE_OPTIONS;
-    return ROLE_OPTIONS.filter((option) => allowedRoles.includes(option.value));
-  }, [allowedRoles]);
+    const base = allowedRoles
+      ? ROLE_OPTIONS.filter((option) => allowedRoles.includes(option.value))
+      : ROLE_OPTIONS;
+
+    // The backend rejects role changes to/from admin (admins are created by
+    // command), so the select never offers a move that cannot save: an admin
+    // target only lists its own role (locked) and any other target lists the
+    // roles it can actually hold. Without a user (creation) the caller's
+    // allowedRoles stand.
+    if (!user) return base;
+    return base.filter((option) =>
+      targetIsAdmin
+        ? option.value === (user.role ?? ROLES.ADMIN)
+        : option.value !== ROLES.ADMIN,
+    );
+  }, [allowedRoles, targetIsAdmin, user]);
 
   const initialValues = useMemo(
     () => ({

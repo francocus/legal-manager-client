@@ -19,6 +19,10 @@ import CasePage from './components/biz/cases/casePage/CasePage.jsx';
 import ClientsContainer from './components/biz/clients/clientsContainer/ClientsContainer.jsx';
 import ClientPage from './components/biz/clients/clientPage/ClientPage.jsx';
 import UsersContainer from './components/biz/users/usersContainer/UsersContainer.jsx';
+import TurnosPapelera from './components/biz/trash/papeleras/turnosPapelera/TurnosPapelera.jsx';
+import ExpedientesPapelera from './components/biz/trash/papeleras/expedientesPapelera/ExpedientesPapelera.jsx';
+import ClientesPapelera from './components/biz/trash/papeleras/clientesPapelera/ClientesPapelera.jsx';
+import UsuariosPapelera from './components/biz/trash/papeleras/usuariosPapelera/UsuariosPapelera.jsx';
 import Profile from './components/biz/profile/Profile.jsx';
 import CalendarContainer from './components/biz/calendar/calendarContainer/CalendarContainer.jsx';
 
@@ -48,16 +52,62 @@ function App() {
           <Route path="calendar" element={<CalendarContainer />} />
           <Route path="appointments" element={<AppointmentsContainer />} />
           <Route path="appointments/:appointmentId" element={<AppointmentPage />} />
+          <Route
+            path="appointments/papelera"
+            element={
+              <Protected allowedRoles={[ROLES.ADMIN, ROLES.ABOGADO]}>
+                <TurnosPapelera />
+              </Protected>
+            }
+          />
           <Route path="cases" element={<CasesContainer />} />
           <Route path="cases/:caseId" element={<CasePage />} />
-          <Route path="clients" element={<ClientsContainer />} />
-          <Route path="clients/:clientId" element={<ClientPage />} />
+          <Route
+            path="cases/papelera"
+            element={
+              <Protected allowedRoles={[ROLES.ADMIN, ROLES.ABOGADO]}>
+                <ExpedientesPapelera />
+              </Protected>
+            }
+          />
+          <Route
+            path="clients"
+            element={
+              <Protected allowedRoles={[ROLES.ADMIN, ROLES.ABOGADO]}>
+                <ClientsContainer />
+              </Protected>
+            }
+          />
+          <Route
+            path="clients/:clientId"
+            element={
+              <Protected allowedRoles={[ROLES.ADMIN, ROLES.ABOGADO]}>
+                <ClientPage />
+              </Protected>
+            }
+          />
+          <Route
+            path="clients/papelera"
+            element={
+              <Protected allowedRoles={[ROLES.ADMIN]}>
+                <ClientesPapelera />
+              </Protected>
+            }
+          />
           <Route path="profile" element={<Profile />} />
           <Route
             path="users"
             element={
               <Protected allowedRoles={[ROLES.ADMIN]}>
                 <UsersContainer />
+              </Protected>
+            }
+          />
+          <Route
+            path="users/papelera"
+            element={
+              <Protected allowedRoles={[ROLES.ADMIN]}>
+                <UsuariosPapelera />
               </Protected>
             }
           />

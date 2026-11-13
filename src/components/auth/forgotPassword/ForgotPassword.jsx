@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button, Form } from 'react-bootstrap';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import ToggleTheme from '../../shared/toggleTheme/ToggleTheme.jsx';
 import { Scale } from 'lucide-react';
 import { useForm } from '../../services/hooks/useForm';
@@ -106,6 +106,13 @@ const ForgotPassword = () => {
                   {submitting ? 'Enviando…' : 'Enviar correo de recuperación'}
                 </Button>
               </Form>
+
+              <p className="auth-switch-text">
+                ¿Recordaste tu contraseña?{' '}
+                <Link to="/login" className="auth-link">
+                  Volver al inicio de sesión
+                </Link>
+              </p>
             </div>
           )}
         </section>

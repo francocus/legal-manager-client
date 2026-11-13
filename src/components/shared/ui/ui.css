@@ -72,7 +72,7 @@ a {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 44px;
+  min-height: 46px;
   padding: 0 18px;
   border: 1px solid transparent;
   border-radius: 14px;
@@ -94,18 +94,24 @@ a {
   cursor: not-allowed;
 }
 
+/* Every button lifts the same 2px, matching the create-button family. */
 .app-button:hover:not(:disabled) {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
+/* Gradient actions share one recipe with the create-button family and the
+   modal footers: same shadow, same weight, and the hover always declares
+   its own color so a future .btn instance can never paint it white. */
 .app-button--primary {
   background: linear-gradient(135deg, #eef4fa, #b9cee2);
   color: #07090d;
-  box-shadow: 0 14px 26px rgba(0, 0, 0, 0.32);
+  font-weight: 800;
+  box-shadow: 0 18px 30px rgba(0, 0, 0, 0.4);
 }
 
 .app-button--primary:hover:not(:disabled) {
   background: linear-gradient(135deg, #f8fbfe, #cadce9);
+  color: #07090d;
 }
 
 .app-button--secondary {
@@ -116,6 +122,7 @@ a {
 
 .app-button--secondary:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.12);
+  color: #eef2f6;
 }
 
 .app-button--danger {
@@ -126,6 +133,7 @@ a {
 
 .app-button--danger:hover:not(:disabled) {
   background: rgba(170, 66, 86, 0.6);
+  color: #ffe9ec;
 }
 
 .app-button--ghost {
@@ -135,11 +143,12 @@ a {
 
 .app-button--ghost:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.06);
+  color: #c9d4e0;
 }
 
 .app-icon-button {
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   display: inline-grid;
   place-items: center;
   padding: 0;
@@ -156,6 +165,7 @@ a {
 
 .app-icon-button:hover {
   background: rgba(255, 255, 255, 0.12);
+  color: #eef2f6;
   transform: translateY(-1px);
 }
 
@@ -227,6 +237,7 @@ a {
 
 [data-bs-theme='light'] .app-button--secondary:hover:not(:disabled) {
   background: rgba(15, 23, 32, 0.09);
+  color: #0d1117;
 }
 
 [data-bs-theme='light'] .app-button--ghost {
@@ -235,10 +246,249 @@ a {
 
 [data-bs-theme='light'] .app-button--ghost:hover:not(:disabled) {
   background: rgba(15, 23, 32, 0.06);
+  color: #3c4754;
 }
 
 [data-bs-theme='light'] .app-icon-button {
   background: rgba(15, 23, 32, 0.05);
   border-color: rgba(15, 23, 32, 0.14);
   color: #0d1117;
+}
+
+/*
+ * Shared select skin: every <select> in the app travels through Bootstrap's
+ * .form-select class, so one global rule keeps bare dropdowns (toolbar status
+ * picker, add-lawyer picker, document type, profile preferences) on the same
+ * glass aesthetic as the per-module forms and filter chips. Module styles are
+ * more specific and keep winning where they already exist.
+ */
+.form-select {
+  min-height: 46px;
+  border-radius: 16px;
+  border: 1px solid rgba(170, 195, 220, 0.22);
+  background-color: rgba(5, 8, 12, 0.95);
+  color: #f5f8fb;
+  box-shadow: none;
+  padding-right: 2.5rem;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23c3ccd6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M2 5l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.85rem center;
+  background-size: 14px 14px;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.form-select:focus {
+  border-color: rgba(160, 195, 230, 0.55);
+  background-color: rgba(8, 13, 20, 0.98);
+  color: #ffffff;
+  box-shadow: 0 0 0 0.22rem rgba(110, 160, 200, 0.26);
+  outline: none;
+}
+
+.form-select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Open dropdown rows: Chromium paints the native popup from the element's
+   color-scheme (Bootstrap switches it per data-bs-theme); these pins keep
+   the rows on the app palette in both themes. They sit in ui.css, which
+   loads after every module stylesheet, so the older per-module dark pins
+   lose here in light mode. They also serve as the fallback for browsers
+   without the customizable select below. */
+[data-bs-theme='dark'] .form-select option,
+[data-bs-theme='dark'] select option {
+  background: #0a0d12;
+  color: #f5f8fb;
+}
+
+[data-bs-theme='light'] .form-select option,
+[data-bs-theme='light'] select option {
+  background: #ffffff;
+  color: #0a0e14;
+}
+
+/* Customizable select (Chromium/Edge 135+): with base-select the open picker
+   renders in-page, so it takes the app's rounded glass look instead of the
+   OS popup. The picker needs its own appearance opt-in to leave the UA look.
+   Browsers without support drop these declarations and keep the themed
+   native popup above. select[class] adds the specificity needed to beat
+   every per-module appearance:none (.users-form .form-select and friends
+   live at 0,2,0; this is 0,2,1) so every select opts in. */
+[data-bs-theme] select,
+[data-bs-theme] select[class],
+select::picker(select) {
+  appearance: base-select;
+}
+
+/* Closed control geometry in base mode: the UA stretches a shadow wrapper
+   and lays the value text at its top, so fixed-height controls showed the
+   value pinned to the top edge. Uniform height, symmetric block padding and
+   a line-height equal to the stretched wrapper's height center the value in
+   every control shape; nowrap keeps long values on one clipped line like
+   native selects do. Guarded so non-supporting browsers keep the native
+   rendering, which centers by itself. */
+@supports (appearance: base-select) {
+  [data-bs-theme] select[class] {
+    height: 46px;
+    min-height: 46px;
+    padding-block: 11px;
+    line-height: 22px;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* Mirror the app scrollbar (index.css) into the picker: the global webkit
+   rules cannot reach a top-layer pseudo-element, so long pickers showed the
+   classic OS bar with arrow buttons. Standard scrollbar-color/width styles
+   the picker too — the webkit pseudo stack (picker + scrollbar) parses in
+   Chromium but is invalid per the selector grammar, so lightningcss's minify
+   rejects it. The reveal class (html.is-scrolling) cannot drive the picker
+   either — top-layer scroll events never reach the document capture
+   listener — so the thumb stays quietly visible at the same color the page
+   scrollbar uses while scrolling. Unknown pseudo selectors drop the whole
+   block in non-supporting browsers, which keep the native popup anyway. */
+select::picker(select) {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+[data-bs-theme='light'] select::picker(select) {
+  scrollbar-color: rgba(15, 23, 32, 0.18) transparent;
+}
+
+select::picker-icon {
+  display: none;
+}
+
+select::picker(select) {
+  padding: 6px;
+  border: 1px solid rgba(170, 195, 220, 0.22);
+  border-radius: 16px;
+  background: #0a0d12;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+}
+
+[data-bs-theme='dark'] select[class] option {
+  padding: 9px 14px;
+  border-radius: 10px;
+  background: transparent;
+  color: #f5f8fb;
+}
+
+[data-bs-theme='dark'] select[class] option:hover,
+[data-bs-theme='dark'] select[class] option:focus {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+[data-bs-theme='dark'] select[class] option:checked {
+  background: rgba(120, 160, 210, 0.16);
+  font-weight: 700;
+}
+
+[data-bs-theme='light'] select::picker(select) {
+  border-color: rgba(15, 23, 32, 0.14);
+  background: #ffffff;
+  box-shadow: 0 18px 40px rgba(15, 23, 32, 0.16);
+}
+
+[data-bs-theme='light'] select[class] option {
+  padding: 9px 14px;
+  border-radius: 10px;
+  background: transparent;
+  color: #0a0e14;
+}
+
+[data-bs-theme='light'] select[class] option:hover,
+[data-bs-theme='light'] select[class] option:focus {
+  background: rgba(15, 23, 32, 0.05);
+}
+
+[data-bs-theme='light'] select[class] option:checked {
+  background: rgba(15, 23, 32, 0.08);
+  font-weight: 700;
+}
+
+option::checkmark {
+  display: none;
+}
+
+[data-bs-theme='light'] .form-select {
+  background-color: rgba(15, 23, 32, 0.035);
+  border-color: rgba(15, 23, 32, 0.14);
+  color: #0a0e14;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%230a0e14' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M2 5l6 6 6-6'/%3E%3C/svg%3E");
+}
+
+[data-bs-theme='light'] .form-select:focus {
+  background-color: #ffffff;
+  border-color: rgba(70, 100, 130, 0.55);
+  color: #0a0e14;
+  box-shadow: 0 0 0 0.22rem rgba(70, 100, 130, 0.16);
+}
+
+/*
+ * Shared identity avatar: the detail pages (cliente, expediente, turno) open
+ * with the same tile next to their titles. Matches the client-card avatar
+ * geometry; the light theme swaps the translucent blue glass for a dark-on-
+ * light tile so the icon keeps its contrast.
+ */
+.app-avatar {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: rgba(120, 160, 210, 0.18);
+  color: #cfe0ee;
+}
+
+.app-identity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+[data-bs-theme='light'] .app-avatar {
+  background: rgba(15, 23, 32, 0.08);
+  color: #3c4754;
+}
+
+/*
+ * Light theme for the remaining action variants: the detail pages use
+ * --primary/--danger as plain buttons, and without these overrides the
+ * dark-first colors washed out on light surfaces. Primary follows the
+ * inverted accent the create buttons and modal footers already use in
+ * light mode; danger keeps the red identity on a light tint.
+ */
+[data-bs-theme='light'] .app-button--primary {
+  background: linear-gradient(135deg, #2f3945, #4a5563);
+  color: #f4f6f8;
+  box-shadow: 0 18px 30px rgba(15, 23, 32, 0.22);
+}
+
+[data-bs-theme='light'] .app-button--primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #394452, #566170);
+  color: #f4f6f8;
+}
+
+[data-bs-theme='light'] .app-button--danger {
+  background: rgba(150, 60, 78, 0.1);
+  border-color: rgba(150, 60, 78, 0.28);
+  color: #8f3a4b;
+}
+
+[data-bs-theme='light'] .app-button--danger:hover:not(:disabled) {
+  background: rgba(150, 60, 78, 0.16);
+  color: #8f3a4b;
 }

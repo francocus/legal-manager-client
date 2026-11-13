@@ -155,14 +155,20 @@
 }
 
 .users-table-wrap {
-  overflow: hidden;
+  /* Internal scroll (app scrollbar) instead of clip: long lists (clients,
+     users) were unreachable below the fold and the page got a stray
+     vertical jiggle from the clipped panel. */
+  overflow: auto;
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.04);
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 260px);
+  /* 288 = nav (91) + card bottom padding (48) + panel padding around the
+     table (141 fixed + 56 below): anything smaller left the page ~20px
+     taller than the viewport, so <html> always scrolled a little. */
+  max-height: calc(100vh - 288px);
 }
 
 .users-table thead {
@@ -566,16 +572,16 @@
 
 .users-modal__footer .btn-secondary,
 .users-form__button--secondary {
-  background: rgba(140, 158, 180, 0.22) !important;
-  border: 1px solid rgba(140, 158, 180, 0.36) !important;
-  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  color: #eef2f6 !important;
   opacity: 1;
 }
 
 .users-modal__footer .btn-secondary:hover {
-  background: rgba(140, 158, 180, 0.34) !important;
-  border-color: rgba(140, 158, 180, 0.42) !important;
-  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+  transform: translateY(-2px);
 }
 
 .users-modal__footer .btn-primary,
@@ -583,14 +589,14 @@
   background: linear-gradient(135deg, #eef4fa, #b9cee2) !important;
   border: 0 !important;
   color: #07090d !important;
-  font-weight: 900 !important;
+  font-weight: 800 !important;
   box-shadow: 0 18px 30px rgba(0, 0, 0, 0.4) !important;
   opacity: 1;
 }
 
 .users-modal__footer .btn-primary:hover {
   background: linear-gradient(135deg, #f8fbfe, #cadce9) !important;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
 body.users-modal-open {
@@ -712,9 +718,8 @@ body.users-modal-open {
   box-shadow: 0 0 0 0.22rem rgba(70, 100, 130, 0.16);
 }
 
-[data-bs-theme='light'] input .users-search.form-control::placeholder {
-  color: rgba(60, 71, 84, 0.55) !important;
-}
+/* Dead selector (inputs cannot nest): the dashboard light placeholder rule
+   covers this input, so the value lives there. */
 
 [data-bs-theme='light'] .users-create.btn,
 [data-bs-theme='light'] .users-create.btn-primary,

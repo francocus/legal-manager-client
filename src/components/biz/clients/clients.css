@@ -3,6 +3,16 @@
   padding: clamp(20px, 3vw, 36px) clamp(24px, 4vw, 48px) clamp(32px, 5vw, 56px);
 }
 
+/* The clients panel carries ~18px more fixed chrome than the users panel
+   (padding-top 36 vs none, plus its own header), so the shared table budget
+   (users.css, 100vh - 288px) leaves the page ~17px taller than the viewport
+   and <html> always scrolled a little. Trim the table budget here to match
+   this panel's real overhead; specificity beats the shared rule regardless
+   of stylesheet order. */
+.clients-panel .users-table-wrap {
+  max-height: calc(100vh - 306px);
+}
+
 .clients-header {
   display: flex;
   align-items: flex-end;
@@ -145,4 +155,70 @@
 
 [data-bs-theme='light'] .client-page__cases a {
   background: rgba(15, 23, 32, 0.04);
+}
+
+/*
+ * Create button: same family as .users-create / .cases-create /
+ * .appointments-create. As a react-bootstrap Button it also carries
+ * .btn/.btn-primary, so those selectors are kept and the hover always
+ * declares its own color (Bootstrap's .btn-primary:hover color would
+ * otherwise paint the text white over the light gradient).
+ */
+.clients-create.btn,
+.clients-create.btn-primary,
+.clients-create {
+  min-width: 156px;
+  height: 46px;
+  padding: 0 1.2rem;
+  border: 0;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #eef4fa, #b9cee2);
+  color: #07090d;
+  font-size: 0.92rem;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 0 18px 30px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s ease;
+}
+
+.clients-create.btn:hover,
+.clients-create.btn:focus-visible,
+.clients-create.btn-primary:hover,
+.clients-create.btn-primary:focus-visible,
+.clients-create:hover {
+  background: linear-gradient(135deg, #f8fbfe, #cadce9);
+  color: #07090d;
+  transform: translateY(-2px);
+}
+
+.clients-create__text {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+[data-bs-theme='light'] .clients-create.btn,
+[data-bs-theme='light'] .clients-create.btn-primary,
+[data-bs-theme='light'] .clients-create {
+  background: linear-gradient(135deg, #2f3945, #4a5563);
+  color: #f4f6f8;
+  box-shadow: 0 18px 30px rgba(15, 23, 32, 0.22);
+}
+
+[data-bs-theme='light'] .clients-create.btn:hover,
+[data-bs-theme='light'] .clients-create.btn-primary:hover,
+[data-bs-theme='light'] .clients-create:hover {
+  background: linear-gradient(135deg, #394452, #566170);
+  color: #f4f6f8;
+}
+
+/* Light theme: the blue glass avatar needs dark ink or the icon washes out. */
+[data-bs-theme='light'] .client-card__avatar {
+  background: rgba(15, 23, 32, 0.08);
+  color: #3c4754;
 }

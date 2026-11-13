@@ -13,8 +13,9 @@ import NewAppointment from '../newAppointment/NewAppointment';
 import ConfirmDialog from '../../../shared/confirmDialog/ConfirmDialog';
 import { SkeletonRows } from '../../../shared/skeleton/Skeleton';
 import EmptyState from '../../../shared/emptyState/EmptyState';
-import { ROLES, isAdmin } from '../../../services/consts/roles';
+import { ROLES, isAdmin, isLawyer } from '../../../services/consts/roles';
 import '../appointments.css';
+import '../../trash/trash.css';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'Todos los estados' },
@@ -148,6 +149,20 @@ const AppointmentsContainer = () => {
             <AppointmentsSearch onSearch={setSearchAppointment} />
           </div>
 
+          {userIsAdmin || isLawyer(user?.role) ? (
+            <button
+              type="button"
+              className="trash-entry-button"
+              title="Papelera"
+              aria-label="Papelera"
+              onClick={() => navigate('/dashboard/appointments/papelera')}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M9 3.75h6l1 1.5H20v1.5H4v-1.5h4l1-1.5Zm1.5 5.25h1.5v7.5h-1.5v-7.5Zm4.5 0h1.5v7.5H15v-7.5Zm-8.25 0h1.5v7.5h-1.5v-7.5Zm1.5 11.25h9A1.75 1.75 0 0 0 19 18v-8.25H5V18c0 .97.78 1.75 1.75 1.75Z" />
+              </svg>
+            </button>
+          ) : null}
+
           <Button
             type="button"
             className="appointments-create"
@@ -221,10 +236,10 @@ const AppointmentsContainer = () => {
         show={Boolean(appointmentToDelete)}
         onHide={() => setAppointmentToDelete(null)}
         onConfirm={() => handleDeleteAppointment(appointmentToDelete?.id)}
-        title="Eliminar turno"
-        message="¿Estás seguro que deseas eliminar el turno de"
+        title="Dar de baja"
+        message="El registro queda desactivado y no se elimina físicamente. ¿Estás seguro que deseas dar de baja el turno de"
         itemName={appointmentToDelete?.clientName}
-        confirmLabel="Sí, deseo eliminarlo"
+        confirmLabel="Sí, dar de baja"
       />
 
       <ConfirmDialog

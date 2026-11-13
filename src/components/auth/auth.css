@@ -18,6 +18,7 @@
   --auth-btn-bg: linear-gradient(135deg, #eef4fa, #b9cee2);
   --auth-btn-bg-hover: linear-gradient(135deg, #f8fbfe, #cadce9);
   --auth-btn-color: #07090d;
+  --auth-btn-shadow: 0 18px 30px rgba(0, 0, 0, 0.4);
   --auth-alert-border: rgba(248, 113, 113, 0.4);
   --auth-alert-bg: rgba(150, 35, 35, 0.28);
   --auth-alert-color: #ffe5e5;
@@ -64,6 +65,7 @@
   --auth-btn-bg: linear-gradient(135deg, #0d1117, #2a3441);
   --auth-btn-bg-hover: linear-gradient(135deg, #1a212b, #36424f);
   --auth-btn-color: #f4f6f8;
+  --auth-btn-shadow: 0 18px 30px rgba(15, 23, 32, 0.22);
   --auth-alert-border: rgba(217, 93, 93, 0.4);
   --auth-alert-bg: rgba(217, 93, 93, 0.12);
   --auth-alert-color: #8a1f1f;
@@ -414,8 +416,8 @@
 .auth-submit.btn:focus-visible:not(:disabled) {
   background: var(--auth-btn-bg-hover);
   color: var(--auth-btn-color);
-  transform: translateY(-1px);
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.25);
+  transform: translateY(-2px);
+  box-shadow: var(--auth-btn-shadow);
 }
 
 .auth-submit.btn:disabled {

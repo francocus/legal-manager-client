@@ -16,6 +16,7 @@ import UsersSearch from '../../users/usersSearch/UsersSearch';
 import { ROLES, isAdmin } from '../../../services/consts/roles';
 import '../../users/users.css';
 import '../clients.css';
+import '../../trash/trash.css';
 
 const ClientsContainer = () => {
   const navigate = useNavigate();
@@ -96,15 +97,34 @@ const ClientsContainer = () => {
 
         <div className="clients-header__controls">
           <div className="users-search-wrap">
-            <UsersSearch onSearch={setSearchClient} />
+            <UsersSearch
+              onSearch={setSearchClient}
+              placeholder="Buscar cliente..."
+              ariaLabel="Buscar cliente"
+            />
           </div>
+          {userIsAdmin ? (
+            <button
+              type="button"
+              className="trash-entry-button"
+              title="Papelera"
+              aria-label="Papelera"
+              onClick={() => navigate('/dashboard/clients/papelera')}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M9 3.75h6l1 1.5H20v1.5H4v-1.5h4l1-1.5Zm1.5 5.25h1.5v7.5h-1.5v-7.5Zm4.5 0h1.5v7.5H15v-7.5Zm-8.25 0h1.5v7.5h-1.5v-7.5Zm1.5 11.25h9A1.75 1.75 0 0 0 19 18v-8.25H5V18c0 .97.78 1.75 1.75 1.75Z" />
+              </svg>
+            </button>
+          ) : null}
           {userIsAdmin ? (
             <Button
               type="button"
-              className="app-button app-button--primary"
+              className="clients-create"
+              title="Crear cliente"
+              aria-label="Crear cliente"
               onClick={handleOpenNewClient}
             >
-              Crear cliente
+              <span className="clients-create__text">Crear cliente</span>
             </Button>
           ) : null}
         </div>
@@ -135,10 +155,10 @@ const ClientsContainer = () => {
         show={Boolean(clientToDelete)}
         onHide={() => setClientToDelete(null)}
         onConfirm={() => handleDeleteClient(clientToDelete?.id)}
-        title="Eliminar cliente"
-        message="¿Estás seguro que deseas eliminar al cliente"
+        title="Dar de baja"
+        message="El registro queda desactivado y no se elimina físicamente. ¿Estás seguro que deseas dar de baja al cliente"
         itemName={clientToDelete?.name}
-        confirmLabel="Sí, deseo eliminarlo"
+        confirmLabel="Sí, dar de baja"
       />
 
       {loading ? (

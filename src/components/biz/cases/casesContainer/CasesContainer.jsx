@@ -13,8 +13,9 @@ import NewCase from '../newCase/NewCase';
 import CasesItem from '../casesItem/CasesItem';
 import CasesSearch from '../casesSearch/CasesSearch';
 import { CASE_STATUS_OPTIONS, getStatusLabel } from '../Cases.data';
-import { ROLES, isAdmin } from '../../../services/consts/roles';
+import { ROLES, isAdmin, isLawyer } from '../../../services/consts/roles';
 import '../cases.css';
+import '../../trash/trash.css';
 
 const CasesContainer = () => {
   const navigate = useNavigate();
@@ -125,6 +126,20 @@ const CasesContainer = () => {
             <CasesSearch onSearch={setSearchCase} />
           </div>
 
+          {userIsAdmin || isLawyer(currentUser?.role) ? (
+            <button
+              type="button"
+              className="trash-entry-button"
+              title="Papelera"
+              aria-label="Papelera"
+              onClick={() => navigate('/dashboard/cases/papelera')}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M9 3.75h6l1 1.5H20v1.5H4v-1.5h4l1-1.5Zm1.5 5.25h1.5v7.5h-1.5v-7.5Zm4.5 0h1.5v7.5H15v-7.5Zm-8.25 0h1.5v7.5h-1.5v-7.5Zm1.5 11.25h9A1.75 1.75 0 0 0 19 18v-8.25H5V18c0 .97.78 1.75 1.75 1.75Z" />
+              </svg>
+            </button>
+          ) : null}
+
           {canWrite ? (
             <Button
               type="button"
@@ -170,10 +185,10 @@ const CasesContainer = () => {
         show={Boolean(caseToDelete)}
         onHide={() => setCaseToDelete(null)}
         onConfirm={() => handleDeleteCase(caseToDelete?.id)}
-        title="Eliminar expediente"
-        message="¿Estás seguro que deseas eliminar el expediente"
+        title="Dar de baja"
+        message="El registro queda desactivado y no se elimina físicamente. ¿Estás seguro que deseas dar de baja el expediente"
         itemName={caseToDelete?.caseNumber}
-        confirmLabel="Sí, deseo eliminarlo"
+        confirmLabel="Sí, dar de baja"
       />
 
       {loading ? (

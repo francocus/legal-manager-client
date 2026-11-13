@@ -195,8 +195,11 @@
     transform 160ms ease;
 }
 
+/* Center control names the scope ("Este mes"/"Esta semana") or reads
+   "Volver" once navigation leaves the current period; the width floor keeps
+   the arrows from shifting between labels. */
 .appointments-period-controls button:nth-child(2) {
-  min-width: 74px;
+  min-width: 96px;
 }
 
 .appointments-period-controls button:hover,
