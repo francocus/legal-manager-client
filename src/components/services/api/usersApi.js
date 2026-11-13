@@ -124,6 +124,12 @@ export const usersApi = {
     });
   },
 
+  updateLawyerSchedule: (id, schedule) =>
+    apiRequest(`/user/lawyer/${id}/schedule`, {
+      method: 'PATCH',
+      body: typeof schedule === 'string' ? { schedule } : schedule,
+    }),
+
   updateWithRoleFields: async (id, payload, original = {}) => {
     await usersApi.update(id, payload);
 

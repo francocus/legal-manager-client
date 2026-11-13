@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react';
-import { Alert, Form } from 'react-bootstrap';
+import { Alert, Button, Form, Modal } from 'react-bootstrap';
 import { Link, useNavigate, useParams } from 'react-router';
 import { AuthenticationContext } from '../../../services/auth/authentication.context';
 import { useDashboardData } from '../../../services/data/dashboardData.context';
@@ -72,6 +72,9 @@ const CasePage = () => {
   const { showToast } = useToast();
   const [editing, setEditing] = useState(false);
   const [changingStatus, setChangingStatus] = useState(false);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+  const [typedCaseNumber, setTypedCaseNumber] = useState('');
+  const [closingCase, setClosingCase] = useState(false);
 
   const legalCase = cases.find((entry) => String(entry.id) === String(caseId));
   const canWrite = user?.role === ROLES.ADMIN || user?.role === ROLES.ABOGADO;
@@ -82,6 +85,31 @@ const CasePage = () => {
     await refreshCases();
     showToast({ variant: 'success', message: 'Expediente actualizado correctamente.' });
     setEditing(false);
+  };
+
+  const handleStatusSelect = (newStatus) => {
+    if (!newStatus || newStatus === legalCase.status) return;
+    if (newStatus === 'cerrado') {
+      setTypedCaseNumber('');
+      setShowCloseConfirm(true);
+      return;
+    }
+    handleChangeStatus(newStatus);
+  };
+
+  const handleConfirmCloseCase = async () => {
+    if (typedCaseNumber.trim() !== legalCase.caseNumber) return;
+    try {
+      setClosingCase(true);
+      await casesApi.setStatus(legalCase.id, 'cerrado');
+      await refreshCases();
+      setShowCloseConfirm(false);
+      showToast({ variant: 'success', message: 'Expediente cerrado definitivamente.' });
+    } catch (err) {
+      showToast({ variant: 'danger', message: err.message || 'No se pudo cerrar el expediente.' });
+    } finally {
+      setClosingCase(false);
+    }
   };
 
   const handleChangeStatus = async (newStatus) => {
@@ -147,7 +175,7 @@ const CasePage = () => {
               value={legalCase.status}
               disabled={changingStatus || isClosed}
               title={isClosed ? 'Un expediente cerrado no puede reabrirse' : 'Cambiar estado'}
-              onChange={(e) => handleChangeStatus(e.target.value)}
+              onChange={(e) => handleStatusSelect(e.target.value)}
               style={{ width: 'auto' }}
             >
               {CASE_STATUS_OPTIONS.map((opt) => (
@@ -294,6 +322,56 @@ const CasePage = () => {
           onFormClosed={() => setEditing(false)}
         />
       ) : null}
+
+      <Modal
+        show={showCloseConfirm}
+        centered
+        backdrop="static"
+        onHide={closingCase ? undefined : () => setShowCloseConfirm(false)}
+        dialogClassName="delete-modal__dialog"
+        contentClassName="delete-modal__content"
+      >
+        <Modal.Header className="delete-modal__header" closeButton={!closingCase} closeVariant="white">
+          <Modal.Title className="delete-modal__title">¿Estás seguro de que querés cerrar el expediente?</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="delete-modal__body">
+          <p style={{ marginBottom: 12 }}>
+            Esta acción es definitiva ya que el expediente no puede ser abierto de vuelta.
+          </p>
+          <p style={{ marginBottom: 16 }}>
+            Para confirmar, ingresá el número del expediente: <strong style={{ color: '#ffffff' }}>{legalCase.caseNumber}</strong>
+          </p>
+          <Form.Group controlId="confirmCloseCaseNumber">
+            <Form.Control
+              type="text"
+              autoFocus
+              value={typedCaseNumber}
+              placeholder={`Ingresá ${legalCase.caseNumber}`}
+              onChange={(e) => setTypedCaseNumber(e.target.value)}
+              disabled={closingCase}
+              className="users-search"
+            />
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer className="delete-modal__footer">
+          <Button
+            variant="secondary"
+            className="btn btn-secondary"
+            onClick={() => setShowCloseConfirm(false)}
+            disabled={closingCase}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="danger"
+            className="btn delete-modal__danger"
+            onClick={handleConfirmCloseCase}
+            disabled={typedCaseNumber.trim() !== legalCase.caseNumber || closingCase}
+          >
+            {closingCase ? 'Cerrando...' : 'Cerrar expediente definitivamente'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </section>
   );
 };

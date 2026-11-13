@@ -9,6 +9,7 @@ export const mapUser = (user = {}) => ({
   phone: user.phone ?? '',
   address: user.address ?? '',
   barNumber: user.barNumber ?? '',
+  schedule: user.schedule ?? null,
   specialties: Array.isArray(user.specialties)
     ? user.specialties
     : typeof user.specialties === 'string' && user.specialties.trim()
