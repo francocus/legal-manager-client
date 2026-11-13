@@ -53,6 +53,23 @@ de dashboard (`/dashboard/papelera`) de la primera iteración.
   recortaba los botones de texto. Verificado CDP con datos reales (turno de
   baja, cliente de baja, caso de baja en 4 rutas, dark y light).
 
+## Ronda 3 — giro del usuario (2026-11-12, posterior a la ronda 2)
+
+El usuario cerró el modelo: **"no existe la baja física en nuestro sistema"**.
+Todo lo físico de la papelera se revierte:
+
+- **Sin borrado definitivo**: se quitan los endpoints DELETE de trash, los
+  `HardDelete*` del servicio y los botones del front. La papelera queda como
+  archivo de bajas lógicas con **Restaurar**.
+- **Sin purga de 12 meses**: la purga borraba físicamente (fila + archivo) →
+  fuera. Los ítems permanecen indefinidamente hasta que alguien los restaure.
+- **Abogado con papelera**: los endpoints pasan de AdminsOnly a AdminOrLawyer
+  con filtro por rol (el abogado solo ve SUS turnos, SUS expedientes y los
+  documentos de SUS expedientes; la lista de usuarios queda vacía para él).
+  Restore con chequeo de propiedad (Forbidden si no es suyo). Rutas de
+  turnos/expedientes abiertas a ABOGADO; clientes/usuarios siguen solo admin.
+- Columnas `DeactivatedAt` y `Reactivate()` se conservan (metadata + restore).
+
 ## Bugs/follow-ups conocidos
 
 - Dar de baja un documento cuyo expediente está de baja → 500
