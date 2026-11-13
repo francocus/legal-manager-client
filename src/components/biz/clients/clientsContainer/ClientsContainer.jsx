@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { Alert, Button } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router';
 import { Mail, UserRound } from 'lucide-react';
@@ -21,7 +21,8 @@ import '../../trash/trash.css';
 const ClientsContainer = () => {
   const navigate = useNavigate();
   const { user: currentUser } = useContext(AuthenticationContext);
-  const { clients, loading, error, refreshClients, refreshUsers } = useDashboardData();
+  const { clients, cases, appointments, loading, error, refreshClients, refreshUsers } =
+    useDashboardData();
   const { showToast } = useToast();
 
   const [searchClient, setSearchClient] = useState('');
@@ -30,6 +31,18 @@ const ClientsContainer = () => {
   const [clientToDelete, setClientToDelete] = useState(null);
 
   const userIsAdmin = isAdmin(currentUser?.role);
+
+  const lawyerClientIds = useMemo(() => {
+    if (userIsAdmin) return null;
+    const ids = new Set();
+    (cases ?? []).forEach((c) => {
+      if (c.clientId) ids.add(c.clientId);
+    });
+    (appointments ?? []).forEach((a) => {
+      if (a.clientId) ids.add(a.clientId);
+    });
+    return ids;
+  }, [userIsAdmin, cases, appointments]);
 
   const handleOpenNewClient = () => {
     setClientToEdit(null);
@@ -80,18 +93,22 @@ const ClientsContainer = () => {
   };
 
   const lowerSearch = searchClient.toLowerCase();
-  const filteredClients = clients.filter(
-    (client) =>
+  const filteredClients = clients.filter((client) => {
+    if (lawyerClientIds && !lawyerClientIds.has(client.id)) {
+      return false;
+    }
+    return (
       (client.name && client.name.toLowerCase().includes(lowerSearch)) ||
       (client.email && client.email.toLowerCase().includes(lowerSearch)) ||
-      (client.dni && String(client.dni).toLowerCase().includes(lowerSearch)),
-  );
+      (client.dni && String(client.dni).toLowerCase().includes(lowerSearch))
+    );
+  });
 
   return (
     <section className="clients-panel">
       <header className="clients-header">
-        <div>
-          <p className="app-page__eyebrow">Clientes</p>
+        <div className="clients-header__copy">
+          <p>{userIsAdmin ? 'Gestión de clientes' : 'Mis clientes'}</p>
           <h2>{userIsAdmin ? 'Gestión de clientes' : 'Mis clientes'}</h2>
         </div>
 
@@ -165,8 +182,14 @@ const ClientsContainer = () => {
         <SkeletonRows rows={5} />
       ) : filteredClients.length === 0 ? (
         <EmptyState
-          title="No se encontraron clientes"
-          message="Probá con otro término de búsqueda."
+          title={userIsAdmin ? 'No se encontraron clientes' : 'No tenés clientes asignados'}
+          message={
+            userIsAdmin
+              ? 'Probá con otro término de búsqueda.'
+              : searchClient
+                ? 'Probá con otro término de búsqueda.'
+                : 'Los clientes se asociarán automáticamente cuando participes en sus expedientes o turnos.'
+          }
         />
       ) : userIsAdmin ? (
         <div className="users-table-wrap">

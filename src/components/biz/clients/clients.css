@@ -1,43 +1,53 @@
 .clients-panel {
-  width: 100%;
-  padding: clamp(20px, 3vw, 36px) clamp(24px, 4vw, 48px) clamp(32px, 5vw, 56px);
-}
-
-/* The clients panel carries ~18px more fixed chrome than the users panel
-   (padding-top 36 vs none, plus its own header), so the shared table budget
-   (users.css, 100vh - 288px) leaves the page ~17px taller than the viewport
-   and <html> always scrolled a little. Trim the table budget here to match
-   this panel's real overhead; specificity beats the shared rule regardless
-   of stylesheet order. */
-.clients-panel .users-table-wrap {
-  max-height: calc(100vh - 306px);
+  margin-top: 12px;
+  display: grid;
+  gap: 18px;
+  padding-bottom: 28px;
 }
 
 .clients-header {
   display: flex;
-  align-items: flex-end;
+  align-items: end;
   justify-content: space-between;
-  gap: 16px;
+  gap: 26px;
   flex-wrap: wrap;
-  margin-bottom: 20px;
 }
 
-.clients-header h2 {
-  margin: 4px 0 0;
-  color: #eef2f6;
-  font-size: clamp(1.3rem, 2.2vw, 1.8rem);
+.clients-header__copy {
+  display: grid;
+  align-content: start;
+}
+
+.clients-header__copy h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(1.45rem, 2.2vw, 1.95rem);
+  line-height: 1;
+}
+
+.clients-header__copy p {
+  margin: 0 0 7px;
+  color: #c3d6e6;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
 .clients-header__controls {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: flex-end;
+  align-self: end;
   flex-wrap: nowrap;
+  gap: 12px;
+  flex: 1 1 540px;
 }
 
 .clients-header__controls .users-search-wrap {
-  flex: 1 1 240px;
-  max-width: 320px;
+  min-width: 0;
+  flex: 0 1 300px;
+  max-width: 300px;
 }
 
 .client-card {
@@ -135,6 +145,13 @@
 }
 
 [data-bs-theme='light'] .clients-header h2,
+[data-bs-theme='light'] .clients-header__copy h2 {
+  color: #0d1117;
+}
+
+[data-bs-theme='light'] .clients-header__copy p {
+  color: #2a4a63;
+}
 [data-bs-theme='light'] .client-card,
 [data-bs-theme='light'] .client-page__cases a {
   color: #0d1117;
