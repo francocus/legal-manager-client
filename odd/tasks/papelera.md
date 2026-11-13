@@ -70,6 +70,17 @@ Todo lo físico de la papelera se revierte:
   turnos/expedientes abiertas a ABOGADO; clientes/usuarios siguen solo admin.
 - Columnas `DeactivatedAt` y `Reactivate()` se conservan (metadata + restore).
 
+## Verificación ronda 3
+
+- Admin: filas solo con Restaurar (sin borrado físico en ninguna sección).
+- Abogado (`papelera.abogado@x.test`): botón papelera en Turnos → su papelera
+  con su turno de baja y solo Restaurar; expedientes con su caso; clientes/
+  usuarios bloqueados (Protected → login); nav sin Usuarios ni Papelera.
+- API: abogado ve exactamente sus ítems (2 casos, 1 turno, 0 documentos,
+  0 usuarios); admin ve todo.
+- Nota: la cuenta del abogado de prueba nace sin confirmar (alta por API) →
+  confirmar con el hatch admin antes de loguearla.
+
 ## Bugs/follow-ups conocidos
 
 - Dar de baja un documento cuyo expediente está de baja → 500
