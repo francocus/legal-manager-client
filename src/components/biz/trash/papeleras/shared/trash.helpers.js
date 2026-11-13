@@ -1,20 +1,30 @@
 // deactivatedAt is an ISO string (or legacy 'yyyy-mm-dd') or null.
-// Formats the exact date and time the item has been in the trash: DD/MM/YYYY HH:mm hs.
+// Formats the exact date and time the item has been in the trash: DD/MM/YYYY HH:mm hs (hora Argentina).
 export const getDaysMeta = (deactivatedAt) => {
   if (!deactivatedAt) {
     return '—';
   }
-  const date = new Date(deactivatedAt);
+  let str = String(deactivatedAt).trim();
+  if (str.includes('T') && !str.endsWith('Z') && !/[+-]\d{2}(:\d{2})?$/.test(str)) {
+    str += 'Z';
+  }
+  const date = new Date(str);
   if (Number.isNaN(date.getTime())) {
     return '—';
   }
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
 
-  return `${day}/${month}/${year} ${hours}:${minutes} hs`;
+  const parts = new Intl.DateTimeFormat('es-AR', {
+    timeZone: 'America/Argentina/Buenos_Aires',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(date);
+
+  const get = (type) => parts.find((p) => p.type === type)?.value ?? '';
+  return `${get('day')}/${get('month')}/${get('year')} ${get('hour')}:${get('minute')} hs`;
 };
 
 // 'N turnos · M documentos asociados' is shown only while at least one of the
