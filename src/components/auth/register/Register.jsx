@@ -120,7 +120,7 @@ const Register = () => {
 
             <Form className="auth-form auth-form--register" onSubmit={handleSubmit} noValidate>
               <div className={`auth-field auth-field--wide ${errors.name ? 'has-error' : ''}`}>
-                <label htmlFor="register-name">Nombre completo</label>
+                <label htmlFor="register-name">Nombre completo <span className="text-danger">*</span></label>
                 <div className="auth-input">
                   <UserIcon />
                   <Form.Control
@@ -137,7 +137,7 @@ const Register = () => {
               </div>
 
               <div className={`auth-field ${errors.dni ? 'has-error' : ''}`}>
-                <label htmlFor="register-dni">DNI</label>
+                <label htmlFor="register-dni">DNI <span className="text-danger">*</span></label>
                 <div className="auth-input">
                   <IdIcon />
                   <Form.Control
@@ -155,7 +155,7 @@ const Register = () => {
               </div>
 
               <div className={`auth-field ${errors.email ? 'has-error' : ''}`}>
-                <label htmlFor="register-email">Correo electrónico</label>
+                <label htmlFor="register-email">Correo electrónico <span className="text-danger">*</span></label>
                 <div className="auth-input">
                   <MailIcon />
                   <Form.Control
@@ -172,7 +172,7 @@ const Register = () => {
               </div>
 
               <div className={`auth-field ${errors.password ? 'has-error' : ''}`}>
-                <label htmlFor="register-password">Crear contraseña</label>
+                <label htmlFor="register-password">Crear contraseña <span className="text-danger">*</span></label>
                 <div className="auth-input">
                   <LockIcon />
                   <Form.Control
@@ -197,7 +197,7 @@ const Register = () => {
               </div>
 
               <div className={`auth-field ${errors.confirmPassword ? 'has-error' : ''}`}>
-                <label htmlFor="register-confirm-password">Confirmar contraseña</label>
+                <label htmlFor="register-confirm-password">Confirmar contraseña <span className="text-danger">*</span></label>
                 <div className="auth-input">
                   <LockIcon />
                   <Form.Control

@@ -198,6 +198,7 @@ const AppointmentsContainer = () => {
                   onStatus={handleStatus}
                   onCancel={setAppointmentToCancel}
                   onEdit={setAppointmentToEdit}
+                  onDelete={setAppointmentToDelete}
                 />
               ))}
             </div>

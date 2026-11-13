@@ -9,13 +9,17 @@ const CasesItem = ({
   title,
   clientName,
   lawyerName,
+  lawyerIds,
   area,
   status,
   onEdit,
   onDelete,
 }) => {
   const canEdit = isAdmin(currentUser?.role) || currentUser?.role === 'abogado';
-  const canDelete = isAdmin(currentUser?.role);
+  const canDelete =
+    isAdmin(currentUser?.role) ||
+    (currentUser?.role === 'abogado' &&
+      (lawyerIds?.includes(currentUser?.id) || lawyerName?.includes(currentUser?.name)));
 
   return (
     <article className="cases-item">

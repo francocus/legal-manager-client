@@ -85,7 +85,7 @@ const NewCase = ({ onAddCase, onFormClosed, clients = [], lawyers = [], currentU
           <Row>
             <Col md={12}>
               <Form.Group className="mb-3" controlId="caseNumber">
-                <Form.Label>Número de expediente</Form.Label>
+                <Form.Label>Número de expediente <span className="text-danger">*</span></Form.Label>
                 <Form.Control
                   name="caseNumber"
                   value={values.caseNumber}
@@ -102,7 +102,7 @@ const NewCase = ({ onAddCase, onFormClosed, clients = [], lawyers = [], currentU
           <Row>
             <Col md={12}>
               <Form.Group className="mb-3" controlId="title">
-                <Form.Label>Título</Form.Label>
+                <Form.Label>Título <span className="text-danger">*</span></Form.Label>
                 <Form.Control
                   name="title"
                   value={values.title}
@@ -119,7 +119,7 @@ const NewCase = ({ onAddCase, onFormClosed, clients = [], lawyers = [], currentU
           <Row>
             <Col md={6}>
               <Form.Group className="mb-3" controlId="area">
-                <Form.Label>Área</Form.Label>
+                <Form.Label>Área <span className="text-danger">*</span></Form.Label>
                 <Form.Control
                   name="area"
                   value={values.area}
@@ -133,7 +133,7 @@ const NewCase = ({ onAddCase, onFormClosed, clients = [], lawyers = [], currentU
             </Col>
             <Col md={6}>
               <Form.Group className="mb-3" controlId="status">
-                <Form.Label>Estado</Form.Label>
+                <Form.Label>Estado <span className="text-danger">*</span></Form.Label>
                 <Form.Select name="status" value={values.status} onChange={handleChange}>
                   {CASE_STATUS_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -211,7 +211,7 @@ const NewCase = ({ onAddCase, onFormClosed, clients = [], lawyers = [], currentU
           <Row>
             <Col md={6}>
               <Form.Group className="mb-3" controlId="clientId">
-                <Form.Label>Cliente</Form.Label>
+                <Form.Label>Cliente <span className="text-danger">*</span></Form.Label>
                 <Form.Select
                   name="clientId"
                   value={values.clientId}
@@ -231,7 +231,7 @@ const NewCase = ({ onAddCase, onFormClosed, clients = [], lawyers = [], currentU
 
             <Col md={6}>
               <Form.Group className="mb-3" controlId="lawyerId">
-                <Form.Label>Abogado</Form.Label>
+                <Form.Label>Abogado <span className="text-danger">*</span></Form.Label>
                 {currentUser?.role === ROLES.ABOGADO ? (
                   <Form.Control value={currentUser?.name ?? ''} readOnly />
                 ) : (

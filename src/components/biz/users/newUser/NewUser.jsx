@@ -82,7 +82,7 @@ const NewUser = ({ onAddUser, onFormClosed, fixedRole, allowedRoles, entityLabel
           <Row>
             <Col md={12}>
               <Form.Group className="mb-3" controlId="name">
-                <Form.Label>Nombre completo</Form.Label>
+                <Form.Label>Nombre completo <span className="text-danger">*</span></Form.Label>
                 <Form.Control
                   name="name"
                   value={values.name}
@@ -99,7 +99,7 @@ const NewUser = ({ onAddUser, onFormClosed, fixedRole, allowedRoles, entityLabel
           <Row>
             <Col md={6}>
               <Form.Group className="mb-3" controlId="dni">
-                <Form.Label>DNI</Form.Label>
+                <Form.Label>DNI <span className="text-danger">*</span></Form.Label>
                 <Form.Control
                   name="dni"
                   value={values.dni}
@@ -114,7 +114,7 @@ const NewUser = ({ onAddUser, onFormClosed, fixedRole, allowedRoles, entityLabel
             </Col>
             <Col md={6}>
               <Form.Group className="mb-3" controlId="email">
-                <Form.Label>Correo electrónico</Form.Label>
+                <Form.Label>Correo electrónico <span className="text-danger">*</span></Form.Label>
                 <Form.Control
                   name="email"
                   value={values.email}
@@ -134,7 +134,7 @@ const NewUser = ({ onAddUser, onFormClosed, fixedRole, allowedRoles, entityLabel
           <Row>
             <Col md={fixedRole ? 12 : 6}>
               <Form.Group className="mb-3" controlId="password">
-                <Form.Label>Contraseña</Form.Label>
+                <Form.Label>Contraseña <span className="text-danger">*</span></Form.Label>
                 <Form.Control
                   name="password"
                   value={values.password}
@@ -152,7 +152,7 @@ const NewUser = ({ onAddUser, onFormClosed, fixedRole, allowedRoles, entityLabel
             {!fixedRole ? (
               <Col md={6}>
                 <Form.Group className="mb-3" controlId="role">
-                  <Form.Label>Rol</Form.Label>
+                  <Form.Label>Rol <span className="text-danger">*</span></Form.Label>
                   <Form.Select name="role" value={values.role} onChange={handleChange}>
                     {roleOptions.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -170,7 +170,7 @@ const NewUser = ({ onAddUser, onFormClosed, fixedRole, allowedRoles, entityLabel
               <Row>
                 <Col md={6}>
                   <Form.Group className="mb-3" controlId="barNumber">
-                    <Form.Label>Matrícula *</Form.Label>
+                    <Form.Label>Matrícula <span className="text-danger">*</span></Form.Label>
                     <Form.Control
                       name="barNumber"
                       value={values.barNumber}

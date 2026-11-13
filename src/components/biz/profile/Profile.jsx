@@ -45,6 +45,7 @@ const Profile = () => {
   const [savingContact, setSavingContact] = useState(false);
   const [selectedDays, setSelectedDays] = useState([1, 2, 3, 4, 5]);
   const [selectedSlots, setSelectedSlots] = useState(STANDARD_SLOTS);
+  const [customSlot, setCustomSlot] = useState('');
   const [savingSchedule, setSavingSchedule] = useState(false);
 
   useEffect(() => {
@@ -128,6 +129,29 @@ const Profile = () => {
     } finally {
       setSavingSchedule(false);
     }
+  };
+
+  const handleAddCustomSlot = () => {
+    if (!customSlot) return;
+    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    if (!timeRegex.test(customSlot)) {
+      showToast({ variant: 'danger', message: 'Formato de hora inválido. Usá HH:mm (ej. 08:30).' });
+      return;
+    }
+    if (selectedSlots.includes(customSlot)) {
+      showToast({ variant: 'warning', message: 'El horario ya está agregado.' });
+      return;
+    }
+    setSelectedSlots((prev) => [...prev, customSlot].sort());
+    setCustomSlot('');
+  };
+
+  const handleRemoveSlot = (slotToRemove) => {
+    setSelectedSlots((prev) => prev.filter((s) => s !== slotToRemove));
+  };
+
+  const handleLoadStandardSlots = () => {
+    setSelectedSlots(STANDARD_SLOTS);
   };
 
   const handleSaveContact = async (e) => {
@@ -319,29 +343,101 @@ const Profile = () => {
             </div>
 
             <div style={{ marginBottom: 24 }}>
-              <label style={{ display: 'block', fontWeight: 700, marginBottom: 8, color: '#eef2f6' }}>
-                Horarios disponibles
-              </label>
-              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                {STANDARD_SLOTS.map((slot) => {
-                  const isChecked = selectedSlots.includes(slot);
-                  return (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: 12 }}>
+                <label style={{ fontWeight: 700, margin: 0, color: '#eef2f6' }}>
+                  Horarios disponibles ({selectedSlots.length})
+                </label>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    className="app-button app-button--secondary"
+                    style={{ padding: '4px 10px', fontSize: '0.8rem' }}
+                    onClick={handleLoadStandardSlots}
+                  >
+                    Cargar horarios estándar
+                  </button>
+                  {selectedSlots.length > 0 && (
                     <button
-                      key={slot}
                       type="button"
-                      className={`app-button ${isChecked ? 'app-button--primary' : 'app-button--secondary'}`}
-                      style={{ padding: '6px 14px', fontSize: '0.9rem' }}
-                      onClick={() => {
-                        setSelectedSlots((prev) =>
-                          isChecked ? prev.filter((s) => s !== slot) : [...prev, slot]
-                        );
+                      className="app-button app-button--secondary"
+                      style={{ padding: '4px 10px', fontSize: '0.8rem' }}
+                      onClick={() => setSelectedSlots([])}
+                    >
+                      Limpiar todos
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Selector para agregar cualquier horario libre */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
+                <Form.Control
+                  type="time"
+                  value={customSlot}
+                  onChange={(e) => setCustomSlot(e.target.value)}
+                  style={{ maxWidth: '140px', height: '38px', borderRadius: '10px' }}
+                />
+                <button
+                  type="button"
+                  className="app-button app-button--primary"
+                  style={{ padding: '6px 14px', fontSize: '0.88rem' }}
+                  onClick={handleAddCustomSlot}
+                  disabled={!customSlot}
+                >
+                  + Agregar horario
+                </button>
+                <span style={{ fontSize: '0.82rem', color: '#a0aec0' }}>
+                  Podés configurar cualquier horario de atención libre (ej: 08:30, 11:00, 16:30).
+                </span>
+              </div>
+
+              {/* Lista de horarios asignados como badges/chips interactivos */}
+              {selectedSlots.length === 0 ? (
+                <p style={{ color: '#e2e8f0', fontSize: '0.9rem', fontStyle: 'italic', margin: '8px 0' }}>
+                  No tenés horarios seleccionados. Agregá uno con el selector o cargá los estándar.
+                </p>
+              ) : (
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                  {selectedSlots.map((slot) => (
+                    <div
+                      key={slot}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        padding: '6px 12px',
+                        borderRadius: '12px',
+                        background: 'rgba(92, 138, 180, 0.22)',
+                        border: '1px solid rgba(170, 195, 220, 0.4)',
+                        color: '#ffffff',
+                        fontSize: '0.92rem',
+                        fontWeight: 600,
                       }}
                     >
-                      {slot} hs
-                    </button>
-                  );
-                })}
-              </div>
+                      <span>{slot} hs</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveSlot(slot)}
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          color: '#ff8585',
+                          cursor: 'pointer',
+                          fontWeight: 800,
+                          fontSize: '1.1rem',
+                          lineHeight: 1,
+                          padding: 0,
+                          marginLeft: 2,
+                        }}
+                        title="Eliminar horario"
+                        aria-label={`Eliminar horario ${slot}`}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <Button

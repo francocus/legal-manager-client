@@ -13,6 +13,16 @@ export const getAppointmentMinutes = (appointment = {}) => {
   return hours * 60 + minutes;
 };
 
+export const formatAppointmentDate = (dateStr) => {
+  if (!dateStr) return '';
+  const [y, m, d] = dateStr.split('-').map(Number);
+  if (!y || !m || !d) return dateStr;
+  const date = new Date(y, m - 1, d);
+  const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+  const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+  return `${days[date.getDay()]} ${d} ${months[date.getMonth()]}`;
+};
+
 export const getStatusClass = (status) => {
   const normalizedStatus = normalizeText(status).replace(/\s+/g, '-');
   if (normalizedStatus === 'confirmado') return 'is-confirmed';
