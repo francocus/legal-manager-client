@@ -24,7 +24,7 @@
 
 El ejercicio profesional en estudios jurídicos modernos enfrenta desafíos organizativos críticos: dispersión de expedientes en papel, dificultad para realizar un seguimiento riguroso de etapas procesales y plazos de vencimiento, superposición de turnos de clientes por falta de sincronización horaria, y canales de comunicación lentos que generan incertidumbre en los justiciables.
 
-**LegalManager** es una plataforma integral desarrollada como Single Page Application (SPA) para digitalizar y centralizar la operativa diaria de estudios de abogados. Proporciona una interfaz ágil, reactiva y accesible que conecta en un mismo entorno de trabajo a los tres actores fundamentales del ecosistema legal: los socios directores (**Administradores**), los profesionales a cargo de las causas (**Abogados**) y los titulares de los derechos en litigio (**Clientes**).
+**LegalManager** es una plataforma integral desarrollada como Single Page Application (SPA) para digitalizar y centralizar la operativa diaria de estudios de abogados. Proporciona una interfaz ágil, reactiva y accesible que conecta en un mismo entorno de trabajo a los tres actores fundamentales del ecosistema legal: los socios directores (**Administradores**), los profesionales a cargo de las causas (**Abogados**) y los titulares de los derechos (**Clientes**).
 
 ---
 
