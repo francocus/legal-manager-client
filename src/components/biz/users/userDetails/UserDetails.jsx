@@ -7,6 +7,7 @@ import { ROLE_OPTIONS, ROLES, isAdmin } from '../../../services/consts/roles';
 import { AuthenticationContext } from '../../../services/auth/authentication.context';
 import { usersApi } from '../../../services/api/usersApi';
 import { useToast } from '../../../shared/toast/toast.context';
+import SpecialtiesSelector from '../../../shared/specialtiesSelector/SpecialtiesSelector';
 
 const capitalize = (value) => value.charAt(0).toUpperCase() + value.slice(1);
 
@@ -267,13 +268,11 @@ const UserDetails = ({
               <Row>
                 <Col md={12}>
                   <Form.Group className="mb-3" controlId="specialties">
-                    <Form.Label>Especialidades (separadas por coma)</Form.Label>
-                    <Form.Control
-                      name="specialties"
-                      value={values.specialties}
-                      onChange={handleChange}
-                      type="text"
-                      placeholder="Ej. Civil, Comercial, Laboral"
+                    <Form.Label>Especialidades</Form.Label>
+                    <SpecialtiesSelector
+                      selected={values.specialties}
+                      returnAsString
+                      onChange={(val) => setValue('specialties', val)}
                     />
                   </Form.Group>
                 </Col>

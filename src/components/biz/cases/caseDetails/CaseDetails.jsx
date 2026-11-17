@@ -7,6 +7,7 @@ import { useForm } from '../../../services/hooks/useForm';
 import { isRequired } from '../../../services/validators/validators';
 import { ROLES } from '../../../services/consts/roles';
 import { useToast } from '../../../shared/toast/toast.context';
+import SpecialtiesSelector from '../../../shared/specialtiesSelector/SpecialtiesSelector';
 
 const buildInitialValues = (legalCase, currentUser) => ({
   ...initialCaseForm,
@@ -45,10 +46,17 @@ const CaseDetails = ({
       }
     });
 
+    if (values.startDate && values.lastUpdate) {
+      if (new Date(values.lastUpdate) < new Date(values.startDate)) {
+        errors.lastUpdate =
+          'La fecha de última actualización no puede ser anterior a la fecha de inicio.';
+      }
+    }
+
     return errors;
   };
 
-  const { values, errors, submitting, handleChange, reset, handleSubmit } = useForm({
+  const { values, errors, submitting, handleChange, reset, handleSubmit, setValue } = useForm({
     initialValues,
     validate: validateCaseForm,
     onSubmit: async (formValues) => {
@@ -148,21 +156,22 @@ const CaseDetails = ({
           </Row>
 
           <Row>
-            <Col md={6}>
+            <Col md={12}>
               <Form.Group className="mb-3" controlId="area">
-                <Form.Label>Área</Form.Label>
-                <Form.Control
-                  name="area"
-                  value={values.area ?? ''}
-                  onChange={handleChange}
+                <Form.Label>Especialidades / Áreas <span className="text-danger">*</span></Form.Label>
+                <SpecialtiesSelector
+                  selected={values.area ?? ''}
+                  returnAsString
+                  onChange={(val) => setValue('area', val)}
                   isInvalid={Boolean(errors.area)}
-                  type="text"
-                  placeholder="Ingresar área"
                 />
                 {fieldError('area')}
               </Form.Group>
             </Col>
-            <Col md={6}>
+          </Row>
+
+          <Row>
+            <Col md={12}>
               <Form.Group className="mb-3" controlId="status">
                 <Form.Label>Estado</Form.Label>
                 <Form.Select
@@ -205,6 +214,7 @@ const CaseDetails = ({
                   onChange={handleChange}
                   isInvalid={Boolean(errors.lastUpdate)}
                   type="date"
+                  min={values.startDate || undefined}
                   className="opacity-50"
                   disabled
                 />
