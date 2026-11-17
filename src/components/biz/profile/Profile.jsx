@@ -1,14 +1,21 @@
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { Form, Spinner } from 'react-bootstrap';
-import { Check, Pencil, X } from 'lucide-react';
+import { BriefcaseBusiness, Check, CircleAlert, Pencil, Phone, UserRound, X } from 'lucide-react';
 import { AuthenticationContext } from '../../services/auth/authentication.context';
 import { usersApi } from '../../services/api/usersApi';
 import { useToast } from '../../shared/toast/toast.context';
 import { getRoleLabel } from '../users/User.data';
 import { ROLES } from '../../services/consts/roles';
+import { getProfileMissingFields, isProfileComplete } from '../../services/consts/profile';
 import { normalizeSpecialties } from '../../services/consts/specialties';
 import SpecialtiesSelector from '../../shared/specialtiesSelector/SpecialtiesSelector';
 import './Profile.css';
+
+const PROFILE_FIELD_LABELS = {
+  phone: 'teléfono',
+  address: 'dirección',
+  schedule: 'horarios de atención',
+};
 
 const WEEK_DAYS = [
   { id: 1, label: 'Lunes' },
@@ -519,6 +526,18 @@ const Profile = () => {
     ? `${describeDays(savedSchedule.days)} · ${savedSchedule.slots.length} horarios`
     : 'Sin configurar';
 
+  // profileData is refreshed from the API on mount; the session user is the
+  // fallback while that request is in flight.
+  const profileOwner = profileData ?? user;
+  const profileIsComplete = isProfileComplete(profileOwner);
+  const missingProfileFields = getProfileMissingFields(profileOwner);
+  const missingProfileLabels = missingProfileFields
+    .map((field) => PROFILE_FIELD_LABELS[field])
+    .filter(Boolean);
+  const missingProfileAnchor = missingProfileFields.includes('schedule')
+    ? '#profile-professional'
+    : '#profile-contact';
+
   return (
     <section className="app-page">
       <header className="app-page__header">
@@ -537,69 +556,103 @@ const Profile = () => {
           Tocá el lápiz junto a un dato para editarlo. Solo los campos habilitados para tu rol se
           pueden modificar.
         </p>
-        <dl className="app-detail-grid profile-detail-grid">
-          {renderDatum({
-            label: 'Nombre',
-            value: displayName,
-            field: 'name',
-            editable: isAdmin,
-          })}
-          {renderDatum({
-            label: 'DNI',
-            value: displayDni,
-            field: 'dni',
-            editable: isAdmin,
-          })}
-          {renderDatum({
-            label: 'Correo electrónico',
-            value: displayEmail,
-            field: 'email',
-            editable: isAdmin,
-            type: 'email',
-          })}
-          {renderDatum({ label: 'Rol', value: displayRole, field: 'role' })}
-          {isLawyer &&
-            renderDatum({
-              label: 'Matrícula',
-              value: displayBarNumber,
-              field: 'barNumber',
+        {!profileIsComplete && (
+          <div className="profile-completeness-alert" role="status">
+            <CircleAlert size={18} aria-hidden="true" />
+            <span>
+              Completá tu perfil: falta {missingProfileLabels.join(' y ')}.{' '}
+              <a href={missingProfileAnchor}>Ir a los datos faltantes</a>
+            </span>
+          </div>
+        )}
+
+        <section className="profile-section" id="profile-identity">
+          <h4 className="profile-section__title">
+            <UserRound size={16} aria-hidden="true" />
+            Identidad
+          </h4>
+          <dl className="app-detail-grid profile-detail-grid">
+            {renderDatum({
+              label: 'Nombre',
+              value: displayName,
+              field: 'name',
+              editable: isAdmin,
             })}
-          {(isClient || isLawyer) &&
-            renderDatum({
-              label: 'Teléfono',
-              value: displayPhone,
-              field: 'phone',
-              editable: true,
-              rawValue: phone,
-              type: 'tel',
-              placeholder: 'Ej. +54 9 11 1234-5678',
+            {renderDatum({
+              label: 'DNI',
+              value: displayDni,
+              field: 'dni',
+              editable: isAdmin,
             })}
-          {isClient &&
-            renderDatum({
-              label: 'Dirección',
-              value: displayAddress,
-              field: 'address',
-              editable: true,
-              rawValue: address,
-              placeholder: 'Ej. San Martín 123, Piso 4',
+            {renderDatum({
+              label: 'Correo electrónico',
+              value: displayEmail,
+              field: 'email',
+              editable: isAdmin,
+              type: 'email',
             })}
-          {isLawyer &&
-            renderDatum({
-              label: 'Especialidades',
-              value: displaySpecialties,
-              field: 'specialties',
-              editable: true,
-              editor: renderSpecialtiesEditor,
-            })}
-          {isLawyer &&
-            renderDatum({
-              label: 'Horarios de atención',
-              value: displaySchedule,
-              field: 'schedule',
-              editable: true,
-              editor: renderScheduleEditor,
-            })}
-        </dl>
+            {renderDatum({ label: 'Rol', value: displayRole, field: 'role' })}
+          </dl>
+        </section>
+
+        {(isClient || isLawyer) && (
+          <section className="profile-section" id="profile-contact">
+            <h4 className="profile-section__title">
+              <Phone size={16} aria-hidden="true" />
+              Contacto
+            </h4>
+            <dl className="app-detail-grid profile-detail-grid">
+              {renderDatum({
+                label: 'Teléfono',
+                value: displayPhone,
+                field: 'phone',
+                editable: true,
+                rawValue: phone,
+                type: 'tel',
+                placeholder: 'Ej. +54 9 11 1234-5678',
+              })}
+              {isClient &&
+                renderDatum({
+                  label: 'Dirección',
+                  value: displayAddress,
+                  field: 'address',
+                  editable: true,
+                  rawValue: address,
+                  placeholder: 'Ej. San Martín 123, Piso 4',
+                })}
+            </dl>
+          </section>
+        )}
+
+        {isLawyer && (
+          <section className="profile-section" id="profile-professional">
+            <h4 className="profile-section__title">
+              <BriefcaseBusiness size={16} aria-hidden="true" />
+              Perfil profesional
+            </h4>
+            <dl className="app-detail-grid profile-detail-grid">
+              {renderDatum({
+                label: 'Matrícula',
+                value: displayBarNumber,
+                field: 'barNumber',
+              })}
+              {renderDatum({
+                label: 'Especialidades',
+                value: displaySpecialties,
+                field: 'specialties',
+                editable: true,
+                editor: renderSpecialtiesEditor,
+              })}
+              {renderDatum({
+                label: 'Horarios de atención',
+                value: displaySchedule,
+                field: 'schedule',
+                editable: true,
+                editor: renderScheduleEditor,
+              })}
+            </dl>
+          </section>
+        )}
       </div>
     </section>
   );

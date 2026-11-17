@@ -1,8 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { Button, Col, Form, Modal, Row } from 'react-bootstrap';
-import { casesApi } from '../../../services/api/casesApi';
 import { initialCaseForm } from '../newCase/NewCase.data';
-import { CASE_STATUS_OPTIONS } from '../Cases.data';
 import { useForm } from '../../../services/hooks/useForm';
 import { isRequired } from '../../../services/validators/validators';
 import { ROLES } from '../../../services/consts/roles';
@@ -34,7 +32,7 @@ const CaseDetails = ({
 
   const validateCaseForm = (values) => {
     const errors = {};
-    const requiredFields = ['caseNumber', 'title', 'area', 'startDate', 'lastUpdate', 'clientId'];
+    const requiredFields = ['caseNumber', 'title', 'area', 'startDate', 'clientId'];
 
     if (currentUser?.role !== ROLES.ABOGADO) {
       requiredFields.push('lawyerId');
@@ -46,13 +44,6 @@ const CaseDetails = ({
       }
     });
 
-    if (values.startDate && values.lastUpdate) {
-      if (new Date(values.lastUpdate) < new Date(values.startDate)) {
-        errors.lastUpdate =
-          'La fecha de última actualización no puede ser anterior a la fecha de inicio.';
-      }
-    }
-
     return errors;
   };
 
@@ -60,21 +51,18 @@ const CaseDetails = ({
     initialValues,
     validate: validateCaseForm,
     onSubmit: async (formValues) => {
-      // PUT /case/{id} accepts only title/area/description/notes and the
-      // status select is separate: PATCH /case/{id}/status. Ids are Guid
-      // strings and the select speaks lowercase, so status goes normalized.
-      const statusChanged =
-        String(formValues.status ?? '').toLowerCase() !==
-        String(initialValues.status ?? '').toLowerCase();
+      // PUT /case/{id} persists only title/area/description/notes. Status and
+      // lastUpdate are computed by the backend and edited in their own views.
       const payload = {
-        ...formValues,
+        id: formValues.id,
+        title: formValues.title,
+        area: formValues.area,
+        description: formValues.description,
+        notes: formValues.notes,
         lawyerId: currentUser?.role === ROLES.ABOGADO ? currentUser.id : formValues.lawyerId,
       };
 
       try {
-        if (statusChanged) {
-          await casesApi.setStatus(legalCase.id, String(formValues.status ?? '').toLowerCase());
-        }
         await onEditCase?.(payload);
         showToast({ variant: 'success', message: 'Expediente actualizado correctamente.' });
         onFormClosed?.();
@@ -172,25 +160,6 @@ const CaseDetails = ({
 
           <Row>
             <Col md={12}>
-              <Form.Group className="mb-3" controlId="status">
-                <Form.Label>Estado</Form.Label>
-                <Form.Select
-                  name="status"
-                  value={String(values.status ?? '').toLowerCase() || 'activo'}
-                  onChange={handleChange}
-                >
-                  {CASE_STATUS_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
-            </Col>
-          </Row>
-
-          <Row>
-            <Col md={6}>
               <Form.Group className="mb-3" controlId="startDate">
                 <Form.Label>Fecha de inicio</Form.Label>
                 <Form.Control
@@ -203,22 +172,6 @@ const CaseDetails = ({
                   disabled
                 />
                 {fieldError('startDate')}
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group className="mb-3" controlId="lastUpdate">
-                <Form.Label>Última actualización</Form.Label>
-                <Form.Control
-                  name="lastUpdate"
-                  value={values.lastUpdate ?? ''}
-                  onChange={handleChange}
-                  isInvalid={Boolean(errors.lastUpdate)}
-                  type="date"
-                  min={values.startDate || undefined}
-                  className="opacity-50"
-                  disabled
-                />
-                {fieldError('lastUpdate')}
               </Form.Group>
             </Col>
           </Row>

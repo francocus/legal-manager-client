@@ -1642,3 +1642,147 @@
 [data-bs-theme='light'] .case-docs__draft-note {
   color: #45505d;
 }
+
+/* Folder / file-card silhouette for the case list (client + lawyer views).
+   The status stripe reuses the palette already used by .cases-item__status
+   and the appointment ticket; only the shape is new. */
+.cases-item--folder {
+  --case-accent: rgba(120, 172, 214, 0.5);
+  padding-top: 28px;
+  border-left-width: 0;
+  overflow: visible;
+}
+
+.cases-item--folder:has(.cases-item__status.is-active),
+.cases-item--folder:has(.cases-item__status.is-open) {
+  --case-accent: rgba(90, 173, 132, 0.9);
+}
+
+.cases-item--folder:has(.cases-item__status.is-pending) {
+  --case-accent: rgba(235, 177, 85, 0.9);
+}
+
+.cases-item--folder:has(.cases-item__status.is-closed),
+.cases-item--folder:has(.cases-item__status.is-finished) {
+  --case-accent: rgba(126, 144, 167, 0.9);
+}
+
+.cases-item--folder:has(.cases-item__status.is-cancelled),
+.cases-item--folder:has(.cases-item__status.is-canceled) {
+  --case-accent: rgba(217, 93, 93, 0.9);
+}
+
+.cases-item__stripe {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 5px;
+  border-radius: 18px 0 0 18px;
+  background: var(--case-accent);
+  pointer-events: none;
+}
+
+/* Upper folder tab: sits on the card edge, above the body. */
+.cases-item__link .cases-item__tab {
+  position: absolute;
+  top: -1px;
+  left: 20px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 27px;
+  padding: 0 14px 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-bottom: 0;
+  border-radius: 12px 12px 0 0;
+  background: linear-gradient(180deg, rgba(20, 27, 37, 0.98), rgba(12, 16, 22, 0.98));
+  box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.18);
+  color: #b7cada;
+}
+
+.cases-item__link .cases-item__tab .cases-item__label {
+  margin: 0;
+  color: inherit;
+}
+
+.cases-item__tab-icon {
+  color: #7dd3fc;
+}
+
+/* Sticker label carrying the case number. */
+.cases-item .cases-item__sticker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 5px 10px;
+  border: 1px solid rgba(150, 180, 220, 0.24);
+  border-radius: 6px;
+  background: rgba(120, 150, 190, 0.14);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.16);
+  color: #eaf2fa;
+  font-size: 0.92rem;
+  font-weight: 800;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  transform: rotate(-1deg);
+}
+
+.cases-item__sticker span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.cases-item__sticker-icon {
+  flex-shrink: 0;
+  color: #7dd3fc;
+}
+
+.cases-item--folder .cases-item__row {
+  flex-wrap: wrap;
+}
+
+[data-bs-theme='light'] .cases-item--folder {
+  --case-accent: rgba(70, 130, 185, 0.8);
+  border-left-width: 0;
+  background: #ffffff;
+}
+
+[data-bs-theme='light'] .cases-item--folder:has(.cases-item__status.is-active),
+[data-bs-theme='light'] .cases-item--folder:has(.cases-item__status.is-open) {
+  --case-accent: rgba(70, 150, 110, 0.85);
+}
+
+[data-bs-theme='light'] .cases-item--folder:has(.cases-item__status.is-pending) {
+  --case-accent: rgba(200, 145, 50, 0.85);
+}
+
+[data-bs-theme='light'] .cases-item--folder:has(.cases-item__status.is-closed),
+[data-bs-theme='light'] .cases-item--folder:has(.cases-item__status.is-finished) {
+  --case-accent: rgba(100, 115, 135, 0.85);
+}
+
+[data-bs-theme='light'] .cases-item--folder:has(.cases-item__status.is-cancelled),
+[data-bs-theme='light'] .cases-item--folder:has(.cases-item__status.is-canceled) {
+  --case-accent: rgba(195, 75, 75, 0.85);
+}
+
+[data-bs-theme='light'] .cases-item__link .cases-item__tab {
+  border-color: rgba(15, 23, 32, 0.12);
+  background: #ffffff;
+  box-shadow: 0 -3px 10px rgba(15, 23, 32, 0.05);
+  color: #5b6675;
+}
+
+[data-bs-theme='light'] .cases-item .cases-item__sticker {
+  border-color: rgba(37, 99, 235, 0.22);
+  background: rgba(37, 99, 235, 0.08);
+  box-shadow: 0 4px 10px rgba(15, 23, 32, 0.08);
+  color: #1e40af;
+}
+
+[data-bs-theme='light'] .cases-item__sticker-icon {
+  color: #0369a1;
+}

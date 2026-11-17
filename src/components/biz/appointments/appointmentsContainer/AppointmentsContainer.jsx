@@ -221,6 +221,8 @@ const AppointmentsContainer = () => {
                     <AppointmentItem
                       key={appointment.id}
                       appointment={appointment}
+                      onStatus={handleStatus}
+                      onCancel={setAppointmentToCancel}
                       onEdit={setAppointmentToEdit}
                       onDelete={setAppointmentToDelete}
                       onSelect={() => navigate(`/dashboard/appointments/${appointment.id}`)}

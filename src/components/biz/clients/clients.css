@@ -281,3 +281,96 @@
     padding: 0 14px 20px;
   }
 }
+
+/* Mini folder language for the case list on a client's detail page.
+   Same status palette as .cases-item / .appointment-ticket, no new actions. */
+.client-page__case-folder {
+  --client-case-accent: rgba(120, 172, 214, 0.55);
+}
+
+.client-page__case-folder:has(.cases-item__status.is-active),
+.client-page__case-folder:has(.cases-item__status.is-open) {
+  --client-case-accent: rgba(90, 173, 132, 0.85);
+}
+
+.client-page__case-folder:has(.cases-item__status.is-pending) {
+  --client-case-accent: rgba(235, 177, 85, 0.85);
+}
+
+.client-page__case-folder:has(.cases-item__status.is-closed),
+.client-page__case-folder:has(.cases-item__status.is-finished) {
+  --client-case-accent: rgba(126, 144, 167, 0.85);
+}
+
+.client-page__case-folder:has(.cases-item__status.is-cancelled),
+.client-page__case-folder:has(.cases-item__status.is-canceled) {
+  --client-case-accent: rgba(217, 93, 93, 0.85);
+}
+
+.client-page__case-folder a {
+  position: relative;
+  overflow: hidden;
+  border-left: 4px solid var(--client-case-accent);
+}
+
+.client-page__case-folder a::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 14px;
+  width: 42px;
+  height: 4px;
+  border-radius: 0 0 4px 4px;
+  background: var(--client-case-accent);
+}
+
+.client-page__case-icon {
+  flex-shrink: 0;
+  color: #7dd3fc;
+}
+
+.client-page__case-sticker {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border: 1px solid rgba(150, 180, 220, 0.24);
+  border-radius: 6px;
+  background: rgba(120, 150, 190, 0.14);
+  color: #eaf2fa;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+[data-bs-theme='light'] .client-page__case-folder {
+  --client-case-accent: rgba(70, 130, 185, 0.8);
+}
+
+[data-bs-theme='light'] .client-page__case-folder:has(.cases-item__status.is-active),
+[data-bs-theme='light'] .client-page__case-folder:has(.cases-item__status.is-open) {
+  --client-case-accent: rgba(70, 150, 110, 0.85);
+}
+
+[data-bs-theme='light'] .client-page__case-folder:has(.cases-item__status.is-pending) {
+  --client-case-accent: rgba(200, 145, 50, 0.85);
+}
+
+[data-bs-theme='light'] .client-page__case-folder:has(.cases-item__status.is-closed),
+[data-bs-theme='light'] .client-page__case-folder:has(.cases-item__status.is-finished) {
+  --client-case-accent: rgba(100, 115, 135, 0.85);
+}
+
+[data-bs-theme='light'] .client-page__case-folder:has(.cases-item__status.is-cancelled),
+[data-bs-theme='light'] .client-page__case-folder:has(.cases-item__status.is-canceled) {
+  --client-case-accent: rgba(195, 75, 75, 0.85);
+}
+
+[data-bs-theme='light'] .client-page__case-icon {
+  color: #0369a1;
+}
+
+[data-bs-theme='light'] .client-page__case-sticker {
+  background: rgba(37, 99, 235, 0.08);
+  border-color: rgba(37, 99, 235, 0.22);
+  color: #1e40af;
+}

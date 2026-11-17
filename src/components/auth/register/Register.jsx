@@ -49,6 +49,18 @@ const EyeIcon = ({ off }) =>
     </svg>
   );
 
+const PhoneIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+    <path d="M6.5 3.5h3l1.3 4-2 1.4a11 11 0 0 0 6.3 6.3l1.4-2 4 1.3v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.5 5.7a2 2 0 0 1 2-2.2Z" />
+  </svg>
+);
+const LocationIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+    <path d="M12 21s7-6.1 7-11a7 7 0 1 0-14 0c0 4.9 7 11 7 11Z" />
+    <circle cx="12" cy="10" r="2.5" />
+  </svg>
+);
+
 const validateRegisterForm = (values) => {
   const errors = {};
 
@@ -60,6 +72,10 @@ const validateRegisterForm = (values) => {
   if (!isRequired(values.password)) errors.password = 'La contraseña es obligatoria.';
   if (values.confirmPassword !== values.password)
     errors.confirmPassword = 'Las contraseñas deben coincidir.';
+  if (String(values.phone ?? '').trim().length > 30)
+    errors.phone = 'El teléfono no puede superar los 30 caracteres.';
+  if (String(values.address ?? '').trim().length > 200)
+    errors.address = 'La dirección no puede superar los 200 caracteres.';
 
   return errors;
 };
@@ -72,18 +88,30 @@ const Register = () => {
   const [showConfirm, setShowConfirm] = useState(false);
 
   const { values, errors, submitting, setValue, handleChange, handleSubmit } = useForm({
-    initialValues: { name: '', dni: '', email: '', password: '', confirmPassword: '' },
+    initialValues: {
+      name: '',
+      dni: '',
+      email: '',
+      phone: '',
+      address: '',
+      password: '',
+      confirmPassword: '',
+    },
     validate: validateRegisterForm,
-    onSubmit: async ({ name, dni, email, password }) => {
+    onSubmit: async ({ name, dni, email, phone, address, password }) => {
       try {
         // Registration no longer signs the user in: the account starts as
         // email-pending, so no session is persisted for unconfirmed users.
+        const trimmedPhone = String(phone ?? '').trim();
+        const trimmedAddress = String(address ?? '').trim();
         await usersApi.register({
           name: name.trim(),
           dni,
           email: email.trim(),
           password,
           role: ROLES.CLIENTE,
+          ...(trimmedPhone ? { phone: trimmedPhone } : {}),
+          ...(trimmedAddress ? { address: trimmedAddress } : {}),
         });
         navigate('/registro-pendiente', { state: { email }, replace: true });
       } catch (error) {
@@ -169,6 +197,42 @@ const Register = () => {
                   />
                 </div>
                 {errors.email && <span className="auth-error">{errors.email}</span>}
+              </div>
+
+              <div className={`auth-field ${errors.phone ? 'has-error' : ''}`}>
+                <label htmlFor="register-phone">Teléfono (opcional)</label>
+                <div className="auth-input">
+                  <PhoneIcon />
+                  <Form.Control
+                    id="register-phone"
+                    name="phone"
+                    type="tel"
+                    maxLength={30}
+                    placeholder="Ej: +54 9 11 1234-5678"
+                    value={values.phone}
+                    onChange={handleChange}
+                    aria-invalid={Boolean(errors.phone)}
+                  />
+                </div>
+                {errors.phone && <span className="auth-error">{errors.phone}</span>}
+              </div>
+
+              <div className={`auth-field ${errors.address ? 'has-error' : ''}`}>
+                <label htmlFor="register-address">Dirección (opcional)</label>
+                <div className="auth-input">
+                  <LocationIcon />
+                  <Form.Control
+                    id="register-address"
+                    name="address"
+                    type="text"
+                    maxLength={200}
+                    placeholder="Ej: San Martín 123, Piso 4"
+                    value={values.address}
+                    onChange={handleChange}
+                    aria-invalid={Boolean(errors.address)}
+                  />
+                </div>
+                {errors.address && <span className="auth-error">{errors.address}</span>}
               </div>
 
               <div className={`auth-field ${errors.password ? 'has-error' : ''}`}>

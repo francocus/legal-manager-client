@@ -21,6 +21,8 @@ export const splitPersonName = (name) => {
 
 const toPersonBody = (payload) => {
   const { firstName, lastName } = splitPersonName(payload?.name);
+  const phone = String(payload?.phone ?? '').trim();
+  const address = String(payload?.address ?? '').trim();
 
   return {
     firstName,
@@ -28,6 +30,8 @@ const toPersonBody = (payload) => {
     dni: payload?.dni,
     email: payload?.email,
     password: payload?.password,
+    ...(phone ? { phone } : {}),
+    ...(address ? { address } : {}),
   };
 };
 
@@ -35,7 +39,7 @@ export const usersApi = {
   login: (credentials) =>
     apiRequest('/auth/login', { method: 'POST', body: credentials, auth: false }),
 
-  // /auth/register accepts only { firstName, lastName, dni, email, password }.
+  // /auth/register accepts the base person fields plus optional contact data.
   register: (payload) =>
     apiRequest('/auth/register', { method: 'POST', body: toPersonBody(payload), auth: false }),
 
@@ -51,7 +55,13 @@ export const usersApi = {
     const body = toPersonBody(payload);
 
     if (payload?.role === ROLES.ADMIN || payload?.role === 'sysadmin') {
-      return apiRequest('/user/admin', { method: 'POST', body });
+      // Admin creation rejects extra fields, so contact data added by
+      // toPersonBody is left out here.
+      const { firstName, lastName, dni, email, password } = body;
+      return apiRequest('/user/admin', {
+        method: 'POST',
+        body: { firstName, lastName, dni, email, password },
+      });
     }
 
     if (payload?.role === ROLES.ABOGADO) {
@@ -64,11 +74,17 @@ export const usersApi = {
               .filter(Boolean)
           : null;
 
-      // /user/lawyer requires a non-nullable barNumber.
+      // /user/lawyer requires a non-nullable barNumber and does not take an
+      // address, so build its body explicitly from the base person fields.
+      const { firstName, lastName, dni, email, password } = body;
       return apiRequest('/user/lawyer', {
         method: 'POST',
         body: {
-          ...body,
+          firstName,
+          lastName,
+          dni,
+          email,
+          password,
           barNumber: payload?.barNumber,
           phone: payload?.phone || null,
           specialties: specialties?.length ? specialties : null,

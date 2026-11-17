@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import { FileText, FolderOpen } from 'lucide-react';
 import { getStatusClass, getStatusLabel } from '../../cases/Cases.data';
 import { isAdmin } from '../../../services/consts/roles';
 
@@ -22,15 +23,22 @@ const CasesItem = ({
       (lawyerIds?.includes(currentUser?.id) || lawyerName?.includes(currentUser?.name)));
 
   return (
-    <article className="cases-item">
+    <article className="cases-item cases-item--folder">
+      <span className="cases-item__stripe" aria-hidden="true" />
       <Link to={`/dashboard/cases/${id}`} className="cases-item__link">
-        <div className="cases-item__row">
+        <span className="cases-item__tab">
+          <FolderOpen size={14} className="cases-item__tab-icon" aria-hidden="true" />
           <span className="cases-item__label">Expediente</span>
+        </span>
+        <div className="cases-item__row">
+          <h2 className="cases-item__title cases-item__sticker">
+            <FileText size={13} className="cases-item__sticker-icon" aria-hidden="true" />
+            <span>{caseNumber}</span>
+          </h2>
           <span className={`cases-item__status ${getStatusClass(status)}`}>
             {getStatusLabel(status)}
           </span>
         </div>
-        <h2 className="cases-item__title">{caseNumber}</h2>
         <p className="cases-item__subtitle">{title}</p>
         <div className="cases-item__meta">
           <span>
