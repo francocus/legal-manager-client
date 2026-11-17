@@ -1,5 +1,6 @@
-import { useContext, useEffect, useState } from 'react';
-import { Alert, Button, Col, Form, Row, Spinner } from 'react-bootstrap';
+import { useContext, useEffect, useMemo, useState } from 'react';
+import { Form, Spinner } from 'react-bootstrap';
+import { Check, Pencil, X } from 'lucide-react';
 import { AuthenticationContext } from '../../services/auth/authentication.context';
 import { usersApi } from '../../services/api/usersApi';
 import { useToast } from '../../shared/toast/toast.context';
@@ -27,6 +28,63 @@ const STANDARD_SLOTS = [
   '17:00',
 ];
 
+const DAY_IDS_BY_NAME = {
+  lunes: 1,
+  martes: 2,
+  miercoles: 3,
+  jueves: 4,
+  viernes: 5,
+  sabado: 6,
+};
+
+// Older schedules stored day names while the current editor uses numeric ids.
+// Normalizing on read prevents duplicates such as "Lunes" + 1 counting twice.
+const normalizeDayId = (value) => {
+  if (typeof value === 'number' && Number.isInteger(value) && value >= 1 && value <= 6) {
+    return value;
+  }
+  const raw = String(value ?? '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+  const numeric = Number(raw);
+  if (Number.isInteger(numeric) && numeric >= 1 && numeric <= 6) return numeric;
+  return DAY_IDS_BY_NAME[raw] ?? null;
+};
+
+const normalizeDays = (days) =>
+  [...new Set((Array.isArray(days) ? days : []).map(normalizeDayId).filter(Boolean))].sort(
+    (a, b) => a - b,
+  );
+
+const normalizeSlots = (slots) =>
+  [...new Set((Array.isArray(slots) ? slots : []).map((slot) => String(slot ?? '').trim().slice(0, 5)).filter(Boolean))].sort();
+
+const parseSchedule = (schedule) => {
+  if (!schedule) return null;
+  try {
+    const parsed = typeof schedule === 'string' ? JSON.parse(schedule) : schedule;
+    return {
+      days: normalizeDays(parsed?.days),
+      slots: normalizeSlots(parsed?.slots),
+    };
+  } catch (_e) {
+    return null;
+  }
+};
+
+const describeDays = (days) => {
+  if (days.length === 0) return 'Sin días';
+  const labels = days.map((id) => WEEK_DAYS.find((day) => day.id === id)?.label).filter(Boolean);
+  if (labels.length === 0) return 'Sin días';
+  if (days.length > 1 && days.every((day, index) => day === days[0] + index)) {
+    return `${labels[0]} a ${labels[labels.length - 1]}`;
+  }
+  if (labels.length === 1) return labels[0];
+  return `${labels.slice(0, -1).join(', ')} y ${labels[labels.length - 1]}`;
+};
+
 const Profile = () => {
   const { user, updateUserSession } = useContext(AuthenticationContext);
   const { showToast } = useToast();
@@ -35,13 +93,17 @@ const Profile = () => {
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
-  const [savingContact, setSavingContact] = useState(false);
   const [specialties, setSpecialties] = useState([]);
-  const [savingSpecialties, setSavingSpecialties] = useState(false);
   const [selectedDays, setSelectedDays] = useState([1, 2, 3, 4, 5]);
   const [selectedSlots, setSelectedSlots] = useState(STANDARD_SLOTS);
   const [customSlot, setCustomSlot] = useState('');
-  const [savingSchedule, setSavingSchedule] = useState(false);
+  const [editingField, setEditingField] = useState(null);
+  const [draftValue, setDraftValue] = useState('');
+  const [savingField, setSavingField] = useState(null);
+
+  const isAdmin = user?.role === ROLES.ADMIN;
+  const isClient = user?.role === ROLES.CLIENTE;
+  const isLawyer = user?.role === ROLES.ABOGADO;
 
   useEffect(() => {
     let active = true;
@@ -56,20 +118,16 @@ const Profile = () => {
         setPhone(data.phone || '');
         setAddress(data.address || '');
 
-        // Load specialties for lawyers. Legacy or differently-cased values are
-        // mapped to the curated list; anything outside it is dropped.
+        // Legacy or differently-cased values are mapped to the curated list;
+        // anything outside it is dropped before it reaches the selector.
         if (data.specialties) {
           setSpecialties(normalizeSpecialties(data.specialties));
         }
 
-        if (data.schedule) {
-          try {
-            const parsed = typeof data.schedule === 'string' ? JSON.parse(data.schedule) : data.schedule;
-            if (Array.isArray(parsed?.days) && parsed.days.length > 0) setSelectedDays(parsed.days);
-            if (Array.isArray(parsed?.slots) && parsed.slots.length > 0) setSelectedSlots(parsed.slots);
-          } catch (_e) {
-            // keep defaults
-          }
+        const savedSchedule = parseSchedule(data.schedule);
+        if (savedSchedule) {
+          if (savedSchedule.days.length > 0) setSelectedDays(savedSchedule.days);
+          if (savedSchedule.slots.length > 0) setSelectedSlots(savedSchedule.slots);
         }
 
         if (data.name && data.name !== user.name) {
@@ -83,6 +141,11 @@ const Profile = () => {
         if (user?.specialties) {
           setSpecialties(normalizeSpecialties(user.specialties));
         }
+        const fallbackSchedule = parseSchedule(user?.schedule);
+        if (fallbackSchedule) {
+          if (fallbackSchedule.days.length > 0) setSelectedDays(fallbackSchedule.days);
+          if (fallbackSchedule.slots.length > 0) setSelectedSlots(fallbackSchedule.slots);
+        }
       } finally {
         if (active) setLoadingProfile(false);
       }
@@ -95,8 +158,101 @@ const Profile = () => {
     };
   }, [user, updateUserSession]);
 
-  const handleSaveSchedule = async (e) => {
-    e.preventDefault();
+  const cancelEdit = () => {
+    setEditingField(null);
+    setDraftValue('');
+  };
+
+  const startEdit = (field, value) => {
+    setDraftValue(value ?? '');
+    setEditingField(field);
+  };
+
+  const handleSaveSimpleField = async (field) => {
+    const value = (draftValue || '').trim();
+
+    if (['name', 'dni', 'email'].includes(field) && !value) {
+      showToast({ variant: 'danger', message: 'Este dato no puede quedar vacío.' });
+      return;
+    }
+    if (field === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      showToast({ variant: 'danger', message: 'Ingresá un correo electrónico válido.' });
+      return;
+    }
+
+    try {
+      setSavingField(field);
+
+      if (['name', 'dni', 'email'].includes(field)) {
+        const payload = {
+          name: field === 'name' ? value : profileData?.name || user?.name,
+          dni: field === 'dni' ? value : profileData?.dni || user?.dni,
+          email: field === 'email' ? value : profileData?.email || user?.email,
+        };
+        const updated = await usersApi.update(user.id, payload);
+        setProfileData((prev) => ({ ...prev, ...updated }));
+        updateUserSession?.({
+          name: updated?.name ?? payload.name,
+          dni: updated?.dni ?? payload.dni,
+          email: updated?.email ?? payload.email,
+        });
+      } else if (field === 'phone') {
+        const nextPhone = value || null;
+        if (isClient) {
+          await usersApi.updateClientPhone(user.id, nextPhone);
+        } else {
+          await usersApi.updateLawyerPhone(user.id, nextPhone);
+        }
+        setPhone(value);
+        setProfileData((prev) => ({ ...prev, phone: nextPhone }));
+        updateUserSession?.({ phone: nextPhone });
+      } else if (field === 'address') {
+        const nextAddress = value || null;
+        await usersApi.updateClientAddress(user.id, nextAddress);
+        setAddress(value);
+        setProfileData((prev) => ({ ...prev, address: nextAddress }));
+        updateUserSession?.({ address: nextAddress });
+      }
+
+      cancelEdit();
+      showToast({ variant: 'success', message: 'Dato actualizado correctamente.' });
+    } catch (err) {
+      showToast({
+        variant: 'danger',
+        message: err.message || 'No se pudo actualizar el dato.',
+      });
+    } finally {
+      setSavingField(null);
+    }
+  };
+
+  const handleSaveSpecialties = async () => {
+    if (!user?.id) return;
+    const payload = normalizeSpecialties(specialties);
+    if (payload.length === 0) {
+      showToast({ variant: 'danger', message: 'Debés seleccionar al menos una especialidad.' });
+      return;
+    }
+    try {
+      setSavingField('specialties');
+      const updated = await usersApi.updateSpecialties(user.id, payload);
+      const saved = normalizeSpecialties(updated?.specialties ?? payload);
+      setSpecialties(saved);
+      setProfileData((prev) => ({ ...prev, specialties: saved }));
+      updateUserSession?.({ specialties: saved });
+      cancelEdit();
+      showToast({ variant: 'success', message: 'Especialidades actualizadas correctamente.' });
+    } catch (err) {
+      showToast({
+        variant: 'danger',
+        message: err.message || 'No se pudieron actualizar las especialidades.',
+      });
+    } finally {
+      setSavingField(null);
+    }
+  };
+
+  const handleSaveSchedule = async () => {
     if (!user?.id) return;
     if (selectedDays.length === 0) {
       showToast({ variant: 'danger', message: 'Debés seleccionar al menos un día de atención.' });
@@ -107,7 +263,7 @@ const Profile = () => {
       return;
     }
     try {
-      setSavingSchedule(true);
+      setSavingField('schedule');
       const schedulePayload = {
         days: [...selectedDays].sort((a, b) => a - b),
         slots: [...selectedSlots].sort(),
@@ -119,11 +275,8 @@ const Profile = () => {
         ...prev,
         schedule: scheduleJson,
       }));
-
-      updateUserSession?.({
-        schedule: scheduleJson,
-      });
-
+      updateUserSession?.({ schedule: scheduleJson });
+      cancelEdit();
       showToast({ variant: 'success', message: 'Días y horarios de atención actualizados correctamente.' });
     } catch (err) {
       showToast({
@@ -131,7 +284,7 @@ const Profile = () => {
         message: err.message || 'No se pudieron actualizar los horarios de atención.',
       });
     } finally {
-      setSavingSchedule(false);
+      setSavingField(null);
     }
   };
 
@@ -158,69 +311,199 @@ const Profile = () => {
     setSelectedSlots(STANDARD_SLOTS);
   };
 
-  const handleSaveContact = async (e) => {
-    e.preventDefault();
-    if (!user?.id) return;
-    try {
-      setSavingContact(true);
-      const isClient = user.role === ROLES.CLIENTE;
-      const isLawyer = user.role === ROLES.ABOGADO;
+  const renderSimpleEditor = (field, { type = 'text', placeholder } = {}) => (
+    <div className="profile-inline-editor">
+      <Form.Control
+        size="sm"
+        type={type}
+        value={draftValue}
+        placeholder={placeholder}
+        autoFocus
+        onChange={(event) => setDraftValue(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            handleSaveSimpleField(field);
+          }
+          if (event.key === 'Escape') cancelEdit();
+        }}
+      />
+      <button
+        type="button"
+        className="profile-inline-action profile-inline-action--save"
+        onClick={() => handleSaveSimpleField(field)}
+        disabled={savingField === field}
+        aria-label="Guardar"
+        title="Guardar"
+      >
+        {savingField === field ? <Spinner animation="border" size="sm" /> : <Check size={16} />}
+      </button>
+      <button
+        type="button"
+        className="profile-inline-action"
+        onClick={cancelEdit}
+        aria-label="Cancelar"
+        title="Cancelar"
+      >
+        <X size={16} />
+      </button>
+    </div>
+  );
 
-      if (isClient) {
-        await Promise.all([
-          usersApi.updateClientPhone(user.id, phone || null),
-          usersApi.updateClientAddress(user.id, address || null),
-        ]);
-      } else if (isLawyer) {
-        await usersApi.updateLawyerPhone(user.id, phone || null);
-      }
+  const renderSpecialtiesEditor = () => (
+    <div className="profile-inline-editor profile-inline-editor--block">
+      <SpecialtiesSelector selected={specialties} onChange={setSpecialties} />
+      <div className="profile-inline-actions">
+        <button
+          type="button"
+          className="app-button app-button--primary"
+          onClick={handleSaveSpecialties}
+          disabled={savingField === 'specialties'}
+        >
+          {savingField === 'specialties' ? 'Guardando...' : 'Guardar'}
+        </button>
+        <button type="button" className="app-button app-button--secondary" onClick={cancelEdit}>
+          Cancelar
+        </button>
+      </div>
+    </div>
+  );
 
-      setProfileData((prev) => ({
-        ...prev,
-        phone,
-        ...(isClient ? { address } : {}),
-      }));
+  const renderScheduleEditor = () => (
+    <div className="profile-inline-editor profile-inline-editor--block">
+      <label className="profile-field-label">Días de atención</label>
+      <div className="profile-inline-chips">
+        {WEEK_DAYS.map((day) => {
+          const isChecked = selectedDays.includes(day.id);
+          return (
+            <button
+              key={day.id}
+              type="button"
+              className={`app-button ${isChecked ? 'app-button--primary' : 'app-button--secondary'}`}
+              onClick={() =>
+                setSelectedDays((prev) =>
+                  isChecked ? prev.filter((d) => d !== day.id) : [...prev, day.id],
+                )
+              }
+            >
+              {day.label}
+            </button>
+          );
+        })}
+      </div>
 
-      updateUserSession?.({
-        phone,
-        ...(isClient ? { address } : {}),
-      });
+      <label className="profile-field-label">Horarios disponibles ({selectedSlots.length})</label>
+      <div className="profile-inline-chips">
+        <button
+          type="button"
+          className="app-button app-button--secondary"
+          onClick={handleLoadStandardSlots}
+        >
+          Cargar horarios estándar
+        </button>
+        {selectedSlots.length > 0 && (
+          <button
+            type="button"
+            className="app-button app-button--secondary"
+            onClick={() => setSelectedSlots([])}
+          >
+            Limpiar todos
+          </button>
+        )}
+      </div>
 
-      showToast({ variant: 'success', message: 'Datos de contacto actualizados correctamente.' });
-    } catch (err) {
-      showToast({
-        variant: 'danger',
-        message: err.message || 'No se pudieron actualizar los datos de contacto.',
-      });
-    } finally {
-      setSavingContact(false);
-    }
-  };
+      <div className="profile-inline-chips">
+        <Form.Control
+          type="time"
+          value={customSlot}
+          onChange={(e) => setCustomSlot(e.target.value)}
+          className="profile-inline-time"
+        />
+        <button
+          type="button"
+          className="app-button app-button--primary"
+          onClick={handleAddCustomSlot}
+          disabled={!customSlot}
+        >
+          + Agregar horario
+        </button>
+      </div>
 
-  const handleSaveSpecialties = async (e) => {
-    e.preventDefault();
-    if (!user?.id) return;
-    const payload = normalizeSpecialties(specialties);
-    if (payload.length === 0) {
-      showToast({ variant: 'danger', message: 'Debés seleccionar al menos una especialidad.' });
-      return;
-    }
-    try {
-      setSavingSpecialties(true);
-      const updated = await usersApi.updateSpecialties(user.id, payload);
-      const saved = normalizeSpecialties(updated?.specialties ?? payload);
-      setSpecialties(saved);
-      setProfileData((prev) => ({ ...prev, specialties: saved }));
-      updateUserSession?.({ specialties: saved });
-      showToast({ variant: 'success', message: 'Especialidades actualizadas correctamente.' });
-    } catch (err) {
-      showToast({
-        variant: 'danger',
-        message: err.message || 'No se pudieron actualizar las especialidades.',
-      });
-    } finally {
-      setSavingSpecialties(false);
-    }
+      {selectedSlots.length === 0 ? (
+        <p className="profile-empty">
+          No tenés horarios seleccionados. Agregá uno con el selector o cargá los estándar.
+        </p>
+      ) : (
+        <div className="profile-inline-chips">
+          {selectedSlots.map((slot) => (
+            <div key={slot} className="profile-slot">
+              <span>{slot} hs</span>
+              <button
+                type="button"
+                className="profile-slot__remove"
+                onClick={() => handleRemoveSlot(slot)}
+                title="Eliminar horario"
+                aria-label={`Eliminar horario ${slot}`}
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="profile-inline-actions">
+        <button
+          type="button"
+          className="app-button app-button--primary"
+          onClick={handleSaveSchedule}
+          disabled={savingField === 'schedule'}
+        >
+          {savingField === 'schedule' ? 'Guardando...' : 'Guardar'}
+        </button>
+        <button type="button" className="app-button app-button--secondary" onClick={cancelEdit}>
+          Cancelar
+        </button>
+      </div>
+    </div>
+  );
+
+  const renderDatum = ({
+    label,
+    value,
+    field,
+    editable = false,
+    rawValue,
+    editor,
+    type = 'text',
+    placeholder,
+  }) => {
+    const isEditing = editingField === field;
+    return (
+      <div className={`profile-datum${isEditing ? ' profile-datum--editing' : ''}`}>
+        <dt>{label}</dt>
+        <dd>
+          {isEditing ? (
+            editor ? editor() : renderSimpleEditor(field, { type, placeholder })
+          ) : (
+            <span className="profile-datum__row">
+              <span className="profile-datum__value">{value}</span>
+              {editable && (
+                <button
+                  type="button"
+                  className="profile-edit-button"
+                  onClick={() => startEdit(field, rawValue ?? value)}
+                  aria-label={`Editar ${label}`}
+                  title={`Editar ${label}`}
+                >
+                  <Pencil size={14} />
+                </button>
+              )}
+            </span>
+          )}
+        </dd>
+      </div>
+    );
   };
 
   const displayName = profileData?.name || user?.name || '—';
@@ -229,6 +512,12 @@ const Profile = () => {
   const displayRole = getRoleLabel(profileData?.role || user?.role);
   const displayBarNumber = profileData?.barNumber || user?.barNumber || '—';
   const displaySpecialties = specialties.length > 0 ? specialties.join(', ') : '—';
+  const displayPhone = profileData?.phone || 'Sin teléfono registrado';
+  const displayAddress = profileData?.address || 'Sin dirección registrada';
+  const savedSchedule = useMemo(() => parseSchedule(profileData?.schedule), [profileData?.schedule]);
+  const displaySchedule = savedSchedule
+    ? `${describeDays(savedSchedule.days)} · ${savedSchedule.slots.length} horarios`
+    : 'Sin configurar';
 
   return (
     <section className="app-page">
@@ -240,246 +529,78 @@ const Profile = () => {
       </header>
 
       <div className="app-panel">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3 className="app-panel__title" style={{ margin: 0 }}>
-            Datos de la cuenta
-          </h3>
+        <div className="profile-panel-header">
+          <h3 className="app-panel__title">Datos de la cuenta</h3>
           {loadingProfile ? <Spinner animation="border" size="sm" variant="secondary" /> : null}
         </div>
-        <dl className="app-detail-grid" style={{ marginTop: 16 }}>
-          <div>
-            <dt>Nombre</dt>
-            <dd>{displayName}</dd>
-          </div>
-          <div>
-            <dt>DNI</dt>
-            <dd>{displayDni}</dd>
-          </div>
-          <div>
-            <dt>Correo electrónico</dt>
-            <dd>{displayEmail}</dd>
-          </div>
-          <div>
-            <dt>Rol</dt>
-            <dd>{displayRole}</dd>
-          </div>
-          {user?.role === ROLES.ABOGADO ? (
-            <>
-              <div>
-                <dt>Matrícula</dt>
-                <dd>{displayBarNumber}</dd>
-              </div>
-              <div>
-                <dt>Especialidades</dt>
-                <dd>{displaySpecialties}</dd>
-              </div>
-            </>
-          ) : null}
+        <p className="profile-hint">
+          Tocá el lápiz junto a un dato para editarlo. Solo los campos habilitados para tu rol se
+          pueden modificar.
+        </p>
+        <dl className="app-detail-grid profile-detail-grid">
+          {renderDatum({
+            label: 'Nombre',
+            value: displayName,
+            field: 'name',
+            editable: isAdmin,
+          })}
+          {renderDatum({
+            label: 'DNI',
+            value: displayDni,
+            field: 'dni',
+            editable: isAdmin,
+          })}
+          {renderDatum({
+            label: 'Correo electrónico',
+            value: displayEmail,
+            field: 'email',
+            editable: isAdmin,
+            type: 'email',
+          })}
+          {renderDatum({ label: 'Rol', value: displayRole, field: 'role' })}
+          {isLawyer &&
+            renderDatum({
+              label: 'Matrícula',
+              value: displayBarNumber,
+              field: 'barNumber',
+            })}
+          {(isClient || isLawyer) &&
+            renderDatum({
+              label: 'Teléfono',
+              value: displayPhone,
+              field: 'phone',
+              editable: true,
+              rawValue: phone,
+              type: 'tel',
+              placeholder: 'Ej. +54 9 11 1234-5678',
+            })}
+          {isClient &&
+            renderDatum({
+              label: 'Dirección',
+              value: displayAddress,
+              field: 'address',
+              editable: true,
+              rawValue: address,
+              placeholder: 'Ej. San Martín 123, Piso 4',
+            })}
+          {isLawyer &&
+            renderDatum({
+              label: 'Especialidades',
+              value: displaySpecialties,
+              field: 'specialties',
+              editable: true,
+              editor: renderSpecialtiesEditor,
+            })}
+          {isLawyer &&
+            renderDatum({
+              label: 'Horarios de atención',
+              value: displaySchedule,
+              field: 'schedule',
+              editable: true,
+              editor: renderScheduleEditor,
+            })}
         </dl>
       </div>
-
-      {(user?.role === ROLES.CLIENTE || user?.role === ROLES.ABOGADO) && (
-        <div className="app-panel">
-          <h3 className="app-panel__title">Información de contacto</h3>
-          <p className="app-text" style={{ marginBottom: 8 }}>
-            {user.role === ROLES.ABOGADO
-              ? 'Mantené tu teléfono actualizado para que el estudio y tus clientes puedan contactarte.'
-              : 'Información de contacto para la gestión de tus causas y citas.'}
-          </p>
-          <p className="profile-hint" style={{ marginBottom: 16 }}>
-            {user.role === ROLES.ABOGADO
-              ? 'Podés actualizar tu teléfono desde acá. Tus especialidades y horarios se editan en las secciones de abajo.'
-              : 'Podés actualizar tu teléfono y tu dirección desde acá.'}
-          </p>
-          <Form onSubmit={handleSaveContact}>
-            <Row>
-              <Col md={user?.role === ROLES.CLIENTE ? 6 : 12}>
-                <Form.Group className="mb-3" controlId="profilePhone">
-                  <Form.Label>Teléfono</Form.Label>
-                  <Form.Control
-                    type="tel"
-                    value={phone}
-                    placeholder="Ej. +54 9 11 1234-5678"
-                    onChange={(e) => setPhone(e.target.value)}
-                  />
-                </Form.Group>
-              </Col>
-              {user?.role === ROLES.CLIENTE ? (
-                <Col md={6}>
-                  <Form.Group className="mb-3" controlId="profileAddress">
-                    <Form.Label>Dirección</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={address}
-                      placeholder="Ej. San Martín 123, Piso 4"
-                      onChange={(e) => setAddress(e.target.value)}
-                    />
-                  </Form.Group>
-                </Col>
-              ) : null}
-            </Row>
-            <Button
-              type="submit"
-              className="app-button app-button--primary"
-              disabled={savingContact}
-            >
-              {savingContact ? 'Guardando...' : 'Guardar información de contacto'}
-            </Button>
-          </Form>
-        </div>
-      )}
-
-      {user?.role === ROLES.ABOGADO && (
-        <div className="app-panel" id="specialties">
-          <h3 className="app-panel__title">Especialidades jurídicas</h3>
-          <p className="app-text" style={{ marginBottom: 16 }}>
-            Seleccioná las áreas del derecho en las que te especializás. Tus clientes las verán en tu perfil.
-          </p>
-          <Form onSubmit={handleSaveSpecialties}>
-            <SpecialtiesSelector
-              selected={specialties}
-              onChange={setSpecialties}
-            />
-            <Button
-              type="submit"
-              className="app-button app-button--primary"
-              disabled={savingSpecialties}
-              style={{ marginTop: 16 }}
-            >
-              {savingSpecialties ? 'Guardando...' : 'Guardar especialidades'}
-            </Button>
-          </Form>
-        </div>
-      )}
-
-      {user?.role === ROLES.ABOGADO && (
-        <div className="app-panel" id="schedule">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <h3 className="app-panel__title" style={{ margin: 0 }}>
-              Días y horarios de atención
-            </h3>
-            {!profileData?.schedule ? (
-              <span className="badge bg-warning text-dark" style={{ fontSize: '0.8rem', padding: '6px 10px' }}>
-                Sin configurar
-              </span>
-            ) : (
-              <span className="badge bg-success" style={{ fontSize: '0.8rem', padding: '6px 10px' }}>
-                Configurado
-              </span>
-            )}
-          </div>
-          <p className="app-text" style={{ marginBottom: 16 }}>
-            Seleccioná los días de la semana y los horarios en los que tus clientes podrán solicitar turnos con vos.
-          </p>
-          <Form onSubmit={handleSaveSchedule}>
-            <div style={{ marginBottom: 20 }}>
-              <label className="profile-field-label">Días de atención</label>
-              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                {WEEK_DAYS.map((day) => {
-                  const isChecked = selectedDays.includes(day.id);
-                  return (
-                    <button
-                      key={day.id}
-                      type="button"
-                      className={`app-button ${isChecked ? 'app-button--primary' : 'app-button--secondary'}`}
-                      style={{ padding: '6px 14px', fontSize: '0.9rem' }}
-                      onClick={() => {
-                        setSelectedDays((prev) =>
-                          isChecked ? prev.filter((d) => d !== day.id) : [...prev, day.id]
-                        );
-                      }}
-                    >
-                      {day.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div style={{ marginBottom: 24 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: 12 }}>
-                <label className="profile-field-label">
-                  Horarios disponibles ({selectedSlots.length})
-                </label>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  <button
-                    type="button"
-                    className="app-button app-button--secondary"
-                    style={{ padding: '4px 10px', fontSize: '0.8rem' }}
-                    onClick={handleLoadStandardSlots}
-                  >
-                    Cargar horarios estándar
-                  </button>
-                  {selectedSlots.length > 0 && (
-                    <button
-                      type="button"
-                      className="app-button app-button--secondary"
-                      style={{ padding: '4px 10px', fontSize: '0.8rem' }}
-                      onClick={() => setSelectedSlots([])}
-                    >
-                      Limpiar todos
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Selector para agregar cualquier horario libre */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
-                <Form.Control
-                  type="time"
-                  value={customSlot}
-                  onChange={(e) => setCustomSlot(e.target.value)}
-                  style={{ maxWidth: '140px', height: '38px', borderRadius: '10px' }}
-                />
-                <button
-                  type="button"
-                  className="app-button app-button--primary"
-                  style={{ padding: '6px 14px', fontSize: '0.88rem' }}
-                  onClick={handleAddCustomSlot}
-                  disabled={!customSlot}
-                >
-                  + Agregar horario
-                </button>
-                <span className="profile-hint">
-                  Podés configurar cualquier horario de atención libre (ej: 08:30, 11:00, 16:30).
-                </span>
-              </div>
-
-              {/* Lista de horarios asignados como badges/chips interactivos */}
-              {selectedSlots.length === 0 ? (
-                <p className="profile-empty">
-                  No tenés horarios seleccionados. Agregá uno con el selector o cargá los estándar.
-                </p>
-              ) : (
-                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                  {selectedSlots.map((slot) => (
-                    <div key={slot} className="profile-slot">
-                      <span>{slot} hs</span>
-                      <button
-                        type="button"
-                        className="profile-slot__remove"
-                        onClick={() => handleRemoveSlot(slot)}
-                        title="Eliminar horario"
-                        aria-label={`Eliminar horario ${slot}`}
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <Button
-              type="submit"
-              className="app-button app-button--primary"
-              disabled={savingSchedule}
-            >
-              {savingSchedule ? 'Guardando horarios...' : 'Guardar horarios de atención'}
-            </Button>
-          </Form>
-        </div>
-      )}
     </section>
   );
 };

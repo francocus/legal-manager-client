@@ -239,3 +239,19 @@
   color: #1e3a8a;
   text-decoration: underline;
 }
+
+/* The home prompts keep their dark surface in both themes. In light mode the
+   shared primary button turns dark, which made it disappear against that dark
+   banner; keep the inverted (light) treatment inside these prompts only. */
+[data-bs-theme='light'] .home-schedule-prompt .app-button--primary,
+[data-bs-theme='light'] .home-contact-prompt .app-button--primary {
+  background: linear-gradient(135deg, #eef4fa, #b9cee2);
+  color: #07090d;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
+}
+
+[data-bs-theme='light'] .home-schedule-prompt .app-button--primary:hover:not(:disabled),
+[data-bs-theme='light'] .home-contact-prompt .app-button--primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #f8fbfe, #cadce9);
+  color: #07090d;
+}

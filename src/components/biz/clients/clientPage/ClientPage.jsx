@@ -61,12 +61,14 @@ const ClientPage = () => {
 
       <div className="app-panel">
         <h3 className="app-panel__title">Datos de contacto</h3>
-        <p className="client-page__contact">
-          <Mail size={16} /> {client.email || 'Sin correo registrado'}
-        </p>
-        <p className="client-page__contact" style={{ marginTop: '8px' }}>
-          <Phone size={16} /> {client.phone || 'Sin teléfono registrado'}
-        </p>
+        <div className="client-page__contact-list">
+          <p className="client-page__contact">
+            <Mail size={16} /> {client.email || 'Sin correo registrado'}
+          </p>
+          <p className="client-page__contact">
+            <Phone size={16} /> {client.phone || 'Sin teléfono registrado'}
+          </p>
+        </div>
       </div>
 
       <div className="app-panel">
