@@ -11,6 +11,7 @@ import {
   parseDate,
 } from '../../calendar/Calendar.data';
 import { DAY_NAMES, SLOTS, MONTH_NAMES } from '../../../services/consts/calendarConsts';
+import { LEGAL_SPECIALTIES, normalizeSpecialty } from '../../../services/consts/specialties';
 import { appointmentsApi } from '../../../services/api/appointmentsApi';
 import { useToast } from '../../../shared/toast/toast.context';
 
@@ -26,7 +27,7 @@ const buildInitialForm = (appointment, user) => {
       time: appointment.time,
       reason: appointment.reason,
       caseId: appointment.caseId || '',
-      area: appointment.area || '',
+      area: normalizeSpecialty(appointment.area) || '',
     };
   }
   if (user?.role === 'abogado') {
@@ -112,7 +113,9 @@ const NewAppointment = ({
     try {
       setLoading(true);
       const selectedCase = availableCases.find((c) => c.id === form.caseId);
-      const resolvedArea = form.caseId ? selectedCase?.area : form.area || undefined;
+      const resolvedArea = normalizeSpecialty(
+        form.caseId ? selectedCase?.area : form.area || undefined,
+      );
 
       // Creating posts the contract body (no status: the backend computes
       // 'Pendiente') with Guid string ids; editing reschedules only
@@ -230,7 +233,8 @@ const NewAppointment = ({
                 {form.caseId && (
                   <Form.Text className="text-info" style={{ display: 'block', marginTop: 4 }}>
                     Área legal heredada del expediente:{' '}
-                    {availableCases.find((c) => c.id === form.caseId)?.area || 'General'}
+                    {normalizeSpecialty(availableCases.find((c) => c.id === form.caseId)?.area) ||
+                      'General'}
                   </Form.Text>
                 )}
               </Form.Group>
@@ -238,12 +242,19 @@ const NewAppointment = ({
               {!form.caseId && (
                 <Form.Group className="mb-3">
                   <Form.Label>Área legal (opcional)</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Ej. Civil, Comercial, Laboral"
+                  <Form.Select
                     value={form.area || ''}
-                    onChange={(event) => setForm({ ...form, area: event.target.value })}
-                  />
+                    onChange={(event) =>
+                      setForm({ ...form, area: normalizeSpecialty(event.target.value) || '' })
+                    }
+                  >
+                    <option value="">Sin especificar</option>
+                    {LEGAL_SPECIALTIES.map((specialty) => (
+                      <option key={specialty} value={specialty}>
+                        {specialty}
+                      </option>
+                    ))}
+                  </Form.Select>
                 </Form.Group>
               )}
             </>

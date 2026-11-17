@@ -106,6 +106,7 @@ const Home = () => {
           {/* Banner: client without phone or address */}
           {showClientContactBanner && (
             <div
+              className="home-contact-prompt"
               style={{
                 display: 'flex',
                 alignItems: 'center',

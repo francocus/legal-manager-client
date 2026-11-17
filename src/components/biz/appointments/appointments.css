@@ -1954,6 +1954,11 @@
   display: table;
   width: 100%;
   table-layout: fixed;
+  border-bottom: 1px solid rgba(15, 23, 32, 0.1);
+}
+
+[data-bs-theme='light'] .appointments-table tbody tr:last-child {
+  border-bottom: 0;
 }
 
 [data-bs-theme='light'] .appointment-admin-row:hover {
