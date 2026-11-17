@@ -286,7 +286,7 @@
 
 .appointments-table th:nth-child(3),
 .appointments-table td:nth-child(3) {
-  width: 26%;
+  width: 25%;
 }
 
 .appointments-table th:nth-child(4),
@@ -297,8 +297,9 @@
 
 .appointments-table th:nth-child(5),
 .appointments-table td:nth-child(5) {
-  width: 16%;
-  text-align: center;
+  width: 20%;
+  min-width: 196px;
+  text-align: right;
 }
 
 .appointments-table thead {
@@ -373,14 +374,15 @@
 
 .appointment-admin-cell--actions {
   white-space: nowrap;
-  text-align: center;
+  text-align: right;
 }
 
 .appointment-admin-actions {
-  display: inline-flex;
-  flex-wrap: wrap;
+  display: flex;
+  flex-wrap: nowrap;
   gap: 10px;
-  justify-content: center;
+  justify-content: flex-end;
+  width: 100%;
 }
 
 .appointment-admin-action {

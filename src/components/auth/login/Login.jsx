@@ -2,13 +2,10 @@ import { useContext, useEffect, useState } from 'react';
 import { Button, Form } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router';
 import { AuthenticationContext } from '../../services/auth/authentication.context.jsx';
-import ToggleTheme from '../../shared/toggleTheme/ToggleTheme.jsx';
-import { Scale } from 'lucide-react';
 import { useForm } from '../../services/hooks/useForm';
 import { isEmail, isRequired } from '../../services/validators/validators';
 import { SESSION_EXPIRED_KEY } from '../../services/consts/storageKeys';
 import { useToast } from '../../shared/toast/toast.context';
-import '../auth.css';
 
 const MailIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
@@ -81,93 +78,75 @@ const Login = () => {
   });
 
   return (
-    <main className="auth-page">
-      <div className="auth-theme-toggle">
-        <ToggleTheme />
+    <div className="auth-box auth-box--login">
+      <div className="auth-box__head">
+        <span className="auth-eyebrow">Bienvenido</span>
+        <h1>Iniciar sesión</h1>
+        <p>Ingresá tus credenciales para continuar.</p>
       </div>
-      <div className="auth-grid">
-        <aside className="auth-aside">
-          <div className="auth-brand">
-            <span className="auth-mark">
-              <Scale size={48} />
-            </span>
-            <strong>LEGAL MANAGER</strong>
+
+      <Form className="auth-form" onSubmit={handleSubmit} noValidate>
+        <div className={`auth-field ${errors.email ? 'has-error' : ''}`}>
+          <label htmlFor="login-email">Correo electrónico <span className="text-danger">*</span></label>
+          <div className="auth-input">
+            <MailIcon />
+            <Form.Control
+              id="login-email"
+              name="email"
+              type="email"
+              placeholder="nombre@estudio.com"
+              value={values.email}
+              onChange={handleChange}
+              aria-invalid={Boolean(errors.email)}
+            />
           </div>
-        </aside>
+          {errors.email && <span className="auth-error">{errors.email}</span>}
+        </div>
 
-        <section className="auth-panel">
-          <div className="auth-box">
-            <div className="auth-box__head">
-              <span className="auth-eyebrow">Bienvenido</span>
-              <h1>Iniciar sesión</h1>
-              <p>Ingresá tus credenciales para continuar.</p>
-            </div>
-
-            <Form className="auth-form" onSubmit={handleSubmit} noValidate>
-              <div className={`auth-field ${errors.email ? 'has-error' : ''}`}>
-                <label htmlFor="login-email">Correo electrónico <span className="text-danger">*</span></label>
-                <div className="auth-input">
-                  <MailIcon />
-                  <Form.Control
-                    id="login-email"
-                    name="email"
-                    type="email"
-                    placeholder="nombre@estudio.com"
-                    value={values.email}
-                    onChange={handleChange}
-                    aria-invalid={Boolean(errors.email)}
-                  />
-                </div>
-                {errors.email && <span className="auth-error">{errors.email}</span>}
-              </div>
-
-              <div className={`auth-field ${errors.password ? 'has-error' : ''}`}>
-                <label htmlFor="login-password">Contraseña <span className="text-danger">*</span></label>
-                <div className="auth-input">
-                  <LockIcon />
-                  <Form.Control
-                    id="login-password"
-                    name="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    value={values.password}
-                    onChange={handleChange}
-                    aria-invalid={Boolean(errors.password)}
-                  />
-                  <button
-                    type="button"
-                    className="auth-eye"
-                    onClick={() => setShowPassword((previous) => !previous)}
-                    aria-label="Mostrar contraseña"
-                  >
-                    <EyeIcon off={showPassword} />
-                  </button>
-                </div>
-                {errors.password && <span className="auth-error">{errors.password}</span>}
-              </div>
-
-              <Button className="auth-submit" type="submit" disabled={submitting}>
-                {submitting ? 'Ingresando…' : 'Iniciar sesión'}
-              </Button>
-            </Form>
-
-            <p className="auth-switch-text">
-              ¿Olvidaste tu contraseña?{' '}
-              <Link to="/recuperar-contrasena" className="auth-link">
-                Recuperar contraseña
-              </Link>
-            </p>
-
-            <p className="auth-switch-text">
-              ¿No tenés cuenta?{' '}
-              <Link to="/register" className="auth-link">
-                Crear cuenta
-              </Link>
-            </p>
+        <div className={`auth-field ${errors.password ? 'has-error' : ''}`}>
+          <label htmlFor="login-password">Contraseña <span className="text-danger">*</span></label>
+          <div className="auth-input">
+            <LockIcon />
+            <Form.Control
+              id="login-password"
+              name="password"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="••••••••"
+              value={values.password}
+              onChange={handleChange}
+              aria-invalid={Boolean(errors.password)}
+            />
+            <button
+              type="button"
+              className="auth-eye"
+              onClick={() => setShowPassword((previous) => !previous)}
+              aria-label="Mostrar contraseña"
+            >
+              <EyeIcon off={showPassword} />
+            </button>
           </div>
-        </section>
-      </div>
-    </main>
+          {errors.password && <span className="auth-error">{errors.password}</span>}
+        </div>
+
+        <Button className="auth-submit" type="submit" disabled={submitting}>
+          {submitting ? 'Ingresando…' : 'Iniciar sesión'}
+        </Button>
+      </Form>
+
+      <p className="auth-switch-text">
+        ¿Olvidaste tu contraseña?{' '}
+        <Link to="/recuperar-contrasena" className="auth-link">
+          Recuperar contraseña
+        </Link>
+      </p>
+
+      <p className="auth-switch-text">
+        ¿No tenés cuenta?{' '}
+        <Link to="/register" className="auth-link">
+          Crear cuenta
+        </Link>
+      </p>
+    </div>
   );
 };
 

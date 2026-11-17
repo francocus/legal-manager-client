@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Alert, Button } from 'react-bootstrap';
 import { Link, useNavigate, useParams } from 'react-router';
-import { FileText, FolderOpen, Mail, Phone, UserRound } from 'lucide-react';
+import { FileText, Mail, Phone, UserRound } from 'lucide-react';
 import { useDashboardData } from '../../../services/data/dashboardData.context';
 import { getStatusClass, getStatusLabel } from '../../cases/Cases.data';
 import '../clients.css';
@@ -78,12 +78,11 @@ const ClientPage = () => {
             {clientCases.map((legalCase) => (
               <li key={legalCase.id} className="client-page__case-folder">
                 <Link to={`/dashboard/cases/${legalCase.id}`}>
-                  <FolderOpen size={16} className="client-page__case-icon" aria-hidden="true" />
+                  <span className="client-page__case-tab">
+                    <FileText size={12} aria-hidden="true" />
+                    {legalCase.caseNumber}
+                  </span>
                   <span className="client-page__case-main">
-                    <strong className="client-page__case-sticker">
-                      <FileText size={12} aria-hidden="true" />
-                      {legalCase.caseNumber}
-                    </strong>
                     <span>{legalCase.title}</span>
                   </span>
                   <span className={`cases-item__status ${getStatusClass(legalCase.status)}`}>

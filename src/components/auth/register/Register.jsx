@@ -2,13 +2,10 @@ import { useState } from 'react';
 import { Button, Form } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router';
 import { usersApi } from '../../services/api/usersApi';
-import ToggleTheme from '../../shared/toggleTheme/ToggleTheme.jsx';
-import { Scale } from 'lucide-react';
 import { useForm } from '../../services/hooks/useForm';
 import { formatDni, isDni, isEmail, isRequired } from '../../services/validators/validators';
 import { ROLES } from '../../services/consts/roles';
 import { useToast } from '../../shared/toast/toast.context';
-import '../auth.css';
 
 const UserIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
@@ -124,184 +121,166 @@ const Register = () => {
   });
 
   return (
-    <main className="auth-page">
-      <div className="auth-theme-toggle">
-        <ToggleTheme />
+    <div className="auth-box auth-box--register">
+      <div className="auth-box__head">
+        <span className="auth-eyebrow">Crear cuenta</span>
+        <h1>Registro de usuario</h1>
+        <p>Completá tus datos para empezar.</p>
       </div>
-      <div className="auth-grid">
-        <aside className="auth-aside">
-          <div className="auth-brand">
-            <span className="auth-mark">
-              <Scale size={48} />
-            </span>
-            <strong>LEGAL MANAGER</strong>
+
+      <Form className="auth-form auth-form--register" onSubmit={handleSubmit} noValidate>
+        <div className={`auth-field auth-field--wide ${errors.name ? 'has-error' : ''}`}>
+          <label htmlFor="register-name">Nombre completo <span className="text-danger">*</span></label>
+          <div className="auth-input">
+            <UserIcon />
+            <Form.Control
+              id="register-name"
+              name="name"
+              type="text"
+              placeholder="Ej: Juan Pérez"
+              value={values.name}
+              onChange={handleChange}
+              aria-invalid={Boolean(errors.name)}
+            />
           </div>
-        </aside>
+          {errors.name && <span className="auth-error">{errors.name}</span>}
+        </div>
 
-        <section className="auth-panel">
-          <div className="auth-box">
-            <div className="auth-box__head">
-              <span className="auth-eyebrow">Crear cuenta</span>
-              <h1>Registro de usuario</h1>
-              <p>Completá tus datos para empezar.</p>
-            </div>
-
-            <Form className="auth-form auth-form--register" onSubmit={handleSubmit} noValidate>
-              <div className={`auth-field auth-field--wide ${errors.name ? 'has-error' : ''}`}>
-                <label htmlFor="register-name">Nombre completo <span className="text-danger">*</span></label>
-                <div className="auth-input">
-                  <UserIcon />
-                  <Form.Control
-                    id="register-name"
-                    name="name"
-                    type="text"
-                    placeholder="Ej: Juan Pérez"
-                    value={values.name}
-                    onChange={handleChange}
-                    aria-invalid={Boolean(errors.name)}
-                  />
-                </div>
-                {errors.name && <span className="auth-error">{errors.name}</span>}
-              </div>
-
-              <div className={`auth-field ${errors.dni ? 'has-error' : ''}`}>
-                <label htmlFor="register-dni">DNI <span className="text-danger">*</span></label>
-                <div className="auth-input">
-                  <IdIcon />
-                  <Form.Control
-                    id="register-dni"
-                    name="dni"
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="Ej: 30123123"
-                    value={values.dni}
-                    onChange={(event) => setValue('dni', formatDni(event.target.value))}
-                    aria-invalid={Boolean(errors.dni)}
-                  />
-                </div>
-                {errors.dni && <span className="auth-error">{errors.dni}</span>}
-              </div>
-
-              <div className={`auth-field ${errors.email ? 'has-error' : ''}`}>
-                <label htmlFor="register-email">Correo electrónico <span className="text-danger">*</span></label>
-                <div className="auth-input">
-                  <MailIcon />
-                  <Form.Control
-                    id="register-email"
-                    name="email"
-                    type="email"
-                    placeholder="correo@gmail.com"
-                    value={values.email}
-                    onChange={handleChange}
-                    aria-invalid={Boolean(errors.email)}
-                  />
-                </div>
-                {errors.email && <span className="auth-error">{errors.email}</span>}
-              </div>
-
-              <div className={`auth-field ${errors.phone ? 'has-error' : ''}`}>
-                <label htmlFor="register-phone">Teléfono (opcional)</label>
-                <div className="auth-input">
-                  <PhoneIcon />
-                  <Form.Control
-                    id="register-phone"
-                    name="phone"
-                    type="tel"
-                    maxLength={30}
-                    placeholder="Ej: +54 9 11 1234-5678"
-                    value={values.phone}
-                    onChange={handleChange}
-                    aria-invalid={Boolean(errors.phone)}
-                  />
-                </div>
-                {errors.phone && <span className="auth-error">{errors.phone}</span>}
-              </div>
-
-              <div className={`auth-field ${errors.address ? 'has-error' : ''}`}>
-                <label htmlFor="register-address">Dirección (opcional)</label>
-                <div className="auth-input">
-                  <LocationIcon />
-                  <Form.Control
-                    id="register-address"
-                    name="address"
-                    type="text"
-                    maxLength={200}
-                    placeholder="Ej: San Martín 123, Piso 4"
-                    value={values.address}
-                    onChange={handleChange}
-                    aria-invalid={Boolean(errors.address)}
-                  />
-                </div>
-                {errors.address && <span className="auth-error">{errors.address}</span>}
-              </div>
-
-              <div className={`auth-field ${errors.password ? 'has-error' : ''}`}>
-                <label htmlFor="register-password">Crear contraseña <span className="text-danger">*</span></label>
-                <div className="auth-input">
-                  <LockIcon />
-                  <Form.Control
-                    id="register-password"
-                    name="password"
-                    placeholder="••••••••"
-                    type={showPassword ? 'text' : 'password'}
-                    value={values.password}
-                    onChange={handleChange}
-                    aria-invalid={Boolean(errors.password)}
-                  />
-                  <button
-                    type="button"
-                    className="auth-eye"
-                    onClick={() => setShowPassword((previous) => !previous)}
-                    aria-label="Mostrar contraseña"
-                  >
-                    <EyeIcon off={showPassword} />
-                  </button>
-                </div>
-                {errors.password && <span className="auth-error">{errors.password}</span>}
-              </div>
-
-              <div className={`auth-field ${errors.confirmPassword ? 'has-error' : ''}`}>
-                <label htmlFor="register-confirm-password">Confirmar contraseña <span className="text-danger">*</span></label>
-                <div className="auth-input">
-                  <LockIcon />
-                  <Form.Control
-                    id="register-confirm-password"
-                    name="confirmPassword"
-                    placeholder="••••••••"
-                    type={showConfirm ? 'text' : 'password'}
-                    value={values.confirmPassword}
-                    onChange={handleChange}
-                    aria-invalid={Boolean(errors.confirmPassword)}
-                  />
-                  <button
-                    type="button"
-                    className="auth-eye"
-                    onClick={() => setShowConfirm((previous) => !previous)}
-                    aria-label="Mostrar contraseña"
-                  >
-                    <EyeIcon off={showConfirm} />
-                  </button>
-                </div>
-                {errors.confirmPassword && (
-                  <span className="auth-error">{errors.confirmPassword}</span>
-                )}
-              </div>
-
-              <Button className="auth-submit" type="submit" disabled={submitting}>
-                {submitting ? 'Creando…' : 'Crear usuario'}
-              </Button>
-            </Form>
-
-            <p className="auth-switch-text">
-              ¿Ya tenés cuenta?{' '}
-              <Link to="/login" className="auth-link">
-                Volver al acceso
-              </Link>
-            </p>
+        <div className={`auth-field ${errors.dni ? 'has-error' : ''}`}>
+          <label htmlFor="register-dni">DNI <span className="text-danger">*</span></label>
+          <div className="auth-input">
+            <IdIcon />
+            <Form.Control
+              id="register-dni"
+              name="dni"
+              type="text"
+              inputMode="numeric"
+              placeholder="Ej: 30123123"
+              value={values.dni}
+              onChange={(event) => setValue('dni', formatDni(event.target.value))}
+              aria-invalid={Boolean(errors.dni)}
+            />
           </div>
-        </section>
-      </div>
-    </main>
+          {errors.dni && <span className="auth-error">{errors.dni}</span>}
+        </div>
+
+        <div className={`auth-field ${errors.email ? 'has-error' : ''}`}>
+          <label htmlFor="register-email">Correo electrónico <span className="text-danger">*</span></label>
+          <div className="auth-input">
+            <MailIcon />
+            <Form.Control
+              id="register-email"
+              name="email"
+              type="email"
+              placeholder="correo@gmail.com"
+              value={values.email}
+              onChange={handleChange}
+              aria-invalid={Boolean(errors.email)}
+            />
+          </div>
+          {errors.email && <span className="auth-error">{errors.email}</span>}
+        </div>
+
+        <div className={`auth-field ${errors.phone ? 'has-error' : ''}`}>
+          <label htmlFor="register-phone">Teléfono (opcional)</label>
+          <div className="auth-input">
+            <PhoneIcon />
+            <Form.Control
+              id="register-phone"
+              name="phone"
+              type="tel"
+              maxLength={30}
+              placeholder="Ej: +54 9 11 1234-5678"
+              value={values.phone}
+              onChange={handleChange}
+              aria-invalid={Boolean(errors.phone)}
+            />
+          </div>
+          {errors.phone && <span className="auth-error">{errors.phone}</span>}
+        </div>
+
+        <div className={`auth-field ${errors.address ? 'has-error' : ''}`}>
+          <label htmlFor="register-address">Dirección (opcional)</label>
+          <div className="auth-input">
+            <LocationIcon />
+            <Form.Control
+              id="register-address"
+              name="address"
+              type="text"
+              maxLength={200}
+              placeholder="Ej: San Martín 123, Piso 4"
+              value={values.address}
+              onChange={handleChange}
+              aria-invalid={Boolean(errors.address)}
+            />
+          </div>
+          {errors.address && <span className="auth-error">{errors.address}</span>}
+        </div>
+
+        <div className={`auth-field ${errors.password ? 'has-error' : ''}`}>
+          <label htmlFor="register-password">Crear contraseña <span className="text-danger">*</span></label>
+          <div className="auth-input">
+            <LockIcon />
+            <Form.Control
+              id="register-password"
+              name="password"
+              placeholder="••••••••"
+              type={showPassword ? 'text' : 'password'}
+              value={values.password}
+              onChange={handleChange}
+              aria-invalid={Boolean(errors.password)}
+            />
+            <button
+              type="button"
+              className="auth-eye"
+              onClick={() => setShowPassword((previous) => !previous)}
+              aria-label="Mostrar contraseña"
+            >
+              <EyeIcon off={showPassword} />
+            </button>
+          </div>
+          {errors.password && <span className="auth-error">{errors.password}</span>}
+        </div>
+
+        <div className={`auth-field ${errors.confirmPassword ? 'has-error' : ''}`}>
+          <label htmlFor="register-confirm-password">Confirmar contraseña <span className="text-danger">*</span></label>
+          <div className="auth-input">
+            <LockIcon />
+            <Form.Control
+              id="register-confirm-password"
+              name="confirmPassword"
+              placeholder="••••••••"
+              type={showConfirm ? 'text' : 'password'}
+              value={values.confirmPassword}
+              onChange={handleChange}
+              aria-invalid={Boolean(errors.confirmPassword)}
+            />
+            <button
+              type="button"
+              className="auth-eye"
+              onClick={() => setShowConfirm((previous) => !previous)}
+              aria-label="Mostrar contraseña"
+            >
+              <EyeIcon off={showConfirm} />
+            </button>
+          </div>
+          {errors.confirmPassword && (
+            <span className="auth-error">{errors.confirmPassword}</span>
+          )}
+        </div>
+
+        <Button className="auth-submit" type="submit" disabled={submitting}>
+          {submitting ? 'Creando…' : 'Crear usuario'}
+        </Button>
+      </Form>
+
+      <p className="auth-switch-text">
+        ¿Ya tenés cuenta?{' '}
+        <Link to="/login" className="auth-link">
+          Volver al acceso
+        </Link>
+      </p>
+    </div>
   );
 };
 

@@ -549,13 +549,15 @@ const Profile = () => {
 
       <div className="app-panel">
         <div className="profile-panel-header">
-          <h3 className="app-panel__title">Datos de la cuenta</h3>
+          <div>
+            <h3 className="app-panel__title">Datos de la cuenta</h3>
+            <p className="profile-hint">
+              Tocá el lápiz junto a un dato para editarlo. Solo los campos habilitados para tu rol se
+              pueden modificar.
+            </p>
+          </div>
           {loadingProfile ? <Spinner animation="border" size="sm" variant="secondary" /> : null}
         </div>
-        <p className="profile-hint">
-          Tocá el lápiz junto a un dato para editarlo. Solo los campos habilitados para tu rol se
-          pueden modificar.
-        </p>
         {!profileIsComplete && (
           <div className="profile-completeness-alert" role="status">
             <CircleAlert size={18} aria-hidden="true" />
