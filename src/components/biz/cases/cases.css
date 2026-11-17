@@ -41,54 +41,33 @@
 }
 
 .cases-item {
+  --case-accent: rgba(120, 172, 214, 0.55);
   position: relative;
   display: grid;
-  gap: 10px;
-  padding: 20px;
   min-width: 0;
   height: 100%;
   width: 100%;
-  flex-direction: column;
-  border-radius: 18px;
-  background:
-    radial-gradient(circle at top right, rgba(120, 172, 214, 0.08), transparent 32%),
-    rgba(12, 16, 22, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-left-width: 4px;
-  border-left-color: rgba(120, 172, 214, 0.3);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    0 18px 40px rgba(0, 0, 0, 0.18);
-  transition:
-    transform 180ms ease,
-    border-color 180ms ease,
-    box-shadow 180ms ease;
-}
-
-.cases-item:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    0 22px 46px rgba(0, 0, 0, 0.24);
+  padding-top: 26px;
+  isolation: isolate;
 }
 
 .cases-item:has(.cases-item__status.is-active),
 .cases-item:has(.cases-item__status.is-open) {
-  border-left-color: rgba(90, 173, 132, 0.82);
+  --case-accent: rgba(90, 173, 132, 0.9);
 }
 
 .cases-item:has(.cases-item__status.is-pending) {
-  border-left-color: rgba(235, 177, 85, 0.82);
+  --case-accent: rgba(235, 177, 85, 0.9);
 }
 
 .cases-item:has(.cases-item__status.is-closed),
 .cases-item:has(.cases-item__status.is-finished) {
-  border-left-color: rgba(126, 144, 167, 0.82);
+  --case-accent: rgba(126, 144, 167, 0.9);
 }
 
 .cases-item:has(.cases-item__status.is-cancelled),
 .cases-item:has(.cases-item__status.is-canceled) {
-  border-left-color: rgba(217, 93, 93, 0.82);
+  --case-accent: rgba(217, 93, 93, 0.9);
 }
 
 .cases-item__label {
@@ -1279,23 +1258,27 @@
   box-shadow: 0 0 0 0.22rem rgba(70, 100, 130, 0.16);
 }
 
+[data-bs-theme='light'] .cases-item {
+  --case-accent: rgba(70, 130, 185, 0.8);
+}
+
 [data-bs-theme='light'] .cases-item:has(.cases-item__status.is-active),
 [data-bs-theme='light'] .cases-item:has(.cases-item__status.is-open) {
-  border-left-color: rgba(70, 150, 110, 0.85);
+  --case-accent: rgba(70, 150, 110, 0.85);
 }
 
 [data-bs-theme='light'] .cases-item:has(.cases-item__status.is-pending) {
-  border-left-color: rgba(200, 145, 50, 0.85);
+  --case-accent: rgba(200, 145, 50, 0.85);
 }
 
 [data-bs-theme='light'] .cases-item:has(.cases-item__status.is-closed),
 [data-bs-theme='light'] .cases-item:has(.cases-item__status.is-finished) {
-  border-left-color: rgba(100, 115, 135, 0.85);
+  --case-accent: rgba(100, 115, 135, 0.85);
 }
 
 [data-bs-theme='light'] .cases-item:has(.cases-item__status.is-cancelled),
 [data-bs-theme='light'] .cases-item:has(.cases-item__status.is-canceled) {
-  border-left-color: rgba(195, 75, 75, 0.85);
+  --case-accent: rgba(195, 75, 75, 0.85);
 }
 
 [data-bs-theme='light'] .cases-item__title,
@@ -1643,146 +1626,127 @@
   color: #45505d;
 }
 
-/* Folder / file-card silhouette for the case list (client + lawyer views).
-   The status stripe reuses the palette already used by .cases-item__status
-   and the appointment ticket; only the shape is new. */
-.cases-item--folder {
-  --case-accent: rgba(120, 172, 214, 0.5);
-  padding-top: 28px;
-  border-left-width: 0;
-  overflow: visible;
+/* Folder silhouette for the case list. The card is no longer a rectangle with
+   add-ons: the tab, the sheet behind it and the spine make the whole shape. */
+.cases-item__folder {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 12px;
+  height: 100%;
+  padding: 20px 22px 18px 26px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-left: 5px solid var(--case-accent);
+  border-radius: 4px 18px 18px 18px;
+  background:
+    linear-gradient(225deg, rgba(255, 255, 255, 0.085) 0 16px, transparent 16px),
+    radial-gradient(circle at top right, rgba(120, 172, 214, 0.08), transparent 32%),
+    rgba(12, 16, 22, 0.94);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 18px 40px rgba(0, 0, 0, 0.18);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
 }
 
-.cases-item--folder:has(.cases-item__status.is-active),
-.cases-item--folder:has(.cases-item__status.is-open) {
-  --case-accent: rgba(90, 173, 132, 0.9);
+.cases-item__folder:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 22px 46px rgba(0, 0, 0, 0.24);
 }
 
-.cases-item--folder:has(.cases-item__status.is-pending) {
-  --case-accent: rgba(235, 177, 85, 0.9);
-}
-
-.cases-item--folder:has(.cases-item__status.is-closed),
-.cases-item--folder:has(.cases-item__status.is-finished) {
-  --case-accent: rgba(126, 144, 167, 0.9);
-}
-
-.cases-item--folder:has(.cases-item__status.is-cancelled),
-.cases-item--folder:has(.cases-item__status.is-canceled) {
-  --case-accent: rgba(217, 93, 93, 0.9);
-}
-
-.cases-item__stripe {
+/* Paper peeking out from behind the folder gives the silhouette depth. */
+.cases-item__sheet {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 5px;
-  border-radius: 18px 0 0 18px;
-  background: var(--case-accent);
+  z-index: -1;
+  top: -7px;
+  right: 12px;
+  bottom: 9px;
+  left: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px 14px 10px 14px;
+  background: linear-gradient(160deg, rgba(28, 38, 52, 0.95), rgba(15, 21, 29, 0.95));
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.22);
+  transform: rotate(0.7deg);
   pointer-events: none;
 }
 
-/* Upper folder tab: sits on the card edge, above the body. */
-.cases-item__link .cases-item__tab {
+.cases-item__link {
+  gap: 8px;
+}
+
+/* The tab carries the case number, like the label on a real file folder. */
+.cases-item__tab {
   position: absolute;
-  top: -1px;
-  left: 20px;
-  z-index: 1;
+  top: -26px;
+  left: 18px;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 27px;
+  max-width: calc(100% - 36px);
+  height: 28px;
   padding: 0 14px 0 12px;
+  overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.09);
+  border-left: 5px solid var(--case-accent);
   border-bottom: 0;
   border-radius: 12px 12px 0 0;
-  background: linear-gradient(180deg, rgba(20, 27, 37, 0.98), rgba(12, 16, 22, 0.98));
+  background: linear-gradient(180deg, rgba(20, 27, 37, 0.99), rgba(12, 16, 22, 0.99));
   box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.18);
-  color: #b7cada;
+  color: #dce8f5;
 }
 
-.cases-item__link .cases-item__tab .cases-item__label {
+.cases-item__tab .cases-item__label {
   margin: 0;
   color: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .cases-item__tab-icon {
-  color: #7dd3fc;
-}
-
-/* Sticker label carrying the case number. */
-.cases-item .cases-item__sticker {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  max-width: 100%;
-  padding: 5px 10px;
-  border: 1px solid rgba(150, 180, 220, 0.24);
-  border-radius: 6px;
-  background: rgba(120, 150, 190, 0.14);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.16);
-  color: #eaf2fa;
-  font-size: 0.92rem;
-  font-weight: 800;
-  line-height: 1.2;
-  overflow-wrap: anywhere;
-  transform: rotate(-1deg);
-}
-
-.cases-item__sticker span {
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
-.cases-item__sticker-icon {
   flex-shrink: 0;
   color: #7dd3fc;
 }
 
+.cases-item__title {
+  font-size: 1.02rem;
+  line-height: 1.25;
+}
+
 .cases-item--folder .cases-item__row {
   flex-wrap: wrap;
+  align-items: flex-start;
 }
 
-[data-bs-theme='light'] .cases-item--folder {
-  --case-accent: rgba(70, 130, 185, 0.8);
-  border-left-width: 0;
-  background: #ffffff;
+[data-bs-theme='light'] .cases-item__folder {
+  border-color: rgba(15, 23, 32, 0.1);
+  background:
+    linear-gradient(225deg, rgba(15, 23, 32, 0.05) 0 16px, transparent 16px),
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.05), transparent 32%),
+    #ffffff;
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    0 18px 40px rgba(15, 23, 32, 0.12);
 }
 
-[data-bs-theme='light'] .cases-item--folder:has(.cases-item__status.is-active),
-[data-bs-theme='light'] .cases-item--folder:has(.cases-item__status.is-open) {
-  --case-accent: rgba(70, 150, 110, 0.85);
+[data-bs-theme='light'] .cases-item__sheet {
+  border-color: rgba(15, 23, 32, 0.07);
+  background: linear-gradient(160deg, #f1f4f7, #e7ebf0);
+  box-shadow: 0 12px 26px rgba(15, 23, 32, 0.1);
 }
 
-[data-bs-theme='light'] .cases-item--folder:has(.cases-item__status.is-pending) {
-  --case-accent: rgba(200, 145, 50, 0.85);
-}
-
-[data-bs-theme='light'] .cases-item--folder:has(.cases-item__status.is-closed),
-[data-bs-theme='light'] .cases-item--folder:has(.cases-item__status.is-finished) {
-  --case-accent: rgba(100, 115, 135, 0.85);
-}
-
-[data-bs-theme='light'] .cases-item--folder:has(.cases-item__status.is-cancelled),
-[data-bs-theme='light'] .cases-item--folder:has(.cases-item__status.is-canceled) {
-  --case-accent: rgba(195, 75, 75, 0.85);
-}
-
-[data-bs-theme='light'] .cases-item__link .cases-item__tab {
-  border-color: rgba(15, 23, 32, 0.12);
+[data-bs-theme='light'] .cases-item__tab {
+  border-color: rgba(15, 23, 32, 0.1);
   background: #ffffff;
   box-shadow: 0 -3px 10px rgba(15, 23, 32, 0.05);
-  color: #5b6675;
+  color: #475569;
 }
 
-[data-bs-theme='light'] .cases-item .cases-item__sticker {
-  border-color: rgba(37, 99, 235, 0.22);
-  background: rgba(37, 99, 235, 0.08);
-  box-shadow: 0 4px 10px rgba(15, 23, 32, 0.08);
-  color: #1e40af;
-}
-
-[data-bs-theme='light'] .cases-item__sticker-icon {
+[data-bs-theme='light'] .cases-item__tab-icon {
   color: #0369a1;
 }

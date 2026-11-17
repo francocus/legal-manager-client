@@ -283,9 +283,12 @@
 }
 
 /* Mini folder language for the case list on a client's detail page.
-   Same status palette as .cases-item / .appointment-ticket, no new actions. */
+   Same silhouette as the main case cards, scaled down. */
 .client-page__case-folder {
   --client-case-accent: rgba(120, 172, 214, 0.55);
+  position: relative;
+  isolation: isolate;
+  padding-top: 18px;
 }
 
 .client-page__case-folder:has(.cases-item__status.is-active),
@@ -308,38 +311,51 @@
 }
 
 .client-page__case-folder a {
-  position: relative;
-  overflow: hidden;
-  border-left: 4px solid var(--client-case-accent);
+  border-left: 5px solid var(--client-case-accent);
+  border-radius: 4px 12px 12px 12px;
 }
 
 .client-page__case-folder a::before {
   content: '';
   position: absolute;
-  top: 0;
+  z-index: -1;
+  top: 12px;
+  right: 10px;
+  bottom: 6px;
+  left: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: linear-gradient(160deg, rgba(28, 38, 52, 0.9), rgba(15, 21, 29, 0.9));
+  transform: rotate(0.6deg);
+  pointer-events: none;
+}
+
+.client-page__case-tab {
+  position: absolute;
+  top: -1px;
   left: 14px;
-  width: 42px;
-  height: 4px;
-  border-radius: 0 0 4px 4px;
-  background: var(--client-case-accent);
-}
-
-.client-page__case-icon {
-  flex-shrink: 0;
-  color: #7dd3fc;
-}
-
-.client-page__case-sticker {
+  z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 2px 8px;
-  border: 1px solid rgba(150, 180, 220, 0.24);
-  border-radius: 6px;
-  background: rgba(120, 150, 190, 0.14);
-  color: #eaf2fa;
-  font-size: 0.82rem;
+  max-width: calc(100% - 28px);
+  height: 22px;
+  padding: 0 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-left: 5px solid var(--client-case-accent);
+  border-bottom: 0;
+  border-radius: 9px 9px 0 0;
+  background: linear-gradient(180deg, rgba(20, 27, 37, 0.99), rgba(12, 16, 22, 0.99));
+  color: #dce8f5;
+  font-size: 0.76rem;
   font-weight: 800;
+  white-space: nowrap;
+}
+
+.client-page__case-tab svg {
+  flex-shrink: 0;
+  color: #7dd3fc;
 }
 
 [data-bs-theme='light'] .client-page__case-folder {
@@ -365,12 +381,17 @@
   --client-case-accent: rgba(195, 75, 75, 0.85);
 }
 
-[data-bs-theme='light'] .client-page__case-icon {
-  color: #0369a1;
+[data-bs-theme='light'] .client-page__case-folder a::before {
+  border-color: rgba(15, 23, 32, 0.07);
+  background: linear-gradient(160deg, #f1f4f7, #e7ebf0);
 }
 
-[data-bs-theme='light'] .client-page__case-sticker {
-  background: rgba(37, 99, 235, 0.08);
-  border-color: rgba(37, 99, 235, 0.22);
-  color: #1e40af;
+[data-bs-theme='light'] .client-page__case-tab {
+  border-color: rgba(15, 23, 32, 0.1);
+  background: #ffffff;
+  color: #475569;
+}
+
+[data-bs-theme='light'] .client-page__case-tab svg {
+  color: #0369a1;
 }

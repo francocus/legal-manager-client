@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
+import AuthLayout from './components/auth/AuthLayout.jsx';
 import Login from './components/auth/login/Login.jsx';
 import Register from './components/auth/register/Register.jsx';
 import ForgotPassword from './components/auth/forgotPassword/ForgotPassword.jsx';
@@ -30,8 +31,10 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+        </Route>
         <Route path="/recuperar-contrasena" element={<ForgotPassword />} />
         <Route path="/restablecer-contrasena" element={<ResetPassword />} />
         <Route path="/confirmar-email" element={<ConfirmEmail />} />
