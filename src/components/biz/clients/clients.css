@@ -179,6 +179,12 @@
   background: rgba(15, 23, 32, 0.04);
 }
 
+/* Case titles inside the client detail were #9aa7b6 over a near-white card
+   (2.26:1). Use the same muted ink as the rest of the light theme. */
+[data-bs-theme='light'] .client-page__case-main span {
+  color: #475569;
+}
+
 /*
  * Create button: same family as .users-create / .cases-create /
  * .appointments-create. As a react-bootstrap Button it also carries

@@ -12,7 +12,7 @@ import CaseDetails from '../caseDetails/CaseDetails';
 import NewCase from '../newCase/NewCase';
 import CasesItem from '../casesItem/CasesItem';
 import CasesSearch from '../casesSearch/CasesSearch';
-import { CASE_STATUS_OPTIONS, getStatusLabel } from '../Cases.data';
+import { CASE_STATUS_OPTIONS, getStatusClass, getStatusLabel } from '../Cases.data';
 import { ROLES, isAdmin, isLawyer } from '../../../services/consts/roles';
 import '../cases.css';
 import '../../trash/trash.css';
@@ -228,7 +228,7 @@ const CasesContainer = () => {
                       </td>
                       <td className="case-admin-cell case-admin-cell--muted">{legalCase.area}</td>
                       <td className="case-admin-cell" style={{ textAlign: 'center' }}>
-                        <span className={`cases-item__status is-${legalCase.status.toLowerCase()}`}>
+                        <span className={`cases-item__status ${getStatusClass(legalCase.status)}`}>
                           {getStatusLabel(legalCase.status)}
                         </span>
                       </td>

@@ -1,17 +1,14 @@
 import { useMemo } from 'react';
-import { LEGAL_SPECIALTIES } from '../../services/consts/specialties';
+import {
+  LEGAL_SPECIALTIES,
+  normalizeSpecialties,
+} from '../../services/consts/specialties';
 import './SpecialtiesSelector.css';
 
-const parseSelected = (val) => {
-  if (Array.isArray(val)) return val.map((s) => String(s).trim()).filter(Boolean);
-  if (typeof val === 'string') {
-    return val
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean);
-  }
-  return [];
-};
+// Only canonical areas are kept: stored rows that still carry a removed
+// specialty are silently cleaned the next time the lawyer saves, and they
+// never render as extra chips.
+const parseSelected = (val) => normalizeSpecialties(val);
 
 export const SpecialtiesSelector = ({
   selected = [],

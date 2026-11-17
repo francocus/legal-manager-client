@@ -4,9 +4,11 @@ import { ONBOARDING_KEY } from '../../services/consts/storageKeys';
 import './OnboardingModal.css';
 
 const STEPS = [
-  'Usá el menú superior para navegar entre Calendario, Turnos, Expedientes y Usuarios.',
-  'En el Calendario ves la agenda en vista semanal o mensual.',
-  'Desde Perfil podés cambiar el formato de fecha y el tema de la interfaz.',
+  'Usá el menú superior para moverte entre Calendario, Turnos, Expedientes y Clientes.',
+  'En el Calendario ves la agenda en vista semanal o mensual; desde Turnos podés pedir una cita o gestionar las existentes.',
+  'Cada expediente guarda los datos de la causa, sus notas y los documentos asociados.',
+  'Desde Mi perfil podés actualizar tus datos de contacto y, si sos abogado, tus especialidades y horarios de atención.',
+  'Si diste de baja algo por error, recuperalo desde la Papelera sin perder su información.',
 ];
 
 const readShouldShow = () => {

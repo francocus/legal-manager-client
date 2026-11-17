@@ -10,3 +10,83 @@
   flex-direction: column;
   gap: 8px;
 }
+
+/* Profile form bits used to carry dark-only inline colors (#eef2f6,
+   #a0aec0, white chips). They now live here with a light variant. */
+.profile-field-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 700;
+  color: #eef2f6;
+}
+
+.profile-hint {
+  display: inline-block;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: #a0aec0;
+}
+
+.profile-empty {
+  margin: 8px 0;
+  font-size: 0.9rem;
+  font-style: italic;
+  color: #e2e8f0;
+}
+
+.profile-slot {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  background: rgba(92, 138, 180, 0.22);
+  border: 1px solid rgba(170, 195, 220, 0.4);
+  color: #ffffff;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.profile-slot__remove {
+  background: transparent;
+  border: none;
+  color: #ff8585;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0;
+  margin-left: 2px;
+}
+
+.profile-slot__remove:hover,
+.profile-slot__remove:focus-visible {
+  color: #ffb3b3;
+}
+
+[data-bs-theme='light'] .profile-field-label {
+  color: #0d1117;
+}
+
+[data-bs-theme='light'] .profile-hint {
+  color: #475569;
+}
+
+[data-bs-theme='light'] .profile-empty {
+  color: #475569;
+}
+
+[data-bs-theme='light'] .profile-slot {
+  background: rgba(37, 99, 235, 0.08);
+  border-color: rgba(37, 99, 235, 0.25);
+  color: #1e3a8a;
+}
+
+[data-bs-theme='light'] .profile-slot__remove {
+  color: #b91c1c;
+}
+
+[data-bs-theme='light'] .profile-slot__remove:hover,
+[data-bs-theme='light'] .profile-slot__remove:focus-visible {
+  color: #7f1d1d;
+}

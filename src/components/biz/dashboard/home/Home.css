@@ -78,20 +78,24 @@
   color: #d5e2ee;
 }
 
-.home-recent-case__status[data-status='activo'] {
+.home-recent-case__status.is-active {
   background: rgba(52, 168, 116, 0.18);
   color: #7fe0b4;
 }
 
-.home-recent-case__status[data-status='suspendido'] {
-  background: rgba(220, 160, 60, 0.18);
+.home-recent-case__status.is-pending {
+  background: rgba(235, 177, 85, 0.18);
   color: #f0c674;
 }
 
-.home-recent-case__status[data-status='cerrado'],
-.home-recent-case__status[data-status='archivado'] {
-  background: rgba(160, 170, 185, 0.18);
+.home-recent-case__status.is-closed {
+  background: rgba(126, 144, 167, 0.2);
   color: #c0cad6;
+}
+
+.home-recent-case__status.is-cancelled {
+  background: rgba(217, 93, 93, 0.2);
+  color: #ffb4b4;
 }
 
 .home-recent-case__title {
@@ -166,7 +170,7 @@
 }
 
 [data-bs-theme='light'] .home-stat span {
-  color: #5b6675;
+  color: #475569;
 }
 
 [data-bs-theme='light'] .home-recent-case {
@@ -181,12 +185,32 @@
 }
 
 [data-bs-theme='light'] .home-recent-case__number {
-  color: #5b6675;
+  color: #475569;
 }
 
 [data-bs-theme='light'] .home-recent-case__status {
   background: rgba(15, 23, 32, 0.08);
   color: #334155;
+}
+
+[data-bs-theme='light'] .home-recent-case__status.is-active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+[data-bs-theme='light'] .home-recent-case__status.is-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+[data-bs-theme='light'] .home-recent-case__status.is-closed {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+[data-bs-theme='light'] .home-recent-case__status.is-cancelled {
+  background: #fee2e2;
+  color: #991b1b;
 }
 
 [data-bs-theme='light'] .home-recent-case__area {
@@ -196,7 +220,7 @@
 }
 
 [data-bs-theme='light'] .home-recent-case__update {
-  color: #5b6675;
+  color: #475569;
 }
 
 [data-bs-theme='light'] .home-list a {
@@ -204,5 +228,14 @@
 }
 
 [data-bs-theme='light'] .home-list__date {
-  color: #5b6675;
+  color: #475569;
+}
+
+[data-bs-theme='light'] .home-panel-head a {
+  color: #1d4ed8;
+}
+
+[data-bs-theme='light'] .home-panel-head a:hover {
+  color: #1e3a8a;
+  text-decoration: underline;
 }

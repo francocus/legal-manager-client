@@ -22,7 +22,7 @@ const AppointmentDetails = ({ appointment, user, onStatus, onCancel, onEdit, onD
     appointment.title !== 'Solicitud de turno';
 
   return (
-    <article className={`appointment-ticket is-${status}`}>
+    <article className={`appointment-ticket ${getStatusClass(status)}`}>
       {/* 1. Left Stub: Dedicated Calendar Voucher */}
       <div className="appointment-ticket__stub">
         <span className="appointment-ticket__month">{dateParts.monthName}</span>

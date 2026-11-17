@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { trashApi } from '../../../../services/api/trashApi';
+import { useDashboardData } from '../../../../services/data/dashboardData.context';
 import { useToast } from '../../../../shared/toast/toast.context';
 
 export const EMPTY_TRASH = { cases: [], appointments: [], documents: [], users: [] };
@@ -17,6 +18,7 @@ const RESTORE_BY_KIND = {
 // affordance, so restore is the single row action.
 export const useTrash = () => {
   const { showToast } = useToast();
+  const { refreshAll } = useDashboardData();
   const [trash, setTrash] = useState(EMPTY_TRASH);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -68,6 +70,9 @@ export const useTrash = () => {
         await restoreByKind(id);
         showToast({ variant: 'success', message: 'Restaurado correctamente.' });
         await reload();
+        // The restored row now lives in the regular module lists: refresh the
+        // shared dashboard data so going back shows it without a page reload.
+        await refreshAll?.();
       } catch (restoreError) {
         showToast({
           variant: 'danger',
@@ -75,7 +80,7 @@ export const useTrash = () => {
         });
       }
     },
-    [reload, showToast],
+    [reload, refreshAll, showToast],
   );
 
   return { trash, loading, error, reload, restore };
