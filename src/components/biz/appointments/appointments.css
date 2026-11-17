@@ -286,7 +286,7 @@
 
 .appointments-table th:nth-child(3),
 .appointments-table td:nth-child(3) {
-  width: 30%;
+  width: 26%;
 }
 
 .appointments-table th:nth-child(4),
@@ -297,7 +297,7 @@
 
 .appointments-table th:nth-child(5),
 .appointments-table td:nth-child(5) {
-  width: 12%;
+  width: 16%;
   text-align: center;
 }
 
@@ -378,6 +378,7 @@
 
 .appointment-admin-actions {
   display: inline-flex;
+  flex-wrap: wrap;
   gap: 10px;
   justify-content: center;
 }
@@ -2228,6 +2229,23 @@
 [data-bs-theme='light'] .appointment-admin-action--confirm {
   background: rgba(45, 130, 64, 0.14);
   border-color: rgba(45, 130, 64, 0.3);
+}
+
+/* Cancel uses the pending/amber palette so it reads as a reversible state
+   change, distinct from the red trash action. */
+.appointment-admin-action--cancel {
+  background: rgba(150, 92, 30, 0.34);
+  border-color: rgba(235, 177, 85, 0.45);
+  color: #ffe0b2;
+}
+.appointment-admin-action--cancel:hover {
+  background: rgba(180, 110, 30, 0.5);
+  border-color: rgba(235, 177, 85, 0.7);
+}
+[data-bs-theme='light'] .appointment-admin-action--cancel {
+  background: rgba(235, 177, 85, 0.16);
+  border-color: rgba(200, 145, 50, 0.4);
+  color: #8a5a0f;
 }
 
 .appointment-card__link {

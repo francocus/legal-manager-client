@@ -5,9 +5,16 @@ import { AuthenticationContext } from '../../../services/auth/authentication.con
 import { useDashboardData } from '../../../services/data/dashboardData.context';
 import { usePreferences } from '../../../services/preferences/preferences.context';
 import { ROLES } from '../../../services/consts/roles';
+import { getProfileMissingFields, isProfileComplete } from '../../../services/consts/profile';
 import { formatDate, formatDateTime } from '../../../services/utils/format';
 import { getStatusClass, getStatusLabel } from '../../cases/Cases.data';
 import './Home.css';
+
+const PROFILE_FIELD_LABELS = {
+  phone: 'teléfono',
+  address: 'dirección',
+  schedule: 'horarios de atención',
+};
 
 const Home = () => {
   const { user } = useContext(AuthenticationContext);
@@ -24,7 +31,7 @@ const Home = () => {
         (appointment) =>
           appointment.date >= todayKey && appointment.status.toLowerCase() !== 'cancelado',
       )
-      .slice(0, 5);
+      .slice(0, 4);
   }, [appointments]);
 
   const pendingAppointments = appointments.filter(
@@ -35,7 +42,7 @@ const Home = () => {
     (legalCase) => !['cerrado', 'archivado'].includes(legalCase.status.toLowerCase()),
   ).length;
 
-  // Last 4 cases sorted by lastUpdate descending
+  // Last 3 cases sorted by lastUpdate descending
   const recentCases = useMemo(() => {
     return [...cases]
       .sort((a, b) => {
@@ -43,16 +50,18 @@ const Home = () => {
         const db = b.lastUpdate ? new Date(b.lastUpdate) : new Date(0);
         return db - da;
       })
-      .slice(0, 4);
+      .slice(0, 3);
   }, [cases]);
 
-  // Client should see banner if phone or address is missing
-  const showClientContactBanner =
-    role === ROLES.CLIENTE && (!user?.phone || !user?.address);
+  const profileIsComplete = isProfileComplete(user);
+  const missingProfileFields = getProfileMissingFields(user);
+  const missingProfileLabels = missingProfileFields
+    .map((field) => PROFILE_FIELD_LABELS[field])
+    .filter(Boolean);
 
   return (
-    <section className="app-page">
-      <header className="app-page__header">
+    <section className="app-page home-view">
+      <header className="app-page__header home-view__header">
         <div>
           <p className="app-page__eyebrow">Inicio</p>
           <h2 className="app-page__title">Hola, {user?.name ?? 'bienvenido'}</h2>
@@ -68,71 +77,13 @@ const Home = () => {
         <p className="app-page__subtitle">Cargando...</p>
       ) : (
         <>
-          {/* Banner: lawyer without schedule */}
-          {role === ROLES.ABOGADO && !user?.schedule && (
-            <div
-              className="home-schedule-prompt"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 16,
-                padding: '16px 20px',
-                borderRadius: 16,
-                background:
-                  'radial-gradient(circle at top left, rgba(70, 130, 220, 0.16), transparent 70%), rgba(20, 30, 45, 0.85)',
-                border: '1px solid rgba(120, 172, 214, 0.35)',
-                marginBottom: 20,
-              }}
-            >
-              <div>
-                <h4 style={{ margin: '0 0 4px', color: '#ffffff', fontSize: '1rem', fontWeight: 700 }}>
-                  📅 Configurá tus días y horarios de atención
-                </h4>
-                <p style={{ margin: 0, color: '#c3d6e6', fontSize: '0.88rem' }}>
-                  Definí en qué días y franjas horarias tus clientes podrán solicitar turnos con vos.
-                </p>
-              </div>
-              <Link
-                to="/dashboard/profile"
-                className="app-button app-button--primary"
-                style={{ whiteSpace: 'nowrap' }}
-              >
-                Configurar horarios
-              </Link>
-            </div>
-          )}
-
-          {/* Banner: client without phone or address */}
-          {showClientContactBanner && (
-            <div
-              className="home-contact-prompt"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 16,
-                padding: '16px 20px',
-                borderRadius: 16,
-                background:
-                  'radial-gradient(circle at top left, rgba(220, 140, 60, 0.16), transparent 70%), rgba(28, 22, 14, 0.85)',
-                border: '1px solid rgba(220, 160, 80, 0.35)',
-                marginBottom: 20,
-              }}
-            >
-              <div>
-                <h4 style={{ margin: '0 0 4px', color: '#ffffff', fontSize: '1rem', fontWeight: 700 }}>
-                  📋 Completá tus datos de contacto
-                </h4>
-                <p style={{ margin: 0, color: '#e8d5b0', fontSize: '0.88rem' }}>
-                  Ingresá tu teléfono y domicilio para agilizar la gestión de tus causas y la comunicación con tus abogados.
-                </p>
-              </div>
-              <Link
-                to="/dashboard/profile"
-                className="app-button app-button--primary"
-                style={{ whiteSpace: 'nowrap' }}
-              >
+          {/* One compact notice for any role with an incomplete profile. */}
+          {!profileIsComplete && (
+            <div className="home-profile-prompt" role="status">
+              <span className="home-profile-prompt__text">
+                Completá tu perfil: falta {missingProfileLabels.join(' y ')}.
+              </span>
+              <Link to="/dashboard/profile" className="app-button app-button--primary">
                 Completar perfil
               </Link>
             </div>
@@ -156,79 +107,86 @@ const Home = () => {
                 <span>Clientes</span>
                 <strong>{clients.length}</strong>
               </div>
-            ) : null}
-          </div>
-
-          {/* Últimos expedientes consultados (replaces Accesos rápidos) */}
-          <div className="app-panel">
-            <div className="home-panel-head">
-              <h3 className="app-panel__title">Últimos expedientes consultados</h3>
-              <Link to="/dashboard/cases">Ver todos</Link>
-            </div>
-            {recentCases.length > 0 ? (
-              <div className="home-recent-cases">
-                {recentCases.map((legalCase) => (
-                  <Link
-                    key={legalCase.id}
-                    to={`/dashboard/cases/${legalCase.id}`}
-                    className="home-recent-case"
-                  >
-                    <div className="home-recent-case__header">
-                      <span className="home-recent-case__number">
-                        <FolderOpen size={14} />
-                        {legalCase.caseNumber}
-                      </span>
-                      <span
-                        className={`home-recent-case__status ${getStatusClass(legalCase.status)}`}
-                      >
-                        {getStatusLabel(legalCase.status)}
-                      </span>
-                    </div>
-                    <p className="home-recent-case__title">{legalCase.title}</p>
-                    {legalCase.area ? (
-                      <span className="home-recent-case__area">{legalCase.area}</span>
-                    ) : null}
-                    <span className="home-recent-case__update">
-                      Actualizado: {formatDateTime(legalCase.lastUpdate, preferences.dateFormat)}
-                    </span>
-                  </Link>
-                ))}
-              </div>
             ) : (
-              <div className="home-empty">
-                <p className="app-page__subtitle">
-                  Todavía no hay expedientes registrados. Cuando se cargue el primero, va a aparecer acá.
-                </p>
-                <Link to="/dashboard/cases" className="app-button app-button--secondary">
-                  Gestionar expedientes
-                </Link>
+              <div className="app-panel home-stat home-stat--status">
+                <span>Estado del perfil</span>
+                <strong>{profileIsComplete ? 'Completo' : 'Completar perfil'}</strong>
               </div>
             )}
           </div>
 
-          <div className="app-panel">
-            <div className="home-panel-head">
-              <h3 className="app-panel__title">Próximos turnos</h3>
-              <Link to="/dashboard/appointments">Ver todos</Link>
-            </div>
-            {upcomingAppointments.length > 0 ? (
-              <ul className="home-list">
-                {upcomingAppointments.map((appointment) => (
-                  <li key={appointment.id}>
-                    <Link to={`/dashboard/appointments/${appointment.id}`}>
-                      <span className="home-list__date">
-                        {formatDate(appointment.date, preferences.dateFormat)} · {appointment.time}
-                      </span>
-                      <span className="home-list__main">
-                        {appointment.clientName} con {appointment.lawyerName}
+          <div className="home-panels">
+            {/* Últimos expedientes consultados (replaces Accesos rápidos) */}
+            <div className="app-panel home-panel">
+              <div className="home-panel-head">
+                <h3 className="app-panel__title">Últimos expedientes consultados</h3>
+                <Link to="/dashboard/cases">Ver todos</Link>
+              </div>
+              {recentCases.length > 0 ? (
+                <div className="home-recent-cases">
+                  {recentCases.map((legalCase) => (
+                    <Link
+                      key={legalCase.id}
+                      to={`/dashboard/cases/${legalCase.id}`}
+                      className="home-recent-case"
+                    >
+                      <div className="home-recent-case__header">
+                        <span className="home-recent-case__number">
+                          <FolderOpen size={14} />
+                          {legalCase.caseNumber}
+                        </span>
+                        <span
+                          className={`home-recent-case__status ${getStatusClass(legalCase.status)}`}
+                        >
+                          {getStatusLabel(legalCase.status)}
+                        </span>
+                      </div>
+                      <p className="home-recent-case__title">{legalCase.title}</p>
+                      {legalCase.area ? (
+                        <span className="home-recent-case__area">{legalCase.area}</span>
+                      ) : null}
+                      <span className="home-recent-case__update">
+                        Actualizado: {formatDateTime(legalCase.lastUpdate, preferences.dateFormat)}
                       </span>
                     </Link>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="app-page__subtitle">No hay turnos próximos.</p>
-            )}
+                  ))}
+                </div>
+              ) : (
+                <div className="home-empty">
+                  <p className="app-page__subtitle">
+                    Todavía no hay expedientes registrados. Cuando se cargue el primero, va a aparecer acá.
+                  </p>
+                  <Link to="/dashboard/cases" className="app-button app-button--secondary">
+                    Gestionar expedientes
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            <div className="app-panel home-panel">
+              <div className="home-panel-head">
+                <h3 className="app-panel__title">Próximos turnos</h3>
+                <Link to="/dashboard/appointments">Ver todos</Link>
+              </div>
+              {upcomingAppointments.length > 0 ? (
+                <ul className="home-list">
+                  {upcomingAppointments.map((appointment) => (
+                    <li key={appointment.id}>
+                      <Link to={`/dashboard/appointments/${appointment.id}`}>
+                        <span className="home-list__date">
+                          {formatDate(appointment.date, preferences.dateFormat)} · {appointment.time}
+                        </span>
+                        <span className="home-list__main">
+                          {appointment.clientName} con {appointment.lawyerName}
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="app-page__subtitle">No hay turnos próximos.</p>
+              )}
+            </div>
           </div>
         </>
       )}

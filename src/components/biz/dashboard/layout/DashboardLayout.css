@@ -8,8 +8,11 @@
   display: none !important;
 }
 
-.dashboard-profile-menu {
-  min-width: 220px;
+/* Bootstrap is imported after this file, so the extra class keeps the
+   dropdown from falling back to its 160px --bs-dropdown-min-width. */
+.dropdown-menu.dashboard-profile-menu {
+  min-width: 300px;
+  max-width: calc(100vw - 32px);
   padding: 8px;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -30,9 +33,10 @@
 }
 
 .dashboard-profile-menu__header span {
-  color: #9aa7b6;
+  color: #b7c4d2;
   font-size: 0.8rem;
-  word-break: break-all;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .dashboard-profile-menu .dropdown-divider {
@@ -80,7 +84,9 @@
 }
 
 [data-bs-theme='light'] .dashboard-profile-menu__header span {
-  color: #5b6675;
+  color: #475569;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 [data-bs-theme='light'] .dashboard-profile-menu .dropdown-divider {

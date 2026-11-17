@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { Button, Col, Form, Modal, Row } from 'react-bootstrap';
 import { initialCaseForm } from './NewCase.data';
-import { CASE_STATUS_OPTIONS } from '../Cases.data';
 import { useForm } from '../../../services/hooks/useForm';
 import { isRequired } from '../../../services/validators/validators';
 import { ROLES } from '../../../services/consts/roles';
@@ -19,7 +18,7 @@ const NewCase = ({ onAddCase, onFormClosed, clients = [], lawyers = [], currentU
 
   const validateCaseForm = (values) => {
     const errors = {};
-    const requiredFields = ['caseNumber', 'title', 'area', 'startDate', 'lastUpdate', 'clientId'];
+    const requiredFields = ['caseNumber', 'title', 'area', 'startDate', 'clientId'];
 
     if (currentUser?.role !== ROLES.ABOGADO) {
       requiredFields.push('lawyerId');
@@ -30,12 +29,6 @@ const NewCase = ({ onAddCase, onFormClosed, clients = [], lawyers = [], currentU
         errors[field] = 'Este campo es obligatorio.';
       }
     });
-
-    if (values.startDate && values.lastUpdate) {
-      if (new Date(values.lastUpdate) < new Date(values.startDate)) {
-        errors.lastUpdate = 'La fecha de última actualización no puede ser anterior a la fecha de inicio.';
-      }
-    }
 
     return errors;
   };
@@ -140,21 +133,6 @@ const NewCase = ({ onAddCase, onFormClosed, clients = [], lawyers = [], currentU
 
           <Row>
             <Col md={12}>
-              <Form.Group className="mb-3" controlId="status">
-                <Form.Label>Estado <span className="text-danger">*</span></Form.Label>
-                <Form.Select name="status" value={values.status} onChange={handleChange}>
-                  {CASE_STATUS_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
-            </Col>
-          </Row>
-
-          <Row>
-            <Col md={6}>
               <Form.Group className="mb-3" controlId="startDate">
                 <Form.Label>Fecha de inicio</Form.Label>
                 <Form.Control
@@ -165,20 +143,6 @@ const NewCase = ({ onAddCase, onFormClosed, clients = [], lawyers = [], currentU
                   type="date"
                 />
                 {fieldError('startDate')}
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group className="mb-3" controlId="lastUpdate">
-                <Form.Label>Última actualización</Form.Label>
-                <Form.Control
-                  name="lastUpdate"
-                  value={values.lastUpdate}
-                  onChange={handleChange}
-                  isInvalid={Boolean(errors.lastUpdate)}
-                  type="date"
-                  min={values.startDate || undefined}
-                />
-                {fieldError('lastUpdate')}
               </Form.Group>
             </Col>
           </Row>
