@@ -1,6 +1,6 @@
 import { useContext, useMemo } from 'react';
 import { Link } from 'react-router';
-import { CalendarDays, ClipboardList, FolderOpen, Users } from 'lucide-react';
+import { FolderOpen } from 'lucide-react';
 import { AuthenticationContext } from '../../../services/auth/authentication.context';
 import { useDashboardData } from '../../../services/data/dashboardData.context';
 import { usePreferences } from '../../../services/preferences/preferences.context';
@@ -34,20 +34,20 @@ const Home = () => {
     (legalCase) => !['cerrado', 'archivado'].includes(legalCase.status.toLowerCase()),
   ).length;
 
-  const quickActions = [
-    { to: '/dashboard/calendar', label: 'Calendario', icon: CalendarDays },
-    {
-      to: '/dashboard/appointments',
-      label: role === ROLES.CLIENTE ? 'Mis turnos' : 'Turnos',
-      icon: ClipboardList,
-    },
-    {
-      to: '/dashboard/cases',
-      label: role === ROLES.CLIENTE ? 'Mis expedientes' : 'Expedientes',
-      icon: FolderOpen,
-    },
-    ...(isStaff ? [{ to: '/dashboard/clients', label: 'Clientes', icon: Users }] : []),
-  ];
+  // Last 4 cases sorted by lastUpdate descending
+  const recentCases = useMemo(() => {
+    return [...cases]
+      .sort((a, b) => {
+        const da = a.lastUpdate ? new Date(a.lastUpdate) : new Date(0);
+        const db = b.lastUpdate ? new Date(b.lastUpdate) : new Date(0);
+        return db - da;
+      })
+      .slice(0, 4);
+  }, [cases]);
+
+  // Client should see banner if phone or address is missing
+  const showClientContactBanner =
+    role === ROLES.CLIENTE && (!user?.phone || !user?.address);
 
   return (
     <section className="app-page">
@@ -67,6 +67,7 @@ const Home = () => {
         <p className="app-page__subtitle">Cargando...</p>
       ) : (
         <>
+          {/* Banner: lawyer without schedule */}
           {role === ROLES.ABOGADO && !user?.schedule && (
             <div
               className="home-schedule-prompt"
@@ -101,6 +102,40 @@ const Home = () => {
             </div>
           )}
 
+          {/* Banner: client without phone or address */}
+          {showClientContactBanner && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 16,
+                padding: '16px 20px',
+                borderRadius: 16,
+                background:
+                  'radial-gradient(circle at top left, rgba(220, 140, 60, 0.16), transparent 70%), rgba(28, 22, 14, 0.85)',
+                border: '1px solid rgba(220, 160, 80, 0.35)',
+                marginBottom: 20,
+              }}
+            >
+              <div>
+                <h4 style={{ margin: '0 0 4px', color: '#ffffff', fontSize: '1rem', fontWeight: 700 }}>
+                  📋 Completá tus datos de contacto
+                </h4>
+                <p style={{ margin: 0, color: '#e8d5b0', fontSize: '0.88rem' }}>
+                  Ingresá tu teléfono y domicilio para agilizar la gestión de tus causas y la comunicación con tus abogados.
+                </p>
+              </div>
+              <Link
+                to="/dashboard/profile"
+                className="app-button app-button--primary"
+                style={{ whiteSpace: 'nowrap' }}
+              >
+                Completar perfil
+              </Link>
+            </div>
+          )}
+
           <div className="home-stats">
             <div className="app-panel home-stat">
               <span>Próximos turnos</span>
@@ -122,19 +157,52 @@ const Home = () => {
             ) : null}
           </div>
 
+          {/* Últimos expedientes consultados (replaces Accesos rápidos) */}
           <div className="app-panel">
-            <h3 className="app-panel__title">Accesos rápidos</h3>
-            <div className="home-actions">
-              {quickActions.map((action) => {
-                const Icon = action.icon;
-                return (
-                  <Link key={action.to} to={action.to} className="home-action">
-                    <Icon size={20} />
-                    <span>{action.label}</span>
-                  </Link>
-                );
-              })}
+            <div className="home-panel-head">
+              <h3 className="app-panel__title">Últimos expedientes consultados</h3>
+              <Link to="/dashboard/cases">Ver todos</Link>
             </div>
+            {recentCases.length > 0 ? (
+              <div className="home-recent-cases">
+                {recentCases.map((legalCase) => (
+                  <Link
+                    key={legalCase.id}
+                    to={`/dashboard/cases/${legalCase.id}`}
+                    className="home-recent-case"
+                  >
+                    <div className="home-recent-case__header">
+                      <span className="home-recent-case__number">
+                        <FolderOpen size={14} />
+                        {legalCase.caseNumber}
+                      </span>
+                      <span
+                        className="home-recent-case__status"
+                        data-status={legalCase.status?.toLowerCase()}
+                      >
+                        {legalCase.status}
+                      </span>
+                    </div>
+                    <p className="home-recent-case__title">{legalCase.title}</p>
+                    {legalCase.area ? (
+                      <span className="home-recent-case__area">{legalCase.area}</span>
+                    ) : null}
+                    <span className="home-recent-case__update">
+                      Actualizado: {formatDate(legalCase.lastUpdate, preferences.dateFormat)}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="home-empty">
+                <p className="app-page__subtitle">
+                  Todavía no hay expedientes registrados. Cuando se cargue el primero, va a aparecer acá.
+                </p>
+                <Link to="/dashboard/cases" className="app-button app-button--secondary">
+                  Gestionar expedientes
+                </Link>
+              </div>
+            )}
           </div>
 
           <div className="app-panel">

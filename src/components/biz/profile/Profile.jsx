@@ -1,18 +1,12 @@
 import { useContext, useEffect, useState } from 'react';
 import { Alert, Button, Col, Form, Row, Spinner } from 'react-bootstrap';
 import { AuthenticationContext } from '../../services/auth/authentication.context';
-import { usePreferences } from '../../services/preferences/preferences.context';
-import { ThemeContext } from '../../services/theme/theme.context';
 import { usersApi } from '../../services/api/usersApi';
 import { useToast } from '../../shared/toast/toast.context';
 import { getRoleLabel } from '../users/User.data';
 import { ROLES } from '../../services/consts/roles';
+import SpecialtiesSelector from '../../shared/specialtiesSelector/SpecialtiesSelector';
 import './Profile.css';
-
-const DATE_FORMAT_OPTIONS = [
-  { value: 'dd/mm/yyyy', label: 'DD/MM/AAAA' },
-  { value: 'yyyy-mm-dd', label: 'AAAA-MM-DD' },
-];
 
 const WEEK_DAYS = [
   { id: 1, label: 'Lunes' },
@@ -34,8 +28,6 @@ const STANDARD_SLOTS = [
 
 const Profile = () => {
   const { user, updateUserSession } = useContext(AuthenticationContext);
-  const { preferences, updatePreference } = usePreferences();
-  const { theme, toggleTheme } = useContext(ThemeContext);
   const { showToast } = useToast();
 
   const [profileData, setProfileData] = useState(null);
@@ -43,6 +35,8 @@ const Profile = () => {
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [savingContact, setSavingContact] = useState(false);
+  const [specialties, setSpecialties] = useState([]);
+  const [savingSpecialties, setSavingSpecialties] = useState(false);
   const [selectedDays, setSelectedDays] = useState([1, 2, 3, 4, 5]);
   const [selectedSlots, setSelectedSlots] = useState(STANDARD_SLOTS);
   const [customSlot, setCustomSlot] = useState('');
@@ -60,6 +54,14 @@ const Profile = () => {
         setProfileData(data);
         setPhone(data.phone || '');
         setAddress(data.address || '');
+
+        // Load specialties for lawyers
+        if (data.specialties) {
+          const parsed = Array.isArray(data.specialties)
+            ? data.specialties
+            : String(data.specialties).split(',').map((s) => s.trim()).filter(Boolean);
+          setSpecialties(parsed);
+        }
 
         if (data.schedule) {
           try {
@@ -79,6 +81,12 @@ const Profile = () => {
         setProfileData(user);
         setPhone(user?.phone || '');
         setAddress(user?.address || '');
+        if (user?.specialties) {
+          const parsed = Array.isArray(user.specialties)
+            ? user.specialties
+            : String(user.specialties).split(',').map((s) => s.trim()).filter(Boolean);
+          setSpecialties(parsed);
+        }
       } finally {
         if (active) setLoadingProfile(false);
       }
@@ -193,21 +201,42 @@ const Profile = () => {
     }
   };
 
+  const handleSaveSpecialties = async (e) => {
+    e.preventDefault();
+    if (!user?.id) return;
+    if (specialties.length === 0) {
+      showToast({ variant: 'danger', message: 'Debés seleccionar al menos una especialidad.' });
+      return;
+    }
+    try {
+      setSavingSpecialties(true);
+      const updated = await usersApi.updateSpecialties(user.id, specialties);
+      setProfileData((prev) => ({ ...prev, specialties: updated?.specialties ?? specialties }));
+      updateUserSession?.({ specialties: updated?.specialties ?? specialties });
+      showToast({ variant: 'success', message: 'Especialidades actualizadas correctamente.' });
+    } catch (err) {
+      showToast({
+        variant: 'danger',
+        message: err.message || 'No se pudieron actualizar las especialidades.',
+      });
+    } finally {
+      setSavingSpecialties(false);
+    }
+  };
+
   const displayName = profileData?.name || user?.name || '—';
   const displayDni = profileData?.dni || user?.dni || '—';
   const displayEmail = profileData?.email || user?.email || '—';
   const displayRole = getRoleLabel(profileData?.role || user?.role);
   const displayBarNumber = profileData?.barNumber || user?.barNumber || '—';
-  const displaySpecialties = Array.isArray(profileData?.specialties)
-    ? profileData.specialties.join(', ')
-    : profileData?.specialties || '—';
+  const displaySpecialties = specialties.length > 0 ? specialties.join(', ') : '—';
 
   return (
     <section className="app-page">
       <header className="app-page__header">
         <div>
           <p className="app-page__eyebrow">Mi cuenta</p>
-          <h2 className="app-page__title">Perfil y preferencias</h2>
+          <h2 className="app-page__title">Mi perfil</h2>
         </div>
       </header>
 
@@ -291,6 +320,29 @@ const Profile = () => {
               disabled={savingContact}
             >
               {savingContact ? 'Guardando...' : 'Guardar información de contacto'}
+            </Button>
+          </Form>
+        </div>
+      )}
+
+      {user?.role === ROLES.ABOGADO && (
+        <div className="app-panel" id="specialties">
+          <h3 className="app-panel__title">Especialidades jurídicas</h3>
+          <p className="app-text" style={{ marginBottom: 16 }}>
+            Seleccioná las áreas del derecho en las que te especializás. Tus clientes las verán en tu perfil.
+          </p>
+          <Form onSubmit={handleSaveSpecialties}>
+            <SpecialtiesSelector
+              selected={specialties}
+              onChange={setSpecialties}
+            />
+            <Button
+              type="submit"
+              className="app-button app-button--primary"
+              disabled={savingSpecialties}
+              style={{ marginTop: 16 }}
+            >
+              {savingSpecialties ? 'Guardando...' : 'Guardar especialidades'}
             </Button>
           </Form>
         </div>
@@ -450,36 +502,6 @@ const Profile = () => {
           </Form>
         </div>
       )}
-
-      <div className="app-panel">
-        <h3 className="app-panel__title">Preferencias</h3>
-        <div className="profile-preferences">
-          <Form.Group controlId="dateFormat">
-            <Form.Label>Formato de fecha</Form.Label>
-            <Form.Select
-              value={preferences.dateFormat}
-              onChange={(event) => updatePreference('dateFormat', event.target.value)}
-            >
-              {DATE_FORMAT_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </Form.Select>
-          </Form.Group>
-
-          <div className="profile-theme">
-            <span className="app-text">Tema actual: {theme === 'light' ? 'Claro' : 'Oscuro'}</span>
-            <button
-              type="button"
-              className="app-button app-button--secondary"
-              onClick={toggleTheme}
-            >
-              Cambiar tema
-            </button>
-          </div>
-        </div>
-      </div>
     </section>
   );
 };

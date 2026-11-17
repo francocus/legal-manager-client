@@ -2643,24 +2643,48 @@
   flex-shrink: 0;
 }
 
-.appointment-ticket__actions {
-  display: inline-flex;
+.appointment-ticket__actions,
+.appointment-ticket__actions-bar {
+  display: flex;
   align-items: center;
-  gap: 6px;
-  margin-left: auto;
-  flex-shrink: 0;
+  justify-content: flex-end;
+  gap: 8px;
+  width: 100%;
 }
 
-.appointment-ticket__actions .appointment-admin-action {
+.appointment-ticket__actions-bar {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.appointment-ticket__actions .appointment-admin-action,
+.appointment-ticket__actions-bar .appointment-admin-action {
   width: 32px;
   height: 32px;
   min-width: 32px;
   border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.15s ease, opacity 0.15s ease;
 }
 
-.appointment-ticket__actions .appointment-admin-action svg {
+.appointment-ticket__actions-bar .appointment-admin-action:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.15);
+}
+
+.appointment-ticket__actions .appointment-admin-action svg,
+.appointment-ticket__actions-bar .appointment-admin-action svg {
   width: 15px;
   height: 15px;
+}
+
+[data-bs-theme='light'] .appointment-ticket__actions-bar {
+  border-top-color: rgba(15, 23, 32, 0.12);
 }
 
 .appointment-ticket__content {

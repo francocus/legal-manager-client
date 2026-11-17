@@ -1,0 +1,15 @@
+export const LEGAL_SPECIALTIES = [
+  'Civil',
+  'Comercial',
+  'Laboral',
+  'Familia',
+  'Penal',
+  'Administrativo',
+  'Tributario',
+  'Seguridad Social',
+  'Ambiental',
+  'Propiedad Intelectual',
+  'Contractual',
+  'Societario',
+  'Consumidor',
+];
