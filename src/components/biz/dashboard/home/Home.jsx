@@ -5,7 +5,8 @@ import { AuthenticationContext } from '../../../services/auth/authentication.con
 import { useDashboardData } from '../../../services/data/dashboardData.context';
 import { usePreferences } from '../../../services/preferences/preferences.context';
 import { ROLES } from '../../../services/consts/roles';
-import { formatDate } from '../../../services/utils/format';
+import { formatDate, formatDateTime } from '../../../services/utils/format';
+import { getStatusClass, getStatusLabel } from '../../cases/Cases.data';
 import './Home.css';
 
 const Home = () => {
@@ -177,10 +178,9 @@ const Home = () => {
                         {legalCase.caseNumber}
                       </span>
                       <span
-                        className="home-recent-case__status"
-                        data-status={legalCase.status?.toLowerCase()}
+                        className={`home-recent-case__status ${getStatusClass(legalCase.status)}`}
                       >
-                        {legalCase.status}
+                        {getStatusLabel(legalCase.status)}
                       </span>
                     </div>
                     <p className="home-recent-case__title">{legalCase.title}</p>
@@ -188,7 +188,7 @@ const Home = () => {
                       <span className="home-recent-case__area">{legalCase.area}</span>
                     ) : null}
                     <span className="home-recent-case__update">
-                      Actualizado: {formatDate(legalCase.lastUpdate, preferences.dateFormat)}
+                      Actualizado: {formatDateTime(legalCase.lastUpdate, preferences.dateFormat)}
                     </span>
                   </Link>
                 ))}

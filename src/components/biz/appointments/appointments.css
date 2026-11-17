@@ -689,16 +689,16 @@
 
 .appointment-details__status.is-finished,
 .appointment-chip__status.is-finished {
-  background: rgba(126, 144, 167, 0.16);
-  border-color: rgba(126, 144, 167, 0.34);
-  color: #ffffff;
+  background: rgba(217, 93, 93, 0.18);
+  border-color: rgba(217, 93, 93, 0.42);
+  color: #ffe0e0;
 }
 
 .appointment-details__status.is-cancelled,
 .appointment-chip__status.is-cancelled {
-  background: rgba(217, 93, 93, 0.16);
-  border-color: rgba(217, 93, 93, 0.34);
-  color: #ffe0e0;
+  background: rgba(126, 144, 167, 0.18);
+  border-color: rgba(126, 144, 167, 0.4);
+  color: #e2e8f0;
 }
 
 .appointment-details__grid {
@@ -1345,6 +1345,11 @@
   box-shadow: 0 10px 18px rgba(0, 0, 0, 0.2);
 }
 
+.appointments-month-event.is-primary {
+  background: rgba(52, 168, 116, 0.22);
+  border-color: #34a874;
+}
+
 .appointments-month-event.is-warning {
   background: rgba(199, 119, 0, 0.18);
   border-color: #c77700;
@@ -1880,7 +1885,7 @@
 }
 
 [data-bs-theme='light'] .appointment-chip__client.is-primary {
-  color: #1c3f7a;
+  color: #166534;
 }
 
 [data-bs-theme='light'] .appointment-chip__client.is-warning {
@@ -1899,6 +1904,12 @@
   background: rgba(14, 165, 233, 0.1);
   border-color: rgba(14, 165, 233, 0.3);
   color: #0b5b82;
+}
+
+[data-bs-theme='light'] .appointments-month-event.is-primary {
+  background: rgba(22, 101, 52, 0.1);
+  border-color: rgba(22, 101, 52, 0.35);
+  color: #166534;
 }
 
 [data-bs-theme='light'] .appointments-month-event.is-warning {
@@ -2194,15 +2205,15 @@
 }
 
 [data-bs-theme='light'] .appointment-details__status.is-cancelled {
-  background: rgba(217, 93, 93, 0.14);
-  border-color: rgba(217, 93, 93, 0.4);
-  color: #8a1f1f;
+  background: rgba(126, 144, 167, 0.18);
+  border-color: rgba(126, 144, 167, 0.45);
+  color: #334155;
 }
 
 [data-bs-theme='light'] .appointment-details__status.is-finished {
-  background: rgba(126, 144, 167, 0.16);
-  border-color: rgba(126, 144, 167, 0.4);
-  color: #2c3744;
+  background: rgba(217, 93, 93, 0.14);
+  border-color: rgba(217, 93, 93, 0.45);
+  color: #8a1f1f;
 }
 
 .appointment-admin-action--confirm {
@@ -2541,27 +2552,42 @@
 }
 
 .appointment-ticket.is-confirmed .appointment-ticket__stub {
-  background: linear-gradient(180deg, rgba(90, 140, 235, 0.12) 0%, rgba(90, 140, 235, 0.02) 100%);
-  border-left: 4px solid rgba(90, 140, 235, 0.85);
+  background: linear-gradient(180deg, rgba(90, 173, 132, 0.14) 0%, rgba(90, 173, 132, 0.02) 100%);
+  border-left: 4px solid rgba(90, 173, 132, 0.85);
 }
 .appointment-ticket.is-confirmed .appointment-ticket__month {
-  color: #93c5fd;
+  color: #86efac;
 }
 
 .appointment-ticket.is-cancelled .appointment-ticket__stub {
-  background: linear-gradient(180deg, rgba(217, 93, 93, 0.12) 0%, rgba(217, 93, 93, 0.02) 100%);
-  border-left: 4px solid rgba(217, 93, 93, 0.85);
-}
-.appointment-ticket.is-cancelled .appointment-ticket__month {
-  color: #fca5a5;
-}
-
-.appointment-ticket.is-finished .appointment-ticket__stub {
   background: linear-gradient(180deg, rgba(140, 158, 180, 0.12) 0%, rgba(140, 158, 180, 0.02) 100%);
   border-left: 4px solid rgba(140, 158, 180, 0.85);
 }
-.appointment-ticket.is-finished .appointment-ticket__month {
+.appointment-ticket.is-cancelled .appointment-ticket__month {
   color: #cbd5e1;
+}
+
+.appointment-ticket.is-finished .appointment-ticket__stub {
+  background: linear-gradient(180deg, rgba(217, 93, 93, 0.12) 0%, rgba(217, 93, 93, 0.02) 100%);
+  border-left: 4px solid rgba(217, 93, 93, 0.85);
+}
+.appointment-ticket.is-finished .appointment-ticket__month {
+  color: #fecaca;
+}
+
+/* Light theme: the stub tints stay soft, so the month needs a dark readable
+   tone per state instead of the pastel one used over the dark ticket. */
+[data-bs-theme='light'] .appointment-ticket.is-pending .appointment-ticket__month {
+  color: #92400e;
+}
+[data-bs-theme='light'] .appointment-ticket.is-confirmed .appointment-ticket__month {
+  color: #166534;
+}
+[data-bs-theme='light'] .appointment-ticket.is-cancelled .appointment-ticket__month {
+  color: #475569;
+}
+[data-bs-theme='light'] .appointment-ticket.is-finished .appointment-ticket__month {
+  color: #b91c1c;
 }
 
 /* 2. Physical Perforated Ticket Divider with Circular Cutout Notches */
@@ -2635,7 +2661,9 @@
   border-radius: 6px;
   font-size: 0.74rem;
   font-weight: 600;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  max-width: 100%;
   background: rgba(120, 150, 190, 0.12);
   color: #cbd5e1;
   border: 1px solid rgba(150, 180, 220, 0.18);
@@ -2726,7 +2754,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 8px 12px;
   padding-top: 8px;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
@@ -2735,8 +2764,15 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
+  min-width: 0;
+  flex: 1 1 auto;
   font-size: 0.88rem;
   color: #e2e8f0;
+}
+
+.appointment-ticket__participant-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .appointment-ticket__participant-icon {
@@ -2793,4 +2829,38 @@
 }
 [data-bs-theme='light'] .appointment-ticket__footer {
   border-top-color: rgba(15, 23, 42, 0.06);
+}
+
+/* Light theme ticket body: the labels/descriptions were hard-coded for the
+   dark ticket and became nearly invisible over the white card. */
+[data-bs-theme='light'] .appointment-ticket__month {
+  color: #0369a1;
+}
+
+[data-bs-theme='light'] .appointment-ticket__dayname,
+[data-bs-theme='light'] .appointment-ticket__desc,
+[data-bs-theme='light'] .appointment-ticket__label,
+[data-bs-theme='light'] .appointment-ticket__duration {
+  color: #475569;
+}
+
+[data-bs-theme='light'] .appointment-ticket__participant-text {
+  color: #334155;
+}
+
+[data-bs-theme='light'] .appointment-ticket__time-pill {
+  background: rgba(15, 23, 42, 0.06);
+  border-color: rgba(15, 23, 42, 0.12);
+  color: #0f172a;
+}
+
+[data-bs-theme='light'] .appointment-ticket__case-pill {
+  background: rgba(37, 99, 235, 0.08);
+  border-color: rgba(37, 99, 235, 0.22);
+  color: #1e40af;
+}
+
+[data-bs-theme='light'] .appointment-ticket__time-icon,
+[data-bs-theme='light'] .appointment-ticket__participant-icon {
+  color: #0369a1;
 }

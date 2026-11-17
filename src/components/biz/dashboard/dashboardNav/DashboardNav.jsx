@@ -14,11 +14,13 @@ const NAV_ITEMS = {
     { to: '/dashboard/appointments', label: 'Turnos' },
     { to: '/dashboard/cases', label: 'Expedientes' },
     { to: '/dashboard/clients', label: 'Clientes' },
+    { to: '/dashboard/profile', label: 'Mi perfil' },
   ],
   [ROLES.CLIENTE]: [
     { to: '/dashboard/calendar', label: 'Calendario' },
     { to: '/dashboard/appointments', label: 'Mis Turnos' },
     { to: '/dashboard/cases', label: 'Mis Expedientes' },
+    { to: '/dashboard/profile', label: 'Mi perfil' },
   ],
 };
 

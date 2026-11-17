@@ -5,6 +5,7 @@ import { usersApi } from '../../services/api/usersApi';
 import { useToast } from '../../shared/toast/toast.context';
 import { getRoleLabel } from '../users/User.data';
 import { ROLES } from '../../services/consts/roles';
+import { normalizeSpecialties } from '../../services/consts/specialties';
 import SpecialtiesSelector from '../../shared/specialtiesSelector/SpecialtiesSelector';
 import './Profile.css';
 
@@ -55,12 +56,10 @@ const Profile = () => {
         setPhone(data.phone || '');
         setAddress(data.address || '');
 
-        // Load specialties for lawyers
+        // Load specialties for lawyers. Legacy or differently-cased values are
+        // mapped to the curated list; anything outside it is dropped.
         if (data.specialties) {
-          const parsed = Array.isArray(data.specialties)
-            ? data.specialties
-            : String(data.specialties).split(',').map((s) => s.trim()).filter(Boolean);
-          setSpecialties(parsed);
+          setSpecialties(normalizeSpecialties(data.specialties));
         }
 
         if (data.schedule) {
@@ -82,10 +81,7 @@ const Profile = () => {
         setPhone(user?.phone || '');
         setAddress(user?.address || '');
         if (user?.specialties) {
-          const parsed = Array.isArray(user.specialties)
-            ? user.specialties
-            : String(user.specialties).split(',').map((s) => s.trim()).filter(Boolean);
-          setSpecialties(parsed);
+          setSpecialties(normalizeSpecialties(user.specialties));
         }
       } finally {
         if (active) setLoadingProfile(false);
@@ -204,15 +200,18 @@ const Profile = () => {
   const handleSaveSpecialties = async (e) => {
     e.preventDefault();
     if (!user?.id) return;
-    if (specialties.length === 0) {
+    const payload = normalizeSpecialties(specialties);
+    if (payload.length === 0) {
       showToast({ variant: 'danger', message: 'Debés seleccionar al menos una especialidad.' });
       return;
     }
     try {
       setSavingSpecialties(true);
-      const updated = await usersApi.updateSpecialties(user.id, specialties);
-      setProfileData((prev) => ({ ...prev, specialties: updated?.specialties ?? specialties }));
-      updateUserSession?.({ specialties: updated?.specialties ?? specialties });
+      const updated = await usersApi.updateSpecialties(user.id, payload);
+      const saved = normalizeSpecialties(updated?.specialties ?? payload);
+      setSpecialties(saved);
+      setProfileData((prev) => ({ ...prev, specialties: saved }));
+      updateUserSession?.({ specialties: saved });
       showToast({ variant: 'success', message: 'Especialidades actualizadas correctamente.' });
     } catch (err) {
       showToast({
@@ -245,7 +244,7 @@ const Profile = () => {
           <h3 className="app-panel__title" style={{ margin: 0 }}>
             Datos de la cuenta
           </h3>
-          {loadingProfile ? <Spinner animation="border" size="sm" variant="light" /> : null}
+          {loadingProfile ? <Spinner animation="border" size="sm" variant="secondary" /> : null}
         </div>
         <dl className="app-detail-grid" style={{ marginTop: 16 }}>
           <div>
@@ -282,10 +281,15 @@ const Profile = () => {
       {(user?.role === ROLES.CLIENTE || user?.role === ROLES.ABOGADO) && (
         <div className="app-panel">
           <h3 className="app-panel__title">Información de contacto</h3>
-          <p className="app-text" style={{ marginBottom: 16 }}>
+          <p className="app-text" style={{ marginBottom: 8 }}>
             {user.role === ROLES.ABOGADO
               ? 'Mantené tu teléfono actualizado para que el estudio y tus clientes puedan contactarte.'
               : 'Información de contacto para la gestión de tus causas y citas.'}
+          </p>
+          <p className="profile-hint" style={{ marginBottom: 16 }}>
+            {user.role === ROLES.ABOGADO
+              ? 'Podés actualizar tu teléfono desde acá. Tus especialidades y horarios se editan en las secciones de abajo.'
+              : 'Podés actualizar tu teléfono y tu dirección desde acá.'}
           </p>
           <Form onSubmit={handleSaveContact}>
             <Row>
@@ -369,9 +373,7 @@ const Profile = () => {
           </p>
           <Form onSubmit={handleSaveSchedule}>
             <div style={{ marginBottom: 20 }}>
-              <label style={{ display: 'block', fontWeight: 700, marginBottom: 8, color: '#eef2f6' }}>
-                Días de atención
-              </label>
+              <label className="profile-field-label">Días de atención</label>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                 {WEEK_DAYS.map((day) => {
                   const isChecked = selectedDays.includes(day.id);
@@ -396,7 +398,7 @@ const Profile = () => {
 
             <div style={{ marginBottom: 24 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: 12 }}>
-                <label style={{ fontWeight: 700, margin: 0, color: '#eef2f6' }}>
+                <label className="profile-field-label">
                   Horarios disponibles ({selectedSlots.length})
                 </label>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -438,49 +440,25 @@ const Profile = () => {
                 >
                   + Agregar horario
                 </button>
-                <span style={{ fontSize: '0.82rem', color: '#a0aec0' }}>
+                <span className="profile-hint">
                   Podés configurar cualquier horario de atención libre (ej: 08:30, 11:00, 16:30).
                 </span>
               </div>
 
               {/* Lista de horarios asignados como badges/chips interactivos */}
               {selectedSlots.length === 0 ? (
-                <p style={{ color: '#e2e8f0', fontSize: '0.9rem', fontStyle: 'italic', margin: '8px 0' }}>
+                <p className="profile-empty">
                   No tenés horarios seleccionados. Agregá uno con el selector o cargá los estándar.
                 </p>
               ) : (
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                   {selectedSlots.map((slot) => (
-                    <div
-                      key={slot}
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        padding: '6px 12px',
-                        borderRadius: '12px',
-                        background: 'rgba(92, 138, 180, 0.22)',
-                        border: '1px solid rgba(170, 195, 220, 0.4)',
-                        color: '#ffffff',
-                        fontSize: '0.92rem',
-                        fontWeight: 600,
-                      }}
-                    >
+                    <div key={slot} className="profile-slot">
                       <span>{slot} hs</span>
                       <button
                         type="button"
+                        className="profile-slot__remove"
                         onClick={() => handleRemoveSlot(slot)}
-                        style={{
-                          background: 'transparent',
-                          border: 'none',
-                          color: '#ff8585',
-                          cursor: 'pointer',
-                          fontWeight: 800,
-                          fontSize: '1.1rem',
-                          lineHeight: 1,
-                          padding: 0,
-                          marginLeft: 2,
-                        }}
                         title="Eliminar horario"
                         aria-label={`Eliminar horario ${slot}`}
                       >

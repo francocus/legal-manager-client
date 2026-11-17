@@ -50,9 +50,11 @@ export const getStatusClass = (status) => {
 
 export const getAppointmentAccent = (appointment) => {
   const normalizedStatus = normalizeText(appointment.status);
+  // Status palette: confirmado = green (is-primary), pendiente = amber,
+  // cancelado = grey, finalizado = red. The same accents drive the calendar.
   if (normalizedStatus === 'pendiente') return 'is-warning';
-  if (normalizedStatus === 'cancelado') return 'is-danger';
-  if (normalizedStatus === 'finalizado' || normalizedStatus === 'completado') return 'is-muted';
+  if (normalizedStatus === 'cancelado') return 'is-muted';
+  if (normalizedStatus === 'finalizado' || normalizedStatus === 'completado') return 'is-danger';
   return 'is-primary';
 };
 

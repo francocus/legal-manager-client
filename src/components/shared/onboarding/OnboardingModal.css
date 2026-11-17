@@ -17,3 +17,14 @@
 [data-bs-theme='light'] .onboarding-modal__body {
   color: #3c4754;
 }
+
+/* The header close button is forced to the white variant; over the light card
+   it would be invisible without resetting the filter. */
+[data-bs-theme='light'] .onboarding-modal__header .btn-close {
+  filter: none !important;
+  opacity: 0.65 !important;
+}
+
+[data-bs-theme='light'] .onboarding-modal__header .btn-close:hover {
+  opacity: 0.9 !important;
+}
