@@ -97,6 +97,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+  margin-bottom: 18px;
 }
 
 .profile-panel-header .app-panel__title {
@@ -135,7 +136,7 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  margin-top: 14px;
+  margin: 0 0 16px;
   padding: 10px 14px;
   border-radius: 12px;
   border: 1px solid rgba(220, 160, 80, 0.38);
@@ -149,18 +150,6 @@
   flex: 0 0 auto;
   margin-top: 1px;
   color: #f0b35c;
-}
-
-.profile-completeness-alert a {
-  color: #ffd894;
-  font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.profile-completeness-alert a:hover,
-.profile-completeness-alert a:focus-visible {
-  color: #ffe9c2;
 }
 
 [data-bs-theme='light'] .profile-section + .profile-section {
@@ -180,15 +169,6 @@
 
 [data-bs-theme='light'] .profile-completeness-alert svg {
   color: #b45309;
-}
-
-[data-bs-theme='light'] .profile-completeness-alert a {
-  color: #92400e;
-}
-
-[data-bs-theme='light'] .profile-completeness-alert a:hover,
-[data-bs-theme='light'] .profile-completeness-alert a:focus-visible {
-  color: #7c2d12;
 }
 
 .profile-datum--editing {

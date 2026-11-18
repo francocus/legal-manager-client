@@ -999,10 +999,9 @@
 }
 
 [data-bs-theme='light'] .cases-item {
-  background: #ffffff;
-  border: 1px solid rgba(15, 23, 32, 0.1);
-  border-left-width: 4px;
-  box-shadow: 0 12px 30px rgba(15, 23, 32, 0.08);
+  background: transparent;
+  border: 0;
+  box-shadow: none;
 }
 
 [data-bs-theme='light'] .cases-item:hover {
@@ -1682,7 +1681,7 @@
 .cases-item__tab {
   position: absolute;
   top: -26px;
-  left: 18px;
+  left: -5px;
   z-index: 2;
   display: inline-flex;
   align-items: center;
@@ -1719,12 +1718,23 @@
 }
 
 .cases-item--folder .cases-item__row {
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: flex-start;
 }
 
+.cases-item--folder .cases-item__title {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.cases-item--folder .cases-item__status {
+  flex: 0 0 auto;
+}
+
 [data-bs-theme='light'] .cases-item__folder {
-  border-color: rgba(15, 23, 32, 0.1);
+  border-top-color: rgba(15, 23, 32, 0.1);
+  border-right-color: rgba(15, 23, 32, 0.1);
+  border-bottom-color: rgba(15, 23, 32, 0.1);
   background:
     linear-gradient(225deg, rgba(15, 23, 32, 0.05) 0 16px, transparent 16px),
     radial-gradient(circle at top right, rgba(37, 99, 235, 0.05), transparent 32%),
@@ -1741,7 +1751,8 @@
 }
 
 [data-bs-theme='light'] .cases-item__tab {
-  border-color: rgba(15, 23, 32, 0.1);
+  border-top-color: rgba(15, 23, 32, 0.1);
+  border-right-color: rgba(15, 23, 32, 0.1);
   background: #ffffff;
   box-shadow: 0 -3px 10px rgba(15, 23, 32, 0.05);
   color: #475569;

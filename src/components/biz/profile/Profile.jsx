@@ -534,9 +534,6 @@ const Profile = () => {
   const missingProfileLabels = missingProfileFields
     .map((field) => PROFILE_FIELD_LABELS[field])
     .filter(Boolean);
-  const missingProfileAnchor = missingProfileFields.includes('schedule')
-    ? '#profile-professional'
-    : '#profile-contact';
 
   return (
     <section className="app-page">
@@ -546,6 +543,13 @@ const Profile = () => {
           <h2 className="app-page__title">Mi perfil</h2>
         </div>
       </header>
+
+      {!profileIsComplete && (
+        <div className="profile-completeness-alert" role="status">
+          <CircleAlert size={18} aria-hidden="true" />
+          <span>Completá tu perfil: falta {missingProfileLabels.join(' y ')}.</span>
+        </div>
+      )}
 
       <div className="app-panel">
         <div className="profile-panel-header">
@@ -558,15 +562,6 @@ const Profile = () => {
           </div>
           {loadingProfile ? <Spinner animation="border" size="sm" variant="secondary" /> : null}
         </div>
-        {!profileIsComplete && (
-          <div className="profile-completeness-alert" role="status">
-            <CircleAlert size={18} aria-hidden="true" />
-            <span>
-              Completá tu perfil: falta {missingProfileLabels.join(' y ')}.{' '}
-              <a href={missingProfileAnchor}>Ir a los datos faltantes</a>
-            </span>
-          </div>
-        )}
 
         <section className="profile-section" id="profile-identity">
           <h4 className="profile-section__title">
