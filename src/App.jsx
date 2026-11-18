@@ -34,11 +34,11 @@ function App() {
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/recuperar-contrasena" element={<ForgotPassword />} />
+          <Route path="/restablecer-contrasena" element={<ResetPassword />} />
+          <Route path="/confirmar-email" element={<ConfirmEmail />} />
+          <Route path="/registro-pendiente" element={<RegisterPending />} />
         </Route>
-        <Route path="/recuperar-contrasena" element={<ForgotPassword />} />
-        <Route path="/restablecer-contrasena" element={<ResetPassword />} />
-        <Route path="/confirmar-email" element={<ConfirmEmail />} />
-        <Route path="/registro-pendiente" element={<RegisterPending />} />
         <Route
           path="/dashboard"
           element={

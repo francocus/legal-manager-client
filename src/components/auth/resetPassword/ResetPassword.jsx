@@ -1,13 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Button, Form } from 'react-bootstrap';
 import { Link, useNavigate, useSearchParams } from 'react-router';
-import ToggleTheme from '../../shared/toggleTheme/ToggleTheme.jsx';
-import { Scale } from 'lucide-react';
 import { useForm } from '../../services/hooks/useForm';
 import { isRequired } from '../../services/validators/validators';
 import { accountApi } from '../../services/api/accountApi';
 import { useToast } from '../../shared/toast/toast.context';
-import '../auth.css';
 
 const LockIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
@@ -78,123 +75,107 @@ const ResetPassword = () => {
   const passwordInputType = showPassword ? 'text' : 'password';
 
   return (
-    <main className="auth-page">
-      <div className="auth-theme-toggle">
-        <ToggleTheme />
-      </div>
-      <div className="auth-grid">
-        <aside className="auth-aside">
-          <div className="auth-brand">
-            <span className="auth-mark">
-              <Scale size={48} />
-            </span>
-            <strong>LEGAL MANAGER</strong>
+    <>
+      {!token ? (
+        <div className="auth-box auth-box--login">
+          <div className="auth-box__head">
+            <span className="auth-eyebrow">Recuperar acceso</span>
+            <h2>Enlace inválido</h2>
+            <p>El enlace es inválido o expiró. Pedí uno nuevo.</p>
           </div>
-        </aside>
+          <Button className="auth-submit" onClick={() => navigate('/recuperar-contrasena')}>
+            Ir a recuperar contraseña
+          </Button>
+        </div>
+      ) : status === 'success' ? (
+        <div className="auth-box auth-box--login">
+          <div className="auth-box__head">
+            <span className="auth-eyebrow">Recuperar acceso</span>
+            <h2>Contraseña restablecida</h2>
+            <p>Tu contraseña quedó restablecida. Ya podés iniciar sesión.</p>
+          </div>
+          <Button className="auth-submit" onClick={() => navigate('/login', { replace: true })}>
+            Iniciar sesión
+          </Button>
+        </div>
+      ) : (
+        <div className="auth-box auth-box--login">
+          <div className="auth-box__head">
+            <span className="auth-eyebrow">Recuperar acceso</span>
+            <h2>Restablecer contraseña</h2>
+          </div>
 
-        <section className="auth-panel">
-          {!token ? (
-            <div className="auth-box">
-              <div className="auth-box__head">
-                <span className="auth-eyebrow">Recuperar acceso</span>
-                <h2>Enlace inválido</h2>
-                <p>El enlace es inválido o expiró. Pedí uno nuevo.</p>
+          <Form className="auth-form" onSubmit={handleSubmit} noValidate>
+            <div className={`auth-field ${errors.newPassword ? 'has-error' : ''}`}>
+              <label htmlFor="reset-password">Nueva contraseña</label>
+              <div className="auth-input">
+                <LockIcon />
+                <Form.Control
+                  id="reset-password"
+                  name="newPassword"
+                  type={passwordInputType}
+                  placeholder="••••••••"
+                  value={values.newPassword}
+                  onChange={handleChange}
+                  aria-invalid={Boolean(errors.newPassword)}
+                />
+                <button
+                  type="button"
+                  className="auth-eye"
+                  onClick={() => setShowPassword((previous) => !previous)}
+                  aria-label="Mostrar contraseña"
+                >
+                  <EyeIcon off={showPassword} />
+                </button>
               </div>
-              <Button className="auth-submit" onClick={() => navigate('/recuperar-contrasena')}>
-                Ir a recuperar contraseña
-              </Button>
+              {errors.newPassword && <span className="auth-error">{errors.newPassword}</span>}
             </div>
-          ) : status === 'success' ? (
-            <div className="auth-box">
-              <div className="auth-box__head">
-                <span className="auth-eyebrow">Recuperar acceso</span>
-                <h2>Contraseña restablecida</h2>
-                <p>Tu contraseña quedó restablecida. Ya podés iniciar sesión.</p>
+
+            <div className={`auth-field ${errors.repeatPassword ? 'has-error' : ''}`}>
+              <label htmlFor="reset-repeat-password">Repetir contraseña</label>
+              <div className="auth-input">
+                <LockIcon />
+                <Form.Control
+                  id="reset-repeat-password"
+                  name="repeatPassword"
+                  type={passwordInputType}
+                  placeholder="••••••••"
+                  value={values.repeatPassword}
+                  onChange={handleChange}
+                  aria-invalid={Boolean(errors.repeatPassword)}
+                />
+                <button
+                  type="button"
+                  className="auth-eye"
+                  onClick={() => setShowPassword((previous) => !previous)}
+                  aria-label="Mostrar contraseña"
+                >
+                  <EyeIcon off={showPassword} />
+                </button>
               </div>
-              <Button className="auth-submit" onClick={() => navigate('/login', { replace: true })}>
-                Iniciar sesión
-              </Button>
-            </div>
-          ) : (
-            <div className="auth-box">
-              <div className="auth-box__head">
-                <span className="auth-eyebrow">Recuperar acceso</span>
-                <h2>Restablecer contraseña</h2>
-              </div>
-
-              <Form className="auth-form" onSubmit={handleSubmit} noValidate>
-                <div className={`auth-field ${errors.newPassword ? 'has-error' : ''}`}>
-                  <label htmlFor="reset-password">Nueva contraseña</label>
-                  <div className="auth-input">
-                    <LockIcon />
-                    <Form.Control
-                      id="reset-password"
-                      name="newPassword"
-                      type={passwordInputType}
-                      placeholder="••••••••"
-                      value={values.newPassword}
-                      onChange={handleChange}
-                      aria-invalid={Boolean(errors.newPassword)}
-                    />
-                    <button
-                      type="button"
-                      className="auth-eye"
-                      onClick={() => setShowPassword((previous) => !previous)}
-                      aria-label="Mostrar contraseña"
-                    >
-                      <EyeIcon off={showPassword} />
-                    </button>
-                  </div>
-                  {errors.newPassword && <span className="auth-error">{errors.newPassword}</span>}
-                </div>
-
-                <div className={`auth-field ${errors.repeatPassword ? 'has-error' : ''}`}>
-                  <label htmlFor="reset-repeat-password">Repetir contraseña</label>
-                  <div className="auth-input">
-                    <LockIcon />
-                    <Form.Control
-                      id="reset-repeat-password"
-                      name="repeatPassword"
-                      type={passwordInputType}
-                      placeholder="••••••••"
-                      value={values.repeatPassword}
-                      onChange={handleChange}
-                      aria-invalid={Boolean(errors.repeatPassword)}
-                    />
-                    <button
-                      type="button"
-                      className="auth-eye"
-                      onClick={() => setShowPassword((previous) => !previous)}
-                      aria-label="Mostrar contraseña"
-                    >
-                      <EyeIcon off={showPassword} />
-                    </button>
-                  </div>
-                  {errors.repeatPassword && (
-                    <span className="auth-error">{errors.repeatPassword}</span>
-                  )}
-                </div>
-
-                <Button className="auth-submit" type="submit" disabled={submitting}>
-                  {submitting ? 'Restableciendo…' : 'Restablecer contraseña'}
-                </Button>
-              </Form>
-
-              {apiError && (
-                <>
-                  <p className="auth-error">{apiError}</p>
-                  <p className="auth-switch-text">
-                    <Link to="/recuperar-contrasena" className="auth-link">
-                      Pedir otro correo
-                    </Link>
-                  </p>
-                </>
+              {errors.repeatPassword && (
+                <span className="auth-error">{errors.repeatPassword}</span>
               )}
             </div>
+
+            <Button className="auth-submit" type="submit" disabled={submitting}>
+              {submitting ? 'Restableciendo…' : 'Restablecer contraseña'}
+            </Button>
+          </Form>
+
+          {apiError && (
+            <>
+              <p className="auth-error">{apiError}</p>
+              <p className="auth-switch-text">
+                <Link to="/recuperar-contrasena" className="auth-link">
+                  Pedir otro correo
+                </Link>
+              </p>
+            </>
           )}
-        </section>
-      </div>
-    </main>
+        </div>
+      )}
+    </>
   );
 };
 

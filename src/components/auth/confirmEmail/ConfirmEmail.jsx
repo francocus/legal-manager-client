@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Button, Form, Spinner } from 'react-bootstrap';
 import { Link, useNavigate, useSearchParams } from 'react-router';
-import ToggleTheme from '../../shared/toggleTheme/ToggleTheme.jsx';
-import { Scale } from 'lucide-react';
 import { isEmail, isRequired } from '../../services/validators/validators';
 import { accountApi } from '../../services/api/accountApi';
 import { useToast } from '../../shared/toast/toast.context';
-import '../auth.css';
 
 const MailIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
@@ -89,86 +86,70 @@ const ConfirmEmail = () => {
   };
 
   return (
-    <main className="auth-page">
-      <div className="auth-theme-toggle">
-        <ToggleTheme />
-      </div>
-      <div className="auth-grid">
-        <aside className="auth-aside">
-          <div className="auth-brand">
-            <span className="auth-mark">
-              <Scale size={48} />
-            </span>
-            <strong>LEGAL MANAGER</strong>
+    <>
+      {status === 'confirming' ? (
+        <div className="auth-box auth-box--register">
+          <div className="auth-box__head">
+            <span className="auth-eyebrow">Activar cuenta</span>
+            <h2>Confirmar email</h2>
+            <p>Confirmando tu email…</p>
           </div>
-        </aside>
+          <div className="d-flex justify-content-center">
+            <Spinner animation="border" size="sm">
+              <span className="visually-hidden">Cargando…</span>
+            </Spinner>
+          </div>
+        </div>
+      ) : status === 'success' ? (
+        <div className="auth-box auth-box--register">
+          <div className="auth-box__head">
+            <span className="auth-eyebrow">Activar cuenta</span>
+            <h2>Email confirmado</h2>
+            <p>Tu email quedó confirmado. Ya podés iniciar sesión.</p>
+          </div>
+          <Button className="auth-submit" onClick={() => navigate('/login', { replace: true })}>
+            Iniciar sesión
+          </Button>
+        </div>
+      ) : (
+        <div className="auth-box auth-box--register">
+          <div className="auth-box__head">
+            <span className="auth-eyebrow">Activar cuenta</span>
+            <h2>Enlace inválido</h2>
+            <p>{apiError || INVALID_LINK_TEXT}</p>
+          </div>
 
-        <section className="auth-panel">
-          {status === 'confirming' ? (
-            <div className="auth-box">
-              <div className="auth-box__head">
-                <span className="auth-eyebrow">Activar cuenta</span>
-                <h2>Confirmar email</h2>
-                <p>Confirmando tu email…</p>
+          <Form className="auth-form" onSubmit={handleResend} noValidate>
+            <div className={`auth-field ${resendError ? 'has-error' : ''}`}>
+              <label htmlFor="confirm-resend-email">Email</label>
+              <div className="auth-input">
+                <MailIcon />
+                <Form.Control
+                  id="confirm-resend-email"
+                  name="email"
+                  type="email"
+                  placeholder="tu@email.com"
+                  value={resendEmail}
+                  onChange={(event) => setResendEmail(event.target.value)}
+                  aria-invalid={Boolean(resendError)}
+                />
               </div>
-              <div className="d-flex justify-content-center">
-                <Spinner animation="border" size="sm">
-                  <span className="visually-hidden">Cargando…</span>
-                </Spinner>
-              </div>
+              {resendError && <span className="auth-error">{resendError}</span>}
             </div>
-          ) : status === 'success' ? (
-            <div className="auth-box">
-              <div className="auth-box__head">
-                <span className="auth-eyebrow">Activar cuenta</span>
-                <h2>Email confirmado</h2>
-                <p>Tu email quedó confirmado. Ya podés iniciar sesión.</p>
-              </div>
-              <Button className="auth-submit" onClick={() => navigate('/login', { replace: true })}>
-                Iniciar sesión
-              </Button>
-            </div>
-          ) : (
-            <div className="auth-box">
-              <div className="auth-box__head">
-                <span className="auth-eyebrow">Activar cuenta</span>
-                <h2>Enlace inválido</h2>
-                <p>{apiError || INVALID_LINK_TEXT}</p>
-              </div>
 
-              <Form className="auth-form" onSubmit={handleResend} noValidate>
-                <div className={`auth-field ${resendError ? 'has-error' : ''}`}>
-                  <label htmlFor="confirm-resend-email">Email</label>
-                  <div className="auth-input">
-                    <MailIcon />
-                    <Form.Control
-                      id="confirm-resend-email"
-                      name="email"
-                      type="email"
-                      placeholder="tu@email.com"
-                      value={resendEmail}
-                      onChange={(event) => setResendEmail(event.target.value)}
-                      aria-invalid={Boolean(resendError)}
-                    />
-                  </div>
-                  {resendError && <span className="auth-error">{resendError}</span>}
-                </div>
+            <Button className="auth-submit" type="submit" disabled={resending}>
+              {resending ? 'Enviando…' : 'Reenviar email'}
+            </Button>
+          </Form>
 
-                <Button className="auth-submit" type="submit" disabled={resending}>
-                  {resending ? 'Enviando…' : 'Reenviar email'}
-                </Button>
-              </Form>
-
-              <p className="auth-switch-text">
-                <Link to="/login" className="auth-link">
-                  Ir al inicio de sesión
-                </Link>
-              </p>
-            </div>
-          )}
-        </section>
-      </div>
-    </main>
+          <p className="auth-switch-text">
+            <Link to="/login" className="auth-link">
+              Ir al inicio de sesión
+            </Link>
+          </p>
+        </div>
+      )}
+    </>
   );
 };
 

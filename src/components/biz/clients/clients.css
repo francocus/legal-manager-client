@@ -283,12 +283,12 @@
 }
 
 /* Mini folder language for the case list on a client's detail page.
-   Same silhouette as the main case cards, scaled down. */
+   Same single-surface rule as the main case cards, scaled down. */
 .client-page__case-folder {
   --client-case-accent: rgba(120, 172, 214, 0.55);
+  --client-case-surface: #0c1017;
   position: relative;
   isolation: isolate;
-  padding-top: 18px;
 }
 
 .client-page__case-folder:has(.cases-item__status.is-active),
@@ -311,46 +311,39 @@
 }
 
 .client-page__case-folder a {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 2px;
   border-left: 5px solid var(--client-case-accent);
-  border-radius: 4px 12px 12px 12px;
-}
-
-.client-page__case-folder a::before {
-  content: '';
-  position: absolute;
-  z-index: -1;
-  top: 12px;
-  right: 10px;
-  bottom: 6px;
-  left: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
-  background: linear-gradient(160deg, rgba(28, 38, 52, 0.9), rgba(15, 21, 29, 0.9));
-  transform: rotate(0.6deg);
-  pointer-events: none;
+  border-radius: 12px;
+  background: var(--client-case-surface);
 }
 
 .client-page__case-tab {
-  position: absolute;
-  top: -1px;
-  left: 14px;
-  z-index: 2;
+  grid-column: 1;
+  grid-row: 1;
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  max-width: calc(100% - 28px);
-  height: 22px;
-  padding: 0 10px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-left: 5px solid var(--client-case-accent);
-  border-bottom: 0;
-  border-radius: 9px 9px 0 0;
-  background: linear-gradient(180deg, rgba(20, 27, 37, 0.99), rgba(12, 16, 22, 0.99));
+  min-width: 0;
   color: #dce8f5;
   font-size: 0.76rem;
   font-weight: 800;
   white-space: nowrap;
+}
+
+.client-page__case-folder .client-page__case-main {
+  grid-column: 1;
+  grid-row: 2;
+  min-width: 0;
+}
+
+.client-page__case-folder .cases-item__status {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  justify-self: end;
 }
 
 .client-page__case-tab svg {
@@ -360,6 +353,7 @@
 
 [data-bs-theme='light'] .client-page__case-folder {
   --client-case-accent: rgba(70, 130, 185, 0.8);
+  --client-case-surface: #ffffff;
 }
 
 [data-bs-theme='light'] .client-page__case-folder:has(.cases-item__status.is-active),
@@ -381,14 +375,11 @@
   --client-case-accent: rgba(195, 75, 75, 0.85);
 }
 
-[data-bs-theme='light'] .client-page__case-folder a::before {
-  border-color: rgba(15, 23, 32, 0.07);
-  background: linear-gradient(160deg, #f1f4f7, #e7ebf0);
+[data-bs-theme='light'] .client-page__case-folder a {
+  background: var(--client-case-surface);
 }
 
 [data-bs-theme='light'] .client-page__case-tab {
-  border-color: rgba(15, 23, 32, 0.1);
-  background: #ffffff;
   color: #475569;
 }
 
