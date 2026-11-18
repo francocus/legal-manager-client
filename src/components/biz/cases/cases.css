@@ -42,12 +42,12 @@
 
 .cases-item {
   --case-accent: rgba(120, 172, 214, 0.55);
+  --case-surface: #0c1017;
   position: relative;
   display: grid;
   min-width: 0;
   height: 100%;
   width: 100%;
-  padding-top: 26px;
   isolation: isolate;
 }
 
@@ -1259,6 +1259,7 @@
 
 [data-bs-theme='light'] .cases-item {
   --case-accent: rgba(70, 130, 185, 0.8);
+  --case-surface: #ffffff;
 }
 
 [data-bs-theme='light'] .cases-item:has(.cases-item__status.is-active),
@@ -1625,25 +1626,20 @@
   color: #45505d;
 }
 
-/* Folder silhouette for the case list. The card is no longer a rectangle with
-   add-ons: the tab, the sheet behind it and the spine make the whole shape. */
+/* A single flat surface: the status colour lives in the spine and the badge,
+   so no overlapping sheet or tab can put a second tone under the text. */
 .cases-item__folder {
   position: relative;
   z-index: 1;
   display: grid;
   gap: 12px;
   height: 100%;
-  padding: 20px 22px 18px 26px;
+  padding: 18px 22px;
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-left: 5px solid var(--case-accent);
-  border-radius: 4px 18px 18px 18px;
-  background:
-    linear-gradient(225deg, rgba(255, 255, 255, 0.085) 0 16px, transparent 16px),
-    radial-gradient(circle at top right, rgba(120, 172, 214, 0.08), transparent 32%),
-    rgba(12, 16, 22, 0.94);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    0 18px 40px rgba(0, 0, 0, 0.18);
+  border-radius: 18px;
+  background: var(--case-surface);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
   transition:
     transform 180ms ease,
     box-shadow 180ms ease,
@@ -1652,50 +1648,19 @@
 
 .cases-item__folder:hover {
   transform: translateY(-2px);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    0 22px 46px rgba(0, 0, 0, 0.24);
-}
-
-/* Paper peeking out from behind the folder gives the silhouette depth. */
-.cases-item__sheet {
-  position: absolute;
-  z-index: -1;
-  top: -7px;
-  right: 12px;
-  bottom: 9px;
-  left: 30px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 14px 14px 10px 14px;
-  background: linear-gradient(160deg, rgba(28, 38, 52, 0.95), rgba(15, 21, 29, 0.95));
-  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.22);
-  transform: rotate(0.7deg);
-  pointer-events: none;
+  box-shadow: 0 22px 46px rgba(0, 0, 0, 0.24);
 }
 
 .cases-item__link {
   gap: 8px;
 }
 
-/* The tab carries the case number, like the label on a real file folder. */
+/* The case number is an inline label on the card surface, not a floating tab. */
 .cases-item__tab {
-  position: absolute;
-  top: -26px;
-  left: -5px;
-  z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  max-width: calc(100% - 36px);
-  height: 28px;
-  padding: 0 14px 0 12px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-left: 5px solid var(--case-accent);
-  border-bottom: 0;
-  border-radius: 12px 12px 0 0;
-  background: linear-gradient(180deg, rgba(20, 27, 37, 0.99), rgba(12, 16, 22, 0.99));
-  box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.18);
+  max-width: 100%;
   color: #dce8f5;
 }
 
@@ -1735,26 +1700,15 @@
   border-top-color: rgba(15, 23, 32, 0.1);
   border-right-color: rgba(15, 23, 32, 0.1);
   border-bottom-color: rgba(15, 23, 32, 0.1);
-  background:
-    linear-gradient(225deg, rgba(15, 23, 32, 0.05) 0 16px, transparent 16px),
-    radial-gradient(circle at top right, rgba(37, 99, 235, 0.05), transparent 32%),
-    #ffffff;
-  box-shadow:
-    inset 0 1px 0 #ffffff,
-    0 18px 40px rgba(15, 23, 32, 0.12);
+  background: var(--case-surface);
+  box-shadow: 0 18px 40px rgba(15, 23, 32, 0.12);
 }
 
-[data-bs-theme='light'] .cases-item__sheet {
-  border-color: rgba(15, 23, 32, 0.07);
-  background: linear-gradient(160deg, #f1f4f7, #e7ebf0);
-  box-shadow: 0 12px 26px rgba(15, 23, 32, 0.1);
+[data-bs-theme='light'] .cases-item__folder:hover {
+  box-shadow: 0 22px 46px rgba(15, 23, 32, 0.16);
 }
 
 [data-bs-theme='light'] .cases-item__tab {
-  border-top-color: rgba(15, 23, 32, 0.1);
-  border-right-color: rgba(15, 23, 32, 0.1);
-  background: #ffffff;
-  box-shadow: 0 -3px 10px rgba(15, 23, 32, 0.05);
   color: #475569;
 }
 

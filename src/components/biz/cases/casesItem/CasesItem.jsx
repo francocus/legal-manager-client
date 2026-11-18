@@ -25,7 +25,6 @@ const CasesItem = ({
   return (
     <article className="cases-item cases-item--folder">
       <div className="cases-item__folder">
-        <span className="cases-item__sheet" aria-hidden="true" />
         <Link to={`/dashboard/cases/${id}`} className="cases-item__link">
           <span className="cases-item__tab">
             <FileText size={13} className="cases-item__tab-icon" aria-hidden="true" />
